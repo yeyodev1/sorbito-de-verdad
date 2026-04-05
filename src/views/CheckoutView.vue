@@ -78,6 +78,14 @@ const selectedZone = computed(() => zones.value.find((z) => z._id === selectedZo
 const shipping = computed(() => selectedZone.value?.price ?? 0);
 const total = computed(() => subtotal.value + shipping.value);
 
+const isFormValid = computed(() => {
+  const f = form.value;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email);
+  const baseOk = f.name.trim() !== '' && emailOk && f.phone.trim() !== '' && f.street.trim() !== '' && f.city.trim() !== '';
+  const intlOk = !isInternational.value || (f.zip.trim() !== '');
+  return baseOk && intlOk && items.value.length > 0 && !!selectedZoneId.value;
+});
+
 function autoSelectZoneByCountry(country: string) {
   const zoneName = COUNTRY_ZONE_MAP[country];
   if (zoneName) {
@@ -363,7 +371,7 @@ function formatPrice(val: number) {
             </div>
 
             <!-- Submit -->
-            <button type="submit" class="co__submit" :disabled="loading || items.length === 0">
+            <button type="submit" class="co__submit" :disabled="loading || !isFormValid">
               <template v-if="loading">
                 <i class="fa-solid fa-circle-notch fa-spin"></i>
                 Procesando pago...
@@ -373,6 +381,11 @@ function formatPrice(val: number) {
                 Pagar {{ formatPrice(total) }}
               </template>
             </button>
+
+            <p v-if="!isFormValid && !loading" class="co__form-incomplete">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              Completa todos los campos requeridos para continuar
+            </p>
 
             <p class="co__secure-note">
               <i class="fa-solid fa-shield-halved"></i>
@@ -991,6 +1004,19 @@ function formatPrice(val: number) {
       opacity: 0.55;
       cursor: not-allowed;
     }
+  }
+
+  &__form-incomplete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    margin: 0;
+    opacity: 0.75;
+
+    i { color: $color-accent; font-size: 0.75rem; }
   }
 
   &__secure-note {
