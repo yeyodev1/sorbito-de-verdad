@@ -29,7 +29,13 @@ const routes: Array<RouteRecordRaw> = [
     path: '/checkout',
     name: 'Checkout',
     component: () => import('../views/CheckoutView.vue'),
-    meta: { title: 'Finalizar Compra', requiresAuth: true },
+    meta: { title: 'Finalizar Compra' },
+  },
+  {
+    path: '/rastrear',
+    name: 'TrackOrder',
+    component: () => import('../views/TrackOrderView.vue'),
+    meta: { title: 'Rastrear Pedido' },
   },
   {
     path: '/pay-response',
@@ -84,6 +90,12 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Profile',
     component: () => import('../views/ProfileView.vue'),
     meta: { title: 'Mi Perfil', requiresAuth: true },
+  },
+  {
+    path: '/mis-pedidos/:id',
+    name: 'OrderDetail',
+    component: () => import('../views/OrderDetailView.vue'),
+    meta: { title: 'Detalle del Pedido', requiresAuth: true },
   },
   // Admin routes
   {

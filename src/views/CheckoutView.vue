@@ -78,6 +78,8 @@ const selectedZone = computed(() => zones.value.find((z) => z._id === selectedZo
 const shipping = computed(() => selectedZone.value?.price ?? 0);
 const total = computed(() => subtotal.value + shipping.value);
 
+const isGuest = computed(() => !authStore.user);
+
 const isFormValid = computed(() => {
   const f = form.value;
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email);
@@ -124,7 +126,7 @@ async function handleSubmit() {
       state: form.value.state,
       country: form.value.country,
       zip: form.value.zip,
-      ...(form.value.mapsUrl && { notes: `Google Maps: ${form.value.mapsUrl}` }),
+      ...(form.value.mapsUrl && { mapsUrl: form.value.mapsUrl }),
     };
     const response = await orderService.initiatePayphonePayment(
       items.value,
@@ -204,6 +206,10 @@ function formatPrice(val: number) {
                     <i class="fa-solid fa-envelope co__input-icon"></i>
                     <input id="co-email" v-model="form.email" type="email" class="co__input" placeholder="juan@email.com" required autocomplete="email" />
                   </div>
+                  <p v-if="isGuest" class="co__field-hint co__field-hint--info">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Crearemos una cuenta automáticamente con este email para que puedas rastrear tu pedido.
+                  </p>
                 </div>
                 <div class="co__field">
                   <label class="co__label" for="co-phone">Teléfono de contacto</label>
@@ -234,6 +240,11 @@ function formatPrice(val: number) {
                   <h2 class="co__section-title">Dirección de envío</h2>
                   <p class="co__section-desc">¿A dónde enviamos tu pedido?</p>
                 </div>
+              </div>
+              <!-- Address lock notice -->
+              <div class="co__address-notice">
+                <i class="fa-solid fa-lock"></i>
+                <span>Una vez confirmado el pedido, <strong>la dirección no puede modificarse</strong>. Asegúrate de que sea correcta.</span>
               </div>
               <div class="co__fields co__fields--2col">
                 <div class="co__field co__field--full">
@@ -782,9 +793,29 @@ function formatPrice(val: number) {
     font-size: 0.8125rem;
     color: var(--color-muted);
     line-height: 1.5;
-    margin: 0;
+    margin: 0.375rem 0 0;
 
     i { margin-top: 2px; flex-shrink: 0; font-size: 0.75rem; color: $color-accent; }
+
+    &--info {
+      color: #2563EB;
+      i { color: #2563EB; }
+    }
+  }
+
+  &__address-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    color: #92400E;
+    margin-bottom: 1.25rem;
+
+    i { color: #D97706; margin-top: 2px; flex-shrink: 0; }
   }
 
   // ── Shipping zone cards ──────────────────────────────────────

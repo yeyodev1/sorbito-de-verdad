@@ -48,8 +48,8 @@ export const adminService = {
     const { data } = await httpBase.get('/orders/admin', { params });
     return data;
   },
-  async updateOrderStatus(id: string, status: string, paymentStatus?: string) {
-    const { data } = await httpBase.patch(`/orders/${id}/status`, { status, paymentStatus });
+  async updateOrderStatus(id: string, status: string, paymentStatus?: string, adminNotes?: string) {
+    const { data } = await httpBase.patch(`/orders/${id}/status`, { status, paymentStatus, adminNotes });
     return data;
   },
 

@@ -375,7 +375,9 @@ onMounted(() => { loadOrders(); });
                 </div>
                 <div class="order-card__footer">
                   <span class="order-card__total">Total: <strong>{{ formatPrice(order.total) }}</strong></span>
-                  <span class="order-card__address">{{ order.shippingAddress.city }}, {{ order.shippingAddress.country }}</span>
+                  <RouterLink :to="`/mis-pedidos/${order._id}`" class="order-card__detail-btn">
+                    Ver detalle <i class="fa-solid fa-arrow-right"></i>
+                  </RouterLink>
                 </div>
               </div>
             </div>
@@ -1309,6 +1311,19 @@ onMounted(() => { loadOrders(); });
   }
 
   &__address { font-size: 0.8125rem; color: var(--color-muted); }
+
+  &__detail-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $color-accent;
+    text-decoration: none;
+    transition: opacity 0.2s;
+
+    &:hover { opacity: 0.75; }
+  }
 }
 
 // Transitions

@@ -21,6 +21,7 @@ interface Order {
   status?: string;
   paymentStatus?: string;
   shippingAddress?: Record<string, string>;
+  notes?: string;
   createdAt?: string;
 }
 
@@ -29,6 +30,9 @@ const loading = ref(true);
 const filterStatus = ref('');
 const expandedId = ref<string | null>(null);
 const updatingId = ref<string | null>(null);
+// Draft notes per order (keyed by _id), only committed on save
+const draftNotes = ref<Record<string, string>>({});
+const savingNotes = ref<string | null>(null);
 
 const allStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -60,10 +64,28 @@ async function loadOrders() {
     const res = await adminService.getOrders({ sort: '-createdAt', limit: 100 });
     const data = res?.data || res;
     orders.value = Array.isArray(data) ? data : (data?.orders || []);
+    // Seed draft notes from existing order notes
+    for (const o of orders.value) {
+      if (o.notes && !(o._id in draftNotes.value)) {
+        draftNotes.value[o._id] = o.notes;
+      }
+    }
   } catch (e) {
     console.error(e);
   } finally {
     loading.value = false;
+  }
+}
+
+function openExpand(id: string) {
+  if (expandedId.value === id) {
+    expandedId.value = null;
+  } else {
+    expandedId.value = id;
+    const order = orders.value.find(o => o._id === id);
+    if (order && !(id in draftNotes.value)) {
+      draftNotes.value[id] = order.notes || '';
+    }
   }
 }
 
@@ -81,12 +103,26 @@ async function updateStatus(order: Order, newStatus: string) {
   try {
     await adminService.updateOrderStatus(order._id, newStatus);
     order.status = newStatus;
-    ui.success(`Orden actualizada: ${statusLabels[newStatus] || newStatus}`);
+    ui.success(`Estado → ${statusLabels[newStatus] || newStatus} · Email enviado al cliente`);
   } catch (e: unknown) {
     const err = e as { response?: { data?: { message?: string } }; message?: string };
     ui.error(err?.response?.data?.message || 'Error al actualizar la orden');
   } finally {
     updatingId.value = null;
+  }
+}
+
+async function saveNotes(order: Order) {
+  savingNotes.value = order._id;
+  try {
+    const notes = draftNotes.value[order._id] ?? '';
+    await adminService.updateOrderStatus(order._id, order.status || 'pending', undefined, notes);
+    order.notes = notes;
+    ui.success('Nota guardada');
+  } catch {
+    ui.error('Error al guardar la nota');
+  } finally {
+    savingNotes.value = null;
   }
 }
 
@@ -195,7 +231,7 @@ function getItemCount(order: Order) {
                       <option v-for="s in allStatuses" :key="s" :value="s">{{ statusLabels[s] }}</option>
                     </select>
                     <!-- Expand button -->
-                    <button class="om__expand-btn" @click="toggleExpand(order._id)" :title="expandedId === order._id ? 'Cerrar' : 'Ver detalles'">
+                    <button class="om__expand-btn" @click="openExpand(order._id)" :title="expandedId === order._id ? 'Cerrar' : 'Ver detalles'">
                       <i :class="['fa-solid', expandedId === order._id ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
                     </button>
                   </div>
@@ -234,6 +270,32 @@ function getItemCount(order: Order) {
                           <p v-for="(value, key) in order.shippingAddress" :key="key">
                             <span class="om__address-key">{{ key }}:</span> {{ value }}
                           </p>
+                        </div>
+                      </div>
+
+                      <!-- Notes section -->
+                      <div class="om__details-section om__details-section--full">
+                        <h4 class="om__details-title">
+                          <i class="fa-solid fa-note-sticky"></i>
+                          Nota interna
+                          <span class="om__note-hint">(se envía al cliente con el próximo cambio de estado)</span>
+                        </h4>
+                        <textarea
+                          v-model="draftNotes[order._id]"
+                          class="om__note-textarea"
+                          placeholder="Ej: Tu pedido saldrá mañana por DHL, número de guía: XXXXXXX"
+                          rows="3"
+                        ></textarea>
+                        <div class="om__note-actions">
+                          <button
+                            class="om__note-save"
+                            :disabled="savingNotes === order._id"
+                            @click="saveNotes(order)"
+                          >
+                            <i v-if="savingNotes === order._id" class="fa-solid fa-circle-notch fa-spin"></i>
+                            <i v-else class="fa-solid fa-floppy-disk"></i>
+                            {{ savingNotes === order._id ? 'Guardando...' : 'Guardar nota' }}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -454,6 +516,10 @@ function getItemCount(order: Order) {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
   }
 
   &__details-title {
@@ -463,6 +529,65 @@ function getItemCount(order: Order) {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+
+    i { color: $admin-accent; }
+  }
+
+  &__note-hint {
+    font-size: 0.6875rem;
+    color: $admin-text-muted;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+
+  &__note-textarea {
+    width: 100%;
+    background: $admin-sidebar-active;
+    border: 1px solid $admin-border;
+    border-radius: 8px;
+    color: $admin-text;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+    resize: vertical;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+
+    &::placeholder { color: $admin-text-muted; opacity: 0.6; }
+
+    &:focus {
+      outline: none;
+      border-color: $admin-accent;
+    }
+  }
+
+  &__note-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__note-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: $admin-accent;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 0.5rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.85; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
 
   &__items-table {

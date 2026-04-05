@@ -68,7 +68,10 @@ export interface Order {
     phone: string;
     street: string;
     city: string;
+    state?: string;
     country: string;
+    zip?: string;
+    mapsUrl?: string;
   };
   createdAt: string;
 }
