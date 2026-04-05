@@ -68,6 +68,10 @@ function confirmLogout() {
         <RouterLink v-if="authStore.isAdmin" to="/admin" class="navbar__link navbar__link--admin">
           <i class="fa-solid fa-shield-halved"></i> Admin
         </RouterLink>
+        <RouterLink to="/rastrear" class="navbar__track-btn">
+          <i class="fa-solid fa-truck"></i>
+          Rastrear pedido
+        </RouterLink>
       </nav>
 
       <!-- Actions -->
@@ -164,6 +168,10 @@ function confirmLogout() {
             <i class="fa-solid fa-handshake-simple"></i> Aliados
           </RouterLink>
           <RouterLink to="/carrito" class="navbar__mobile-link" @click="uiStore.closeMenu()">Carrito ({{ totalItems }})</RouterLink>
+          <RouterLink to="/rastrear" class="navbar__mobile-link navbar__mobile-track" @click="uiStore.closeMenu()">
+            <i class="fa-solid fa-truck"></i>
+            Rastrear pedido
+          </RouterLink>
           <template v-if="authStore.isAuthenticated">
             <RouterLink to="/perfil" class="navbar__mobile-link" @click="uiStore.closeMenu()">Mi Perfil</RouterLink>
             <RouterLink v-if="authStore.isAdmin" to="/admin" class="navbar__mobile-link" @click="uiStore.closeMenu()">
@@ -312,6 +320,37 @@ function confirmLogout() {
         color: $color-accent;
         background-color: rgba($color-accent, 0.08);
       }
+    }
+  }
+
+  &__track-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 34px;
+    padding: 0 1rem;
+    border-radius: $radius-full;
+    background-color: $color-accent;
+    color: #fff !important;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+
+    i { font-size: 0.8125rem; }
+
+    &:hover {
+      background-color: darken(#C8956C, 8%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba($color-accent, 0.35);
+    }
+
+    &.router-link-active, &.router-link-exact-active {
+      background-color: darken(#C8956C, 8%);
     }
   }
 
@@ -552,6 +591,24 @@ function confirmLogout() {
     &:hover {
       color: var(--color-error);
       background-color: rgba(239, 68, 68, 0.06);
+    }
+  }
+
+  &__mobile-track {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: $color-accent !important;
+    font-weight: 700;
+    background-color: rgba($color-accent, 0.06);
+    border-top: 1px solid rgba($color-accent, 0.12);
+    border-bottom: 1px solid rgba($color-accent, 0.12);
+
+    i { font-size: 0.9375rem; }
+
+    &:hover {
+      color: $color-accent !important;
+      background-color: rgba($color-accent, 0.12);
     }
   }
 }

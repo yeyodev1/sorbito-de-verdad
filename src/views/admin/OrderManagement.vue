@@ -12,6 +12,17 @@ interface OrderItem {
   price?: number;
 }
 
+interface ShippingAddress {
+  name?: string;
+  phone?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zip?: string;
+  mapsUrl?: string;
+}
+
 interface Order {
   _id: string;
   orderNumber?: string;
@@ -20,7 +31,7 @@ interface Order {
   total?: number;
   status?: string;
   paymentStatus?: string;
-  shippingAddress?: Record<string, string>;
+  shippingAddress?: ShippingAddress;
   notes?: string;
   createdAt?: string;
 }
@@ -267,10 +278,21 @@ function getItemCount(order: Order) {
                       <div v-if="order.shippingAddress" class="om__details-section">
                         <h4 class="om__details-title">Dirección de Envío</h4>
                         <div class="om__address">
-                          <p v-for="(value, key) in order.shippingAddress" :key="key">
-                            <span class="om__address-key">{{ key }}:</span> {{ value }}
-                          </p>
+                          <p v-if="order.shippingAddress.name"><span class="om__address-key">Nombre:</span> {{ order.shippingAddress.name }}</p>
+                          <p v-if="order.shippingAddress.phone"><span class="om__address-key">Teléfono:</span> {{ order.shippingAddress.phone }}</p>
+                          <p v-if="order.shippingAddress.street"><span class="om__address-key">Dirección:</span> {{ order.shippingAddress.street }}</p>
+                          <p v-if="order.shippingAddress.city"><span class="om__address-key">Ciudad:</span> {{ order.shippingAddress.city }}<span v-if="order.shippingAddress.state">, {{ order.shippingAddress.state }}</span></p>
+                          <p v-if="order.shippingAddress.country"><span class="om__address-key">País:</span> {{ order.shippingAddress.country }}<span v-if="order.shippingAddress.zip"> {{ order.shippingAddress.zip }}</span></p>
                         </div>
+                        <a
+                          :href="order.shippingAddress.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([order.shippingAddress.street, order.shippingAddress.city, order.shippingAddress.country].filter(Boolean).join(', '))}`"
+                          target="_blank"
+                          rel="noopener"
+                          class="om__maps-btn"
+                        >
+                          <i class="fa-brands fa-google"></i>
+                          Ver en Google Maps
+                        </a>
                       </div>
 
                       <!-- Notes section -->
@@ -630,6 +652,23 @@ function getItemCount(order: Order) {
   &__address-key {
     color: $admin-text-muted;
     text-transform: capitalize;
+  }
+
+  &__maps-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: #4285F4;
+    color: #fff;
+    text-decoration: none;
+    padding: 0.4rem 0.875rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin-top: 0.625rem;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.85; }
   }
 }
 

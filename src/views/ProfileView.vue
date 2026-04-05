@@ -425,8 +425,10 @@ onMounted(() => { loadOrders(); });
     padding: 1.75rem 2rem;
 
     @media (max-width: 600px) {
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: stretch;
       padding: 1.25rem;
+      gap: 1rem;
     }
   }
 
@@ -443,6 +445,12 @@ onMounted(() => { loadOrders(); });
     justify-content: center;
     flex-shrink: 0;
     box-shadow: 0 4px 14px rgba($admin-accent, 0.35);
+
+    @media (max-width: 600px) {
+      width: 52px;
+      height: 52px;
+      font-size: 1.375rem;
+    }
   }
 
   &__hero-info {
@@ -505,6 +513,7 @@ onMounted(() => { loadOrders(); });
   &__logout-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border: 1px solid $admin-border;
@@ -523,7 +532,9 @@ onMounted(() => { loadOrders(); });
     }
 
     @media (max-width: 600px) {
-      span { display: none; }
+      width: 100%;
+      padding: 0.625rem;
+      font-size: 0.9375rem;
     }
   }
 
@@ -584,7 +595,7 @@ onMounted(() => { loadOrders(); });
     grid-template-columns: repeat(2, 1fr);
     gap: 0.875rem;
 
-    @media (max-width: 640px) { grid-template-columns: 1fr; }
+    @media (max-width: 640px) { grid-template-columns: 1fr; gap: 0.625rem; }
   }
 
   &__mgmt-card {
@@ -597,6 +608,10 @@ onMounted(() => { loadOrders(); });
     border-radius: 12px;
     text-decoration: none;
     transition: all 0.15s ease;
+
+    @media (max-width: 640px) {
+      padding: 1rem 1.125rem;
+    }
 
     &:hover {
       border-color: $admin-accent;
@@ -856,9 +871,10 @@ onMounted(() => { loadOrders(); });
   }
 
   &__order-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem 1rem;
     padding: 0.875rem 1.25rem;
     background-color: $admin-card;
     border: 1px solid $admin-border;
@@ -867,7 +883,11 @@ onMounted(() => { loadOrders(); });
 
     &:hover { background-color: $admin-sidebar-hover; }
 
-    @media (max-width: 600px) { flex-wrap: wrap; }
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      padding: 0.875rem 1rem;
+    }
   }
 
   &__order-num {
@@ -875,13 +895,16 @@ onMounted(() => { loadOrders(); });
     font-weight: 700;
     color: $admin-text;
     font-family: monospace;
-    flex-shrink: 0;
   }
 
   &__order-date {
     font-size: 0.8125rem;
     color: $admin-text-muted;
-    flex: 1;
+
+    @media (max-width: 600px) {
+      grid-column: 1 / -1;
+      order: 3;
+    }
   }
 
   &__order-status {
@@ -889,7 +912,6 @@ onMounted(() => { loadOrders(); });
     font-weight: 600;
     padding: 0.25rem 0.625rem;
     border-radius: 4px;
-    flex-shrink: 0;
 
     &--success { background-color: rgba($admin-success, 0.15); color: $admin-success; }
     &--error   { background-color: rgba($admin-error, 0.15);   color: $admin-error; }
@@ -902,8 +924,13 @@ onMounted(() => { loadOrders(); });
     font-size: 0.9375rem;
     font-weight: 700;
     color: $admin-accent;
-    flex-shrink: 0;
   }
+}
+
+// Password form max-width fix on mobile
+.ap__pwd-form {
+  max-width: 400px;
+  @media (max-width: 600px) { max-width: 100%; }
 }
 
 // ══════════════════════════════════════════════════════════

@@ -15,7 +15,10 @@ interface TrackResult {
 const searchQuery = ref('');
 const loading = ref(false);
 const result = ref<TrackResult | null>(null);
+const results = ref<TrackResult[]>([]);  // for email search (multiple orders)
+const selectedResult = ref<TrackResult | null>(null);
 const error = ref('');
+const searchMode = ref<'number' | 'email'>('number');
 
 const statusLabels: Record<string, string> = {
   confirmed:  'Confirmado',
@@ -48,17 +51,41 @@ function formatDate(dateStr: string) {
   });
 }
 
+function activeResult() {
+  return selectedResult.value ?? result.value;
+}
+
+function switchMode(mode: 'number' | 'email') {
+  searchMode.value = mode;
+  searchQuery.value = '';
+  result.value = null;
+  results.value = [];
+  selectedResult.value = null;
+  error.value = '';
+}
+
 async function search() {
-  const q = searchQuery.value.trim().toUpperCase();
+  const q = searchQuery.value.trim();
   if (!q) return;
   loading.value = true;
-  error.value   = '';
-  result.value  = null;
+  error.value = '';
+  result.value = null;
+  results.value = [];
+  selectedResult.value = null;
+
   try {
-    const { data } = await httpBase.get(`/orders/track/${q}`);
-    result.value = data.data;
+    if (searchMode.value === 'email') {
+      const { data } = await httpBase.get(`/orders/track/by-email/${encodeURIComponent(q.toLowerCase())}`);
+      results.value = data.data;
+      if (results.value.length === 1) selectedResult.value = results.value[0]!;
+    } else {
+      const { data } = await httpBase.get(`/orders/track/${q.toUpperCase()}`);
+      result.value = data.data;
+    }
   } catch {
-    error.value = 'Pedido no encontrado. Verifica el número o aún no fue confirmado.';
+    error.value = searchMode.value === 'email'
+      ? 'No se encontraron pedidos confirmados para ese correo.'
+      : 'Pedido no encontrado. Verifica el número o aún no fue confirmado.';
   } finally {
     loading.value = false;
   }
@@ -79,15 +106,33 @@ async function search() {
           <p class="track__subtitle">Ingresa tu número de pedido para ver el estado de tu envío</p>
         </div>
 
+        <!-- Mode toggle -->
+        <div class="track__mode-tabs">
+          <button
+            :class="['track__mode-tab', { 'track__mode-tab--active': searchMode === 'number' }]"
+            @click="switchMode('number')"
+          >
+            <i class="fa-solid fa-hashtag"></i>
+            Número de pedido
+          </button>
+          <button
+            :class="['track__mode-tab', { 'track__mode-tab--active': searchMode === 'email' }]"
+            @click="switchMode('email')"
+          >
+            <i class="fa-solid fa-envelope"></i>
+            Correo electrónico
+          </button>
+        </div>
+
         <!-- Search form -->
         <form class="track__form" @submit.prevent="search">
           <div class="track__input-wrap">
-            <i class="fa-solid fa-hashtag track__input-icon"></i>
+            <i :class="['track__input-icon', searchMode === 'email' ? 'fa-solid fa-envelope' : 'fa-solid fa-hashtag']"></i>
             <input
               v-model="searchQuery"
-              type="text"
+              :type="searchMode === 'email' ? 'email' : 'text'"
               class="track__input"
-              placeholder="Ej: SDV-1775430455700-123"
+              :placeholder="searchMode === 'email' ? 'tu@correo.com' : 'Ej: SDV-1775430455700-123'"
               autocomplete="off"
               spellcheck="false"
             />
@@ -105,17 +150,41 @@ async function search() {
           {{ error }}
         </div>
 
-        <!-- Result -->
-        <div v-if="result" class="track__result">
+        <!-- Email results: list of orders to pick -->
+        <div v-if="results.length > 1 && !selectedResult" class="track__order-list">
+          <h3 class="track__order-list-title">Selecciona tu pedido:</h3>
+          <button
+            v-for="o in results"
+            :key="o.orderNumber"
+            class="track__order-pick"
+            @click="selectedResult = o"
+          >
+            <div class="track__order-pick-left">
+              <span class="track__order-pick-num">{{ o.orderNumber }}</span>
+              <span class="track__order-pick-date">{{ formatDate(o.createdAt) }}</span>
+            </div>
+            <span :class="['track__status-badge', `track__status-badge--${o.status}`]">
+              {{ statusLabels[o.status] || o.status }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Single result -->
+        <div v-if="activeResult()" class="track__result">
+
+          <!-- Back button when email search showed multiple -->
+          <button v-if="results.length > 1" class="track__back" @click="selectedResult = null">
+            <i class="fa-solid fa-arrow-left"></i> Ver todos mis pedidos
+          </button>
 
           <!-- Order header -->
           <div class="track__result-header">
             <div>
-              <h2 class="track__result-num">{{ result.orderNumber }}</h2>
-              <p class="track__result-date">Pedido del {{ formatDate(result.createdAt) }}</p>
+              <h2 class="track__result-num">{{ activeResult()!.orderNumber }}</h2>
+              <p class="track__result-date">Pedido del {{ formatDate(activeResult()!.createdAt) }}</p>
             </div>
-            <span :class="['track__status-badge', `track__status-badge--${result.status}`]">
-              {{ statusLabels[result.status] || result.status }}
+            <span :class="['track__status-badge', `track__status-badge--${activeResult()!.status}`]">
+              {{ statusLabels[activeResult()!.status] || activeResult()!.status }}
             </span>
           </div>
 
@@ -124,7 +193,7 @@ async function search() {
             <div
               v-for="(step, i) in statusSteps"
               :key="step"
-              :class="['tp-step', `tp-step--${getStepState(step, result.status)}`]"
+              :class="['tp-step', `tp-step--${getStepState(step, activeResult()!.status)}`]"
             >
               <div class="tp-step__circle">
                 <i :class="stepIcons[i]"></i>
@@ -143,7 +212,7 @@ async function search() {
                 Productos
               </h3>
               <ul class="track__items">
-                <li v-for="(item, i) in result.items" :key="i" class="track__item">
+                <li v-for="(item, i) in activeResult()!.items" :key="i" class="track__item">
                   <span class="track__item-name">{{ item.name }}</span>
                   <span class="track__item-qty">× {{ item.quantity }}</span>
                 </li>
@@ -157,13 +226,13 @@ async function search() {
                 Destino
               </h3>
               <p class="track__destination">
-                {{ result.shippingAddress.city }}, {{ result.shippingAddress.country }}
+                {{ activeResult()!.shippingAddress.city }}, {{ activeResult()!.shippingAddress.country }}
               </p>
 
               <!-- Admin note to customer -->
-              <div v-if="result.notes" class="track__note">
+              <div v-if="activeResult()!.notes" class="track__note">
                 <i class="fa-solid fa-comment-dots"></i>
-                <p>{{ result.notes }}</p>
+                <p>{{ activeResult()!.notes }}</p>
               </div>
             </div>
           </div>
@@ -210,6 +279,43 @@ async function search() {
     font-size: 1rem;
     color: var(--color-muted);
     margin: 0;
+  }
+
+  &__mode-tabs {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 560px;
+    margin: 0 auto 1rem;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 0.25rem;
+  }
+
+  &__mode-tab {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+
+    &--active {
+      background: $color-accent;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    &:not(&--active):hover { color: var(--color-primary); }
   }
 
   &__form {
@@ -292,6 +398,76 @@ async function search() {
     color: #DC2626;
 
     i { flex-shrink: 0; }
+  }
+
+  &__order-list {
+    max-width: 560px;
+    margin: 0 auto 2rem;
+  }
+
+  &__order-list-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.75rem;
+  }
+
+  &__order-pick {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    text-align: left;
+
+    &:hover {
+      border-color: $color-accent;
+      box-shadow: 0 2px 8px rgba($color-accent, 0.12);
+    }
+  }
+
+  &__order-pick-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  &__order-pick-num {
+    font-family: monospace;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: $color-accent;
+  }
+
+  &__order-pick-date {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 1.25rem;
+    font-family: 'Inter', sans-serif;
+    transition: color 0.2s;
+
+    &:hover { color: $color-accent; }
   }
 
   &__result {
