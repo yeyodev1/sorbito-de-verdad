@@ -114,7 +114,6 @@ async function handleSubmit() {
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 .newsletter {
   position: relative;

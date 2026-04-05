@@ -98,7 +98,6 @@ const STACK_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_au
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 @use 'sass:color';
 
 // ── Animations ────────────────────────────────────────────────

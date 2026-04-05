@@ -136,7 +136,6 @@ function handleLogout() {
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 .admin-layout {
   display: flex;

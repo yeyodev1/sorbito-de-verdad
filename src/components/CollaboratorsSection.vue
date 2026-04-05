@@ -186,7 +186,6 @@ const collaborators = [
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 .collab {
   // ── Header ───────────────────────────────────────────

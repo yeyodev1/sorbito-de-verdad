@@ -249,7 +249,6 @@ function getItemCount(order: Order) {
 </template>
 
 <style lang="scss" scoped>
-@use '../../styles/colorVariables.module.scss' as *;
 
 .om {
   &__toolbar {

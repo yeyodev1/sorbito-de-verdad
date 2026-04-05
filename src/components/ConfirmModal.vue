@@ -71,7 +71,6 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 .cm-overlay {
   position: fixed;

@@ -28,7 +28,6 @@ const BG_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 .cinematic {
   position: relative;

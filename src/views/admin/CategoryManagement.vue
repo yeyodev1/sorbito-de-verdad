@@ -311,7 +311,6 @@ async function deleteCategory(id: string) {
 </template>
 
 <style lang="scss" scoped>
-@use '../../styles/colorVariables.module.scss' as *;
 
 .cm {
   &__toolbar {

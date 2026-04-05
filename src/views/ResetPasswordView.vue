@@ -161,7 +161,6 @@ async function handleReset() {
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 .rp-page {
   min-height: calc(100vh - 70px);

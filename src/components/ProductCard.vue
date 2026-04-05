@@ -130,7 +130,6 @@ function formatPrice(val: number) {
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 @use "sass:color";
 
 .product-card {

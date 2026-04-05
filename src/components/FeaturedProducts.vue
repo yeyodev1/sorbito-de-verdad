@@ -62,7 +62,6 @@ const loading = computed(() => productsStore.loading);
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 1; }

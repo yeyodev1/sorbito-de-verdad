@@ -73,7 +73,6 @@ const RUSTICA_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 .collection-banner {
   display: grid;

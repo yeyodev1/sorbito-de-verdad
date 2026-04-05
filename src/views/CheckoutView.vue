@@ -4,12 +4,10 @@ import { RouterLink, useRouter } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
 import { useCartStore } from '../stores/cart';
 import { useAuthStore } from '../stores/auth';
-import { useUIStore } from '../stores/ui';
 import { orderService } from '../services/order.service';
 
 const cartStore = useCartStore();
 const authStore = useAuthStore();
-const uiStore = useUIStore();
 const router = useRouter();
 const loading = ref(false);
 const errorMessage = ref('');
@@ -284,7 +282,6 @@ function formatPrice(val: number) {
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 @use "sass:color";
 
 .co {

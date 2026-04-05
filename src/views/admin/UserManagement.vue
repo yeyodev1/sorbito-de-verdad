@@ -299,7 +299,6 @@ const roleBadgeClass: Record<string, string> = {
 </template>
 
 <style lang="scss" scoped>
-@use '../../styles/colorVariables.module.scss' as *;
 
 .um {
   &__role-info {

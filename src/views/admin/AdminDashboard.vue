@@ -217,7 +217,6 @@ function getStatusColor(status?: string) {
 </template>
 
 <style lang="scss" scoped>
-@use '../../styles/colorVariables.module.scss' as *;
 
 .dashboard {
   &__alert {

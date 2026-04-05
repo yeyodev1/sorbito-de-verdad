@@ -101,7 +101,6 @@ import { RouterLink } from 'vue-router';
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 // Footer always uses its own dark palette — theme-independent
 $footer-bg:          #0D0C0A;

@@ -39,7 +39,6 @@ const orderId = computed(() => (route.query.orderId as string) || '');
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 @use "sass:color";
 
 .payment-success-view {

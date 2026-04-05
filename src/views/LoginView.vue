@@ -245,7 +245,6 @@ const cardSubtitle = computed(() => {
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 .login-page {
   min-height: calc(100vh - 70px);

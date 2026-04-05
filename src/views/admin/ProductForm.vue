@@ -664,7 +664,6 @@ async function handleSubmit() {
 </template>
 
 <style lang="scss" scoped>
-@use '../../styles/colorVariables.module.scss' as *;
 
 .pf {
   &__breadcrumb {

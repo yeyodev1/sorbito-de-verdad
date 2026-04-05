@@ -216,7 +216,6 @@ const bakanoStats = [
 </template>
 
 <style lang="scss" scoped>
-@use '../styles/colorVariables.module.scss' as *;
 
 // ── Hero ──────────────────────────────────────────────────
 .aliados-hero {
