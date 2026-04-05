@@ -32,6 +32,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: 'Finalizar Compra', requiresAuth: true },
   },
   {
+    path: '/pay-response',
+    name: 'PayResponse',
+    component: () => import('../views/PayResponseView.vue'),
+    meta: { title: 'Verificando Pago' },
+  },
+  {
     path: '/pago/pendiente',
     name: 'PaymentPending',
     component: () => import('../views/PaymentPendingView.vue'),

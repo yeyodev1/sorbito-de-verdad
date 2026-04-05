@@ -93,6 +93,11 @@ export const orderService = {
     return data;
   },
 
+  async verifyPayment(orderId: string, payphoneTransactionId: string): Promise<ApiResponse<PaymentStatusResponse>> {
+    const { data } = await httpBase.post('/orders/verify-payment', { orderId, payphoneTransactionId });
+    return data;
+  },
+
   async getMyOrders(): Promise<ApiResponse<Order[]>> {
     const { data } = await httpBase.get('/orders/my-orders');
     return data;
