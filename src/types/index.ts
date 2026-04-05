@@ -11,6 +11,7 @@ export interface Product {
   category: Category | string;
   collection: 'boscan' | 'moni' | 'rustica' | 'set';
   stock: number;
+  allowBackorder: boolean;
   isActive: boolean;
   isFeatured: boolean;
   tags: string[];
@@ -52,6 +53,9 @@ export interface Order {
   shipping: number;
   total: number;
   status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  payphoneTransactionId?: string;
+  clientTransactionId?: string;
   shippingAddress: {
     name: string;
     phone: string;

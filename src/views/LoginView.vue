@@ -4,21 +4,21 @@ import { useRouter, useRoute, RouterLink } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
 import { useAuthStore } from '../stores/auth';
 import { useUIStore } from '../stores/ui';
+import { authService } from '../services/auth.service';
 
 const authStore = useAuthStore();
 const uiStore = useUIStore();
 const router = useRouter();
 const route = useRoute();
 
-const isLogin = ref(true);
+// 'login' | 'register' | 'forgot'
+const mode = ref<'login' | 'register' | 'forgot'>('login');
 const loading = ref(false);
 const errorMessage = ref('');
+const forgotSent = ref(false);
 
-const form = ref({
-  name: '',
-  email: '',
-  password: '',
-});
+const form = ref({ name: '', email: '', password: '' });
+const forgotEmail = ref('');
 
 const redirectPath = computed(() => {
   const r = route.query.redirect;
@@ -30,25 +30,63 @@ async function handleSubmit() {
   loading.value = true;
   errorMessage.value = '';
   try {
-    if (isLogin.value) {
+    if (mode.value === 'login') {
       await authStore.login(form.value.email, form.value.password);
+      const firstName = authStore.user?.name?.split(' ')[0] ?? '';
+      uiStore.success(`¡Bienvenido/a${firstName ? `, ${firstName}` : ''}! 👋`);
+      router.push(redirectPath.value);
     } else {
       await authStore.register(form.value.name, form.value.email, form.value.password);
+      const firstName = form.value.name.trim().split(' ')[0];
+      uiStore.success(`¡Bienvenido/a a Sorbito, ${firstName}! 🎉`);
+      router.push(redirectPath.value);
     }
-    uiStore.showNotification(isLogin.value ? '¡Bienvenido/a!' : '¡Cuenta creada exitosamente!', 'success');
-    router.push(redirectPath.value);
   } catch (err: unknown) {
-    errorMessage.value = (err as { message?: string })?.message || 'Error al iniciar sesión. Verifica tus datos.';
+    type AxiosErr = { response?: { data?: { message?: string } }; message?: string };
+    const e = err as AxiosErr;
+    errorMessage.value = e.response?.data?.message || 'Error al procesar. Verifica tus datos.';
   } finally {
     loading.value = false;
   }
 }
 
-function toggleMode() {
-  isLogin.value = !isLogin.value;
+async function handleForgot() {
+  if (loading.value || !forgotEmail.value) return;
+  loading.value = true;
   errorMessage.value = '';
-  form.value = { name: '', email: '', password: '' };
+  try {
+    await authService.forgotPassword(forgotEmail.value);
+    forgotSent.value = true;
+  } catch (err: unknown) {
+    errorMessage.value = (err as { message?: string })?.message || 'Error al enviar. Intenta de nuevo.';
+  } finally {
+    loading.value = false;
+  }
 }
+
+function setMode(m: 'login' | 'register' | 'forgot') {
+  mode.value = m;
+  errorMessage.value = '';
+  forgotSent.value = false;
+  form.value = { name: '', email: '', password: '' };
+  forgotEmail.value = '';
+}
+
+const cardTitle = computed(() => {
+  if (mode.value === 'forgot') return forgotSent.value ? '¡Revisa tu correo!' : 'Recuperar contraseña';
+  return mode.value === 'login' ? 'Bienvenido/a de vuelta' : 'Crear cuenta';
+});
+
+const cardSubtitle = computed(() => {
+  if (mode.value === 'forgot') {
+    return forgotSent.value
+      ? `Enviamos un enlace de recuperación a ${forgotEmail.value}. Válido por 1 hora.`
+      : 'Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.';
+  }
+  return mode.value === 'login'
+    ? 'Inicia sesión para acceder a tus pedidos y favoritos.'
+    : 'Únete y descubre el mundo artesanal de Sorbito.';
+});
 </script>
 
 <template>
@@ -57,7 +95,7 @@ function toggleMode() {
       <div class="login-page__wrap">
         <div class="login-card">
 
-          <!-- ── Logo ──────────────────────────────────── -->
+          <!-- Logo -->
           <RouterLink to="/" class="login-logo">
             <div class="login-logo__icon-wrap">
               <i class="fa-solid fa-mug-hot login-logo__icon"></i>
@@ -68,27 +106,69 @@ function toggleMode() {
             </div>
           </RouterLink>
 
-          <!-- ── Header ────────────────────────────────── -->
+          <!-- Header -->
           <div class="login-card__header">
-            <h1 class="login-card__title">
-              {{ isLogin ? 'Bienvenido/a de vuelta' : 'Crear cuenta' }}
-            </h1>
-            <p class="login-card__subtitle">
-              {{ isLogin
-                ? 'Inicia sesión para acceder a tus pedidos y favoritos.'
-                : 'Únete y descubre el mundo artesanal de Sorbito.' }}
-            </p>
+            <h1 class="login-card__title">{{ cardTitle }}</h1>
+            <p class="login-card__subtitle">{{ cardSubtitle }}</p>
           </div>
 
-          <!-- ── Error ─────────────────────────────────── -->
-          <div v-if="errorMessage" class="login-card__error" role="alert">
-            <i class="fa-solid fa-circle-xmark"></i>
-            {{ errorMessage }}
+          <!-- Error -->
+          <div v-if="errorMessage" class="login-card__error-block" role="alert">
+            <div class="login-card__error">
+              <i class="fa-solid fa-circle-xmark"></i>
+              {{ errorMessage }}
+            </div>
+            <div v-if="mode === 'login'" class="login-card__error-hints">
+              <button class="login-card__hint-btn" @click="setMode('forgot')">
+                <i class="fa-solid fa-key"></i>
+                ¿Olvidaste tu contraseña?
+              </button>
+              <button class="login-card__hint-btn" @click="setMode('register')">
+                <i class="fa-solid fa-user-plus"></i>
+                Crear una cuenta nueva
+              </button>
+            </div>
           </div>
 
-          <!-- ── Form ──────────────────────────────────── -->
-          <form class="login-form" @submit.prevent="handleSubmit" novalidate>
-            <div v-if="!isLogin" class="form-field">
+          <!-- Forgot password — success state -->
+          <div v-if="mode === 'forgot' && forgotSent" class="login-card__success">
+            <div class="login-card__success-icon">
+              <i class="fa-solid fa-envelope-circle-check"></i>
+            </div>
+            <button class="login-card__toggle-btn" @click="setMode('login')">
+              ← Volver al inicio de sesión
+            </button>
+          </div>
+
+          <!-- Forgot password form -->
+          <form v-else-if="mode === 'forgot'" class="login-form" @submit.prevent="handleForgot" novalidate>
+            <div class="form-field">
+              <label class="form-field__label" for="forgot-email">Correo electrónico</label>
+              <input
+                id="forgot-email"
+                v-model="forgotEmail"
+                type="email"
+                class="form-field__input"
+                placeholder="tu@email.com"
+                required
+                autocomplete="email"
+              />
+            </div>
+
+            <button type="submit" class="login-form__submit" :disabled="loading || !forgotEmail">
+              <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
+              <i v-else class="fa-solid fa-paper-plane"></i>
+              <span>{{ loading ? 'Enviando...' : 'Enviar enlace de recuperación' }}</span>
+            </button>
+
+            <button type="button" class="login-form__back" @click="setMode('login')">
+              ← Volver al inicio de sesión
+            </button>
+          </form>
+
+          <!-- Login / Register form -->
+          <form v-else class="login-form" @submit.prevent="handleSubmit" novalidate>
+            <div v-if="mode === 'register'" class="form-field">
               <label class="form-field__label" for="login-name">Nombre completo</label>
               <input
                 id="login-name"
@@ -115,7 +195,17 @@ function toggleMode() {
             </div>
 
             <div class="form-field">
-              <label class="form-field__label" for="login-password">Contraseña</label>
+              <div class="form-field__label-row">
+                <label class="form-field__label" for="login-password">Contraseña</label>
+                <button
+                  v-if="mode === 'login'"
+                  type="button"
+                  class="form-field__forgot-link"
+                  @click="setMode('forgot')"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <input
                 id="login-password"
                 v-model="form.password"
@@ -124,23 +214,23 @@ function toggleMode() {
                 placeholder="••••••••"
                 required
                 minlength="6"
-                :autocomplete="isLogin ? 'current-password' : 'new-password'"
+                :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
               />
             </div>
 
             <button type="submit" class="login-form__submit" :disabled="loading">
               <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
-              <span v-if="loading">{{ isLogin ? 'Ingresando...' : 'Creando cuenta...' }}</span>
-              <span v-else>{{ isLogin ? 'Iniciar Sesión' : 'Crear Cuenta' }}</span>
+              <span v-if="loading">{{ mode === 'login' ? 'Ingresando...' : 'Creando cuenta...' }}</span>
+              <span v-else>{{ mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta' }}</span>
             </button>
           </form>
 
-          <!-- ── Footer links ───────────────────────────── -->
-          <div class="login-card__footer">
+          <!-- Footer links -->
+          <div v-if="mode !== 'forgot'" class="login-card__footer">
             <p class="login-card__toggle">
-              {{ isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
-              <button class="login-card__toggle-btn" @click="toggleMode">
-                {{ isLogin ? 'Regístrate gratis' : 'Iniciar Sesión' }}
+              {{ mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
+              <button class="login-card__toggle-btn" @click="setMode(mode === 'login' ? 'register' : 'login')">
+                {{ mode === 'login' ? 'Regístrate gratis' : 'Iniciar Sesión' }}
               </button>
             </p>
             <RouterLink to="/tienda" class="login-card__skip">
@@ -157,7 +247,6 @@ function toggleMode() {
 <style lang="scss" scoped>
 @use '../styles/colorVariables.module.scss' as *;
 
-// ── Page wrapper ──────────────────────────────────────────
 .login-page {
   min-height: calc(100vh - 70px);
   display: flex;
@@ -172,7 +261,6 @@ function toggleMode() {
   }
 }
 
-// ── Card ──────────────────────────────────────────────────
 .login-card {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
@@ -211,18 +299,78 @@ function toggleMode() {
     margin: 0;
   }
 
+  &__error-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
   &__error {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 1rem;
-    background-color: rgba($color-error, 0.08);
-    border: 1px solid rgba($color-error, 0.25);
+    background-color: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
     border-radius: $radius-sm;
     font-size: 0.9rem;
-    color: $color-error;
+    color: var(--color-error);
 
     i { flex-shrink: 0; }
+  }
+
+  &__error-hints {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__hint-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.625rem 0.75rem;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: $radius-sm;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+    text-align: center;
+    line-height: 1.3;
+
+    i { font-size: 0.75rem; flex-shrink: 0; }
+
+    &:hover {
+      border-color: $color-accent;
+      color: $color-accent;
+      background-color: rgba($color-accent, 0.06);
+    }
+  }
+
+  &__success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem 0;
+    text-align: center;
+  }
+
+  &__success-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background-color: rgba($color-accent, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: $color-accent;
   }
 
   &__footer {
@@ -262,16 +410,14 @@ function toggleMode() {
   }
 }
 
-// ── Logo ──────────────────────────────────────────────────
 .login-logo {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.875rem;
   text-decoration: none;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid var(--color-border);
   padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
 
   &__icon-wrap {
     display: flex;
@@ -315,7 +461,6 @@ function toggleMode() {
   }
 }
 
-// ── Form ──────────────────────────────────────────────────
 .login-form {
   display: flex;
   flex-direction: column;
@@ -348,18 +493,57 @@ function toggleMode() {
 
     &:disabled { opacity: 0.6; cursor: not-allowed; }
   }
+
+  &__back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: $radius-md;
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+  }
 }
 
-// ── Form field ────────────────────────────────────────────
 .form-field {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
 
+  &__label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   &__label {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-primary);
+  }
+
+  &__forgot-link {
+    background: none;
+    border: none;
+    font-size: 0.8125rem;
+    color: $color-accent;
+    cursor: pointer;
+    font-family: var(--font-body);
+    padding: 0;
+    transition: opacity 0.2s ease;
+
+    &:hover { opacity: 0.75; }
   }
 
   &__input {

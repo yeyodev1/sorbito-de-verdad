@@ -536,8 +536,8 @@ watch([selectedCollection, selectedSort], () => {
     transition: all 0.2s ease;
 
     &:hover {
-      border-color: $color-error;
-      color: $color-error;
+      border-color: var(--color-error);
+      color: var(--color-error);
     }
   }
 }

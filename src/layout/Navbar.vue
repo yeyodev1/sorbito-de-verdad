@@ -32,6 +32,17 @@ function handleLogout() {
   uiStore.closeMenu();
   router.push('/');
 }
+
+function confirmLogout() {
+  uiStore.openConfirm({
+    title: 'Cerrar sesión',
+    message: '¿Seguro que deseas cerrar tu sesión? Tendrás que volver a iniciar sesión para acceder a tu cuenta.',
+    type: 'danger',
+    confirmLabel: 'Cerrar sesión',
+    cancelLabel: 'Cancelar',
+    onConfirm: handleLogout,
+  });
+}
 </script>
 
 <template>
@@ -51,6 +62,9 @@ function handleLogout() {
         <RouterLink to="/" class="navbar__link">Inicio</RouterLink>
         <RouterLink to="/tienda" class="navbar__link">Tienda</RouterLink>
         <RouterLink to="/nosotros" class="navbar__link">Nosotros</RouterLink>
+        <RouterLink to="/aliados" class="navbar__link navbar__link--aliados">
+          <i class="fa-solid fa-handshake-simple"></i> Aliados
+        </RouterLink>
         <RouterLink v-if="authStore.isAdmin" to="/admin" class="navbar__link navbar__link--admin">
           <i class="fa-solid fa-shield-halved"></i> Admin
         </RouterLink>
@@ -58,7 +72,7 @@ function handleLogout() {
 
       <!-- Actions -->
       <div class="navbar__actions">
-        <!-- Cart -->
+        <!-- Cart (always visible) -->
         <button class="navbar__icon-btn" @click="uiStore.toggleCart()" aria-label="Abrir carrito">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
@@ -68,33 +82,67 @@ function handleLogout() {
           <span v-if="totalItems > 0" class="navbar__cart-badge">{{ totalItems }}</span>
         </button>
 
-        <!-- User -->
-        <RouterLink v-if="authStore.isAuthenticated" to="/perfil" class="navbar__icon-btn" aria-label="Mi perfil">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </RouterLink>
-        <RouterLink v-else to="/login" class="navbar__icon-btn" aria-label="Iniciar sesión">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/>
-            <line x1="15" y1="12" x2="3" y2="12"/>
-          </svg>
-        </RouterLink>
+        <!-- Group: Account (desktop only) -->
+        <div class="navbar__action-group">
+          <!-- User / Admin -->
+          <template v-if="authStore.isAuthenticated">
+            <RouterLink
+              v-if="authStore.isAdmin"
+              to="/perfil"
+              class="navbar__admin-btn"
+              :aria-label="authStore.isOwner ? 'Panel Owner' : 'Panel Admin'"
+            >
+              <i :class="authStore.isOwner ? 'fa-solid fa-crown' : 'fa-solid fa-shield-halved'"></i>
+              <span class="navbar__admin-label">{{ authStore.isOwner ? 'Owner' : 'Admin' }}</span>
+            </RouterLink>
+            <RouterLink v-else to="/perfil" class="navbar__icon-btn" aria-label="Mi perfil">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </RouterLink>
 
-        <!-- Theme toggle -->
-        <button
-          class="navbar__theme-btn"
-          @click="uiStore.toggleTheme()"
-          :aria-label="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
-        >
-          <Transition name="theme-icon" mode="out-in">
-            <i v-if="isDark" key="sun" class="fa-solid fa-sun"></i>
-            <i v-else key="moon" class="fa-solid fa-moon"></i>
-          </Transition>
-          <span class="navbar__theme-label">{{ isDark ? 'Light' : 'Dark' }}</span>
-        </button>
+            <!-- Logout (desktop) -->
+            <button
+              class="navbar__logout-btn"
+              @click="confirmLogout()"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </button>
+          </template>
+          <RouterLink v-else to="/login" class="navbar__icon-btn" aria-label="Iniciar sesión">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+          </RouterLink>
+        </div>
+
+        <!-- Separator (desktop only) -->
+        <div class="navbar__sep" aria-hidden="true"></div>
+
+        <!-- Group: Preferences -->
+        <div class="navbar__action-group">
+          <!-- Theme toggle -->
+          <button
+            class="navbar__theme-btn"
+            @click="uiStore.toggleTheme()"
+            :aria-label="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          >
+            <Transition name="theme-icon" mode="out-in">
+              <i v-if="isDark" key="sun" class="fa-solid fa-sun"></i>
+              <i v-else key="moon" class="fa-solid fa-moon"></i>
+            </Transition>
+            <span class="navbar__theme-label">{{ isDark ? 'Light' : 'Dark' }}</span>
+          </button>
+        </div>
 
         <!-- Hamburger (mobile) -->
         <button class="navbar__hamburger" @click="uiStore.toggleMenu()" :aria-expanded="isMenuOpen" aria-label="Menú">
@@ -112,13 +160,19 @@ function handleLogout() {
           <RouterLink to="/" class="navbar__mobile-link" @click="uiStore.closeMenu()">Inicio</RouterLink>
           <RouterLink to="/tienda" class="navbar__mobile-link" @click="uiStore.closeMenu()">Tienda</RouterLink>
           <RouterLink to="/nosotros" class="navbar__mobile-link" @click="uiStore.closeMenu()">Nosotros</RouterLink>
+          <RouterLink to="/aliados" class="navbar__mobile-link" @click="uiStore.closeMenu()">
+            <i class="fa-solid fa-handshake-simple"></i> Aliados
+          </RouterLink>
           <RouterLink to="/carrito" class="navbar__mobile-link" @click="uiStore.closeMenu()">Carrito ({{ totalItems }})</RouterLink>
           <template v-if="authStore.isAuthenticated">
             <RouterLink to="/perfil" class="navbar__mobile-link" @click="uiStore.closeMenu()">Mi Perfil</RouterLink>
             <RouterLink v-if="authStore.isAdmin" to="/admin" class="navbar__mobile-link" @click="uiStore.closeMenu()">
               <i class="fa-solid fa-shield-halved"></i> Panel Admin
             </RouterLink>
-            <button class="navbar__mobile-link navbar__mobile-logout" @click="handleLogout">Cerrar Sesión</button>
+            <button class="navbar__mobile-link navbar__mobile-logout" @click="confirmLogout()">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              Cerrar Sesión
+            </button>
           </template>
           <template v-else>
             <RouterLink to="/login" class="navbar__mobile-link" @click="uiStore.closeMenu()">Iniciar Sesión</RouterLink>
@@ -229,6 +283,21 @@ function handleLogout() {
       color: $color-accent;
     }
 
+    &--aliados {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      color: var(--color-muted);
+      font-weight: 600;
+
+      i { font-size: 0.8125rem; }
+
+      &:hover, &.router-link-active {
+        color: $color-accent;
+        background-color: rgba($color-accent, 0.08);
+      }
+    }
+
     &--admin {
       display: flex;
       align-items: center;
@@ -250,7 +319,49 @@ function handleLogout() {
   &__actions {
     display: flex;
     align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__action-group {
+    display: flex;
+    align-items: center;
     gap: 0.25rem;
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  &__sep {
+    width: 1px;
+    height: 22px;
+    background-color: var(--color-border);
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  &__logout-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-sm;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #ef4444;
+      background-color: rgba(#ef4444, 0.08);
+      border-color: rgba(#ef4444, 0.25);
+    }
   }
 
   &__icon-btn {
@@ -289,6 +400,44 @@ function handleLogout() {
     justify-content: center;
     line-height: 1;
     pointer-events: none;
+  }
+
+  &__admin-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 34px;
+    padding: 0 0.875rem;
+    border-radius: $radius-full;
+    background-color: rgba($color-accent, 0.12);
+    border: 1px solid rgba($color-accent, 0.35);
+    color: $color-accent;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    i { font-size: 0.75rem; }
+
+    &:hover {
+      background-color: rgba($color-accent, 0.2);
+      border-color: $color-accent;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 480px) {
+      padding: 0 0.625rem;
+    }
+  }
+
+  &__admin-label {
+    @media (max-width: 480px) {
+      display: none;
+    }
   }
 
   &__theme-btn {
@@ -394,9 +543,16 @@ function handleLogout() {
   }
 
   &__mobile-logout {
-    color: $color-error;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--color-error);
+
+    i { font-size: 0.9375rem; }
+
     &:hover {
-      color: $color-error;
+      color: var(--color-error);
+      background-color: rgba(239, 68, 68, 0.06);
     }
   }
 }

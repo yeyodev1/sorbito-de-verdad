@@ -135,7 +135,7 @@ function formatPrice(val: number) {
     font-family: var(--font-heading);
     font-size: clamp(1.75rem, 3.5vw, 2.5rem);
     font-weight: 700;
-    color: $color-primary;
+    color: var(--color-primary);
     margin-bottom: 2.5rem;
   }
 
@@ -148,27 +148,38 @@ function formatPrice(val: number) {
     gap: 1rem;
   }
 
-  &__empty-icon { font-size: 3.5rem; opacity: 0.4; }
+  &__empty-icon {
+    font-size: 3.5rem;
+    opacity: 0.35;
+    color: var(--color-muted);
+  }
 
   &__empty-title {
     font-family: var(--font-heading);
     font-size: 1.5rem;
-    color: $color-primary;
+    color: var(--color-primary);
   }
 
-  &__empty-text { font-size: 1rem; color: $color-muted; max-width: 300px; }
+  &__empty-text {
+    font-size: 1rem;
+    color: var(--color-muted);
+    max-width: 300px;
+  }
 
   &__empty-btn {
     margin-top: 0.5rem;
     padding: 0.75rem 2rem;
-    background-color: $color-accent;
+    background-color: var(--color-accent);
     color: white;
     border-radius: $radius-md;
     text-decoration: none;
     font-weight: 600;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 
-    &:hover { background-color: color.adjust($color-accent, $lightness: -8%); }
+    &:hover {
+      background-color: color.adjust($color-accent, $lightness: -8%);
+      transform: translateY(-1px);
+    }
   }
 
   &__layout {
@@ -188,10 +199,10 @@ function formatPrice(val: number) {
     grid-template-columns: 1fr auto auto auto auto;
     gap: 1rem;
     padding: 0.75rem 0;
-    border-bottom: 2px solid $color-border;
+    border-bottom: 2px solid var(--color-border);
     font-size: 0.8125rem;
     font-weight: 600;
-    color: $color-muted;
+    color: var(--color-muted);
     text-transform: uppercase;
     letter-spacing: 0.06em;
 
@@ -209,25 +220,28 @@ function formatPrice(val: number) {
 
   &__continue {
     font-size: 0.9375rem;
-    color: $color-muted;
+    color: var(--color-muted);
     text-decoration: none;
     transition: color 0.2s ease;
 
-    &:hover { color: $color-accent; }
+    &:hover { color: var(--color-accent); }
   }
 
   &__clear {
     font-size: 0.875rem;
-    color: $color-muted;
+    color: var(--color-muted);
     background: none;
-    border: 1px solid $color-border;
+    border: 1px solid var(--color-border);
     padding: 0.5rem 1rem;
     border-radius: $radius-sm;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: var(--font-body);
 
-    &:hover { border-color: $color-error; color: $color-error; }
+    &:hover {
+      border-color: var(--color-error);
+      color: var(--color-error);
+    }
   }
 }
 
@@ -236,7 +250,7 @@ function formatPrice(val: number) {
   grid-template-columns: 1fr auto auto auto auto;
   gap: 1rem;
   padding: 1.25rem 0;
-  border-bottom: 1px solid $color-border;
+  border-bottom: 1px solid var(--color-border);
   align-items: center;
 
   @media (max-width: 640px) {
@@ -257,7 +271,8 @@ function formatPrice(val: number) {
     flex-shrink: 0;
     border-radius: $radius-sm;
     overflow: hidden;
-    background-color: $color-bg-subtle;
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
   }
 
   &__image {
@@ -276,37 +291,43 @@ function formatPrice(val: number) {
   &__name {
     font-size: 0.9375rem;
     font-weight: 500;
-    color: $color-primary;
+    color: var(--color-primary);
     text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
+    transition: color 0.2s ease;
 
-    &:hover { color: $color-accent; }
+    &:hover { color: var(--color-accent); }
   }
 
   &__collection {
     font-size: 0.8125rem;
-    color: $color-muted;
+    color: var(--color-muted);
     text-transform: capitalize;
   }
 
   &__price, &__subtotal {
     font-size: 0.9375rem;
     font-weight: 500;
-    color: $color-primary;
+    color: var(--color-primary);
   }
 
-  &__subtotal { font-weight: 700; font-family: var(--font-heading); }
+  &__subtotal {
+    font-weight: 700;
+    font-family: var(--font-heading);
+    color: var(--color-accent);
+  }
 
   &__qty {
     display: flex;
     align-items: center;
     gap: 0.375rem;
-    border: 1px solid $color-border;
+    border: 1px solid var(--color-border);
     border-radius: $radius-sm;
     padding: 0.25rem;
+    background-color: var(--color-bg-subtle);
   }
 
   &__qty-btn {
@@ -316,72 +337,98 @@ function formatPrice(val: number) {
     align-items: center;
     justify-content: center;
     font-size: 1rem;
-    color: $color-primary;
+    color: var(--color-primary);
     cursor: pointer;
     border-radius: $radius-sm;
     border: none;
     background: none;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 
-    &:hover { background-color: $color-bg-subtle; }
+    &:hover {
+      background-color: var(--color-accent-light);
+      color: var(--color-accent);
+    }
   }
 
   &__qty-value {
     font-size: 0.9375rem;
-    font-weight: 500;
+    font-weight: 600;
     min-width: 24px;
     text-align: center;
+    color: var(--color-primary);
   }
 
   &__remove {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: $color-muted;
+    color: var(--color-muted);
     cursor: pointer;
-    padding: 4px;
-    transition: color 0.2s ease;
+    padding: 6px;
+    border: none;
+    background: none;
+    border-radius: $radius-sm;
+    transition: color 0.2s ease, background-color 0.2s ease;
 
-    &:hover { color: $color-error; }
+    &:hover {
+      color: var(--color-error);
+      background-color: rgba(229, 62, 62, 0.08);
+    }
   }
 }
 
 .cart-summary {
-  background-color: $color-bg-card;
-  border: 1px solid $color-border;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   border-radius: $radius-lg;
   padding: 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  position: sticky;
+  top: 1.5rem;
 
   &__title {
     font-family: var(--font-heading);
     font-size: 1.25rem;
     font-weight: 700;
-    color: $color-primary;
+    color: var(--color-primary);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 0;
   }
 
   &__row {
     display: flex;
     justify-content: space-between;
     font-size: 0.9375rem;
-    color: $color-muted;
+    color: var(--color-muted);
+
+    span:last-child {
+      color: var(--color-primary);
+      font-weight: 500;
+    }
   }
 
-  &__free { color: $color-success; font-weight: 600; }
+  &__free {
+    color: var(--color-success) !important;
+    font-weight: 600;
+  }
 
   &__shipping-note {
     font-size: 0.8125rem;
-    color: $color-muted;
-    background-color: $color-bg-subtle;
-    padding: 0.5rem 0.75rem;
+    color: var(--color-muted);
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    padding: 0.625rem 0.875rem;
     border-radius: $radius-sm;
+    line-height: 1.5;
   }
 
   &__divider {
     height: 1px;
-    background-color: $color-border;
+    background-color: var(--color-border);
+    margin: 0.25rem 0;
   }
 
   &__total-row {
@@ -389,8 +436,13 @@ function formatPrice(val: number) {
     justify-content: space-between;
     font-size: 1.125rem;
     font-weight: 700;
-    color: $color-primary;
+    color: var(--color-primary);
     font-family: var(--font-heading);
+
+    span:last-child {
+      color: var(--color-accent);
+      font-size: 1.375rem;
+    }
   }
 
   &__checkout-btn {
@@ -400,7 +452,7 @@ function formatPrice(val: number) {
     gap: 0.5rem;
     width: 100%;
     padding: 0.9rem;
-    background-color: $color-accent;
+    background-color: var(--color-accent);
     color: white;
     border: none;
     border-radius: $radius-md;
@@ -409,22 +461,23 @@ function formatPrice(val: number) {
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: var(--font-body);
+    margin-top: 0.25rem;
 
     &:hover {
       background-color: color.adjust($color-accent, $lightness: -8%);
       transform: translateY(-1px);
-      box-shadow: $shadow-md;
+      box-shadow: 0 6px 20px rgba(200, 149, 108, 0.35);
     }
   }
 
   &__auth-note {
     font-size: 0.875rem;
-    color: $color-muted;
+    color: var(--color-muted);
     text-align: center;
   }
 
   &__auth-link {
-    color: $color-accent;
+    color: var(--color-accent);
     font-weight: 500;
 
     &:hover { text-decoration: underline; }

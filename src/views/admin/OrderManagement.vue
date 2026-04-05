@@ -2,6 +2,9 @@
 import { ref, computed, onMounted } from 'vue';
 import AdminLayout from '../../layout/AdminLayout.vue';
 import { adminService } from '../../services/admin.service';
+import { useUIStore } from '../../stores/ui';
+
+const ui = useUIStore();
 
 interface OrderItem {
   name?: string;
@@ -78,8 +81,10 @@ async function updateStatus(order: Order, newStatus: string) {
   try {
     await adminService.updateOrderStatus(order._id, newStatus);
     order.status = newStatus;
-  } catch (e) {
-    console.error(e);
+    ui.success(`Orden actualizada: ${statusLabels[newStatus] || newStatus}`);
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } }; message?: string };
+    ui.error(err?.response?.data?.message || 'Error al actualizar la orden');
   } finally {
     updatingId.value = null;
   }

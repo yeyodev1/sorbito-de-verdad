@@ -120,7 +120,7 @@ function formatPrice(val: number) {
 .cart-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba($color-primary, 0.45);
+  background-color: rgba(var(--color-primary), 0.45);
   z-index: 1100;
   cursor: pointer;
 }
@@ -132,7 +132,7 @@ function formatPrice(val: number) {
   bottom: 0;
   width: 420px;
   max-width: 100vw;
-  background-color: $color-bg-card;
+  background-color: var(--color-bg-card);
   z-index: 1101;
   display: flex;
   flex-direction: column;
@@ -147,7 +147,7 @@ function formatPrice(val: number) {
     align-items: center;
     justify-content: space-between;
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid var(--color-border);
     flex-shrink: 0;
   }
 
@@ -155,7 +155,7 @@ function formatPrice(val: number) {
     font-family: var(--font-heading);
     font-size: 1.25rem;
     font-weight: 700;
-    color: $color-primary;
+    color: var(--color-primary);
   }
 
   &__close {
@@ -165,13 +165,13 @@ function formatPrice(val: number) {
     width: 36px;
     height: 36px;
     border-radius: $radius-sm;
-    color: $color-muted;
+    color: var(--color-muted);
     transition: all 0.2s ease;
     cursor: pointer;
 
     &:hover {
-      background-color: $color-bg-subtle;
-      color: $color-primary;
+      background-color: var(--color-bg-subtle);
+      color: var(--color-primary);
     }
   }
 
@@ -195,12 +195,12 @@ function formatPrice(val: number) {
   &__empty-title {
     font-family: var(--font-heading);
     font-size: 1.25rem;
-    color: $color-primary;
+    color: var(--color-primary);
   }
 
   &__empty-text {
     font-size: 0.9375rem;
-    color: $color-muted;
+    color: var(--color-muted);
     max-width: 260px;
     line-height: 1.6;
   }
@@ -218,7 +218,7 @@ function formatPrice(val: number) {
   }
 
   &__footer {
-    border-top: 1px solid $color-border;
+    border-top: 1px solid var(--color-border);
     padding: 1.25rem 1.5rem;
     display: flex;
     flex-direction: column;
@@ -235,19 +235,19 @@ function formatPrice(val: number) {
   &__subtotal-label {
     font-size: 1rem;
     font-weight: 500;
-    color: $color-primary;
+    color: var(--color-primary);
   }
 
   &__subtotal-value {
     font-family: var(--font-heading);
     font-size: 1.25rem;
     font-weight: 700;
-    color: $color-primary;
+    color: var(--color-primary);
   }
 
   &__shipping-note {
     font-size: 0.8125rem;
-    color: $color-muted;
+    color: var(--color-muted);
     text-align: center;
   }
 
@@ -279,17 +279,17 @@ function formatPrice(val: number) {
     width: 100%;
     padding: 0.75rem;
     background: none;
-    border: 1px solid $color-border;
+    border: 1px solid var(--color-border);
     border-radius: $radius-md;
     font-size: 0.9375rem;
-    color: $color-muted;
+    color: var(--color-muted);
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: var(--font-body);
 
     &:hover {
-      border-color: $color-primary;
-      color: $color-primary;
+      border-color: var(--color-primary);
+      color: var(--color-primary);
     }
   }
 }
@@ -298,7 +298,7 @@ function formatPrice(val: number) {
   display: flex;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid $color-border;
+  border-bottom: 1px solid var(--color-border);
 
   &:last-child {
     border-bottom: none;
@@ -310,7 +310,7 @@ function formatPrice(val: number) {
     flex-shrink: 0;
     border-radius: $radius-sm;
     overflow: hidden;
-    background-color: $color-bg-subtle;
+    background-color: var(--color-bg-subtle);
   }
 
   &__image {
@@ -330,7 +330,7 @@ function formatPrice(val: number) {
   &__name {
     font-size: 0.9375rem;
     font-weight: 500;
-    color: $color-primary;
+    color: var(--color-primary);
     text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
@@ -344,7 +344,7 @@ function formatPrice(val: number) {
 
   &__price {
     font-size: 0.875rem;
-    color: $color-muted;
+    color: var(--color-muted);
   }
 
   &__controls {
@@ -357,13 +357,13 @@ function formatPrice(val: number) {
   &__qty-btn {
     width: 28px;
     height: 28px;
-    border: 1px solid $color-border;
+    border: 1px solid var(--color-border);
     border-radius: $radius-sm;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1rem;
-    color: $color-primary;
+    color: var(--color-primary);
     cursor: pointer;
     transition: all 0.2s ease;
     background: none;
@@ -377,7 +377,7 @@ function formatPrice(val: number) {
   &__qty {
     font-size: 0.9375rem;
     font-weight: 500;
-    color: $color-primary;
+    color: var(--color-primary);
     min-width: 20px;
     text-align: center;
   }
@@ -394,7 +394,7 @@ function formatPrice(val: number) {
   &__subtotal {
     font-weight: 600;
     font-size: 0.9375rem;
-    color: $color-primary;
+    color: var(--color-primary);
     font-family: var(--font-heading);
   }
 
@@ -402,13 +402,13 @@ function formatPrice(val: number) {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: $color-muted;
+    color: var(--color-muted);
     cursor: pointer;
     transition: color 0.2s ease;
     padding: 4px;
 
     &:hover {
-      color: $color-error;
+      color: var(--color-error);
     }
   }
 }

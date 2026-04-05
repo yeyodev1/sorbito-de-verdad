@@ -2,6 +2,9 @@
 import { ref, onMounted } from 'vue';
 import AdminLayout from '../../layout/AdminLayout.vue';
 import { adminService } from '../../services/admin.service';
+import { useUIStore } from '../../stores/ui';
+
+const ui = useUIStore();
 
 interface Category {
   _id: string;
@@ -37,6 +40,7 @@ async function loadCategories() {
     categories.value = Array.isArray(data) ? data : (data?.categories || []);
   } catch (e) {
     console.error(e);
+    ui.error('Error al cargar las categorías');
   } finally {
     loading.value = false;
   }
@@ -98,15 +102,18 @@ async function handleSave() {
       if (idx !== -1) {
         categories.value[idx] = { ...categories.value[idx], ...payload } as Category;
       }
+      ui.success('Categoría actualizada');
     } else {
       const res = await adminService.createCategory(payload);
       const newCat = res?.data || res;
       categories.value.push(newCat);
+      ui.success('Categoría creada');
     }
     closeModal();
     await loadCategories();
-  } catch (e) {
-    console.error(e);
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } }; message?: string };
+    ui.error(err?.response?.data?.message || err?.message || 'Error al guardar la categoría');
   } finally {
     saving.value = false;
   }
@@ -116,8 +123,10 @@ async function toggleActive(cat: Category) {
   try {
     await adminService.updateCategory(cat._id, { isActive: !cat.isActive });
     cat.isActive = !cat.isActive;
-  } catch (e) {
-    console.error(e);
+    ui.success(cat.isActive ? 'Categoría activada' : 'Categoría desactivada');
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } }; message?: string };
+    ui.error(err?.response?.data?.message || 'Error al cambiar estado');
   }
 }
 
@@ -126,8 +135,10 @@ async function deleteCategory(id: string) {
     await adminService.deleteCategory(id);
     categories.value = categories.value.filter((c) => c._id !== id);
     deleteConfirmId.value = null;
-  } catch (e) {
-    console.error(e);
+    ui.success('Categoría eliminada');
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } }; message?: string };
+    ui.error(err?.response?.data?.message || 'Error al eliminar la categoría');
   }
 }
 </script>

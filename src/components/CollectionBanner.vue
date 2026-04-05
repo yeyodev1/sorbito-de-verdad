@@ -134,8 +134,8 @@ const RUSTICA_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_
     &--boscan {
       background: linear-gradient(
         to top,
-        rgba($color-primary, 0.88) 0%,
-        rgba($color-primary, 0.4) 50%,
+        rgba(var(--color-primary), 0.88) 0%,
+        rgba(var(--color-primary), 0.4) 50%,
         transparent 100%
       );
     }
@@ -144,7 +144,7 @@ const RUSTICA_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_
       background: linear-gradient(
         to top,
         rgba(#3a1a25, 0.82) 0%,
-        rgba($color-rose, 0.3) 50%,
+        rgba(var(--color-rose), 0.3) 50%,
         transparent 100%
       );
     }
@@ -152,8 +152,8 @@ const RUSTICA_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_
     &--rustica {
       background: linear-gradient(
         to right,
-        rgba($color-primary, 0.9) 0%,
-        rgba($color-primary, 0.5) 50%,
+        rgba(var(--color-primary), 0.9) 0%,
+        rgba(var(--color-primary), 0.5) 50%,
         transparent 100%
       );
     }
@@ -197,7 +197,7 @@ const RUSTICA_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_
     backdrop-filter: blur(4px);
 
     &--moni {
-      background-color: rgba($color-rose, 0.25);
+      background-color: rgba(var(--color-rose), 0.25);
       color: rgba(white, 0.9);
     }
   }
@@ -237,7 +237,7 @@ const RUSTICA_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_
 
     &--boscan {
       background-color: white;
-      color: $color-primary;
+      color: var(--color-primary);
 
       &:hover {
         background-color: $color-accent;
@@ -248,7 +248,7 @@ const RUSTICA_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_
     }
 
     &--moni {
-      background-color: $color-rose;
+      background-color: var(--color-rose);
       color: white;
 
       &:hover {

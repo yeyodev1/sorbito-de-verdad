@@ -8,6 +8,14 @@ interface AuthState {
   isLoading: boolean;
 }
 
+function persistUser(user: User | null) {
+  if (user) {
+    localStorage.setItem('sorbito_user', JSON.stringify(user));
+  } else {
+    localStorage.removeItem('sorbito_user');
+  }
+}
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
@@ -28,6 +36,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await authService.login({ email, password });
         this.token = response.data.token;
         this.user = response.data.user;
+        persistUser(response.data.user);
         return response;
       } finally {
         this.isLoading = false;
@@ -40,6 +49,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await authService.register({ name, email, password });
         this.token = response.data.token;
         this.user = response.data.user;
+        persistUser(response.data.user);
         return response;
       } finally {
         this.isLoading = false;
@@ -48,6 +58,7 @@ export const useAuthStore = defineStore('auth', {
 
     logout() {
       authService.logout();
+      persistUser(null);
       this.token = null;
       this.user = null;
     },
@@ -57,12 +68,19 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await authService.getMe();
         this.user = response.data;
+        persistUser(response.data);
         return response;
       } catch {
         this.logout();
       } finally {
         this.isLoading = false;
       }
+    },
+
+    setFromToken(token: string, user: User) {
+      this.token = token;
+      this.user = user;
+      persistUser(user);
     },
 
     async initAuth() {

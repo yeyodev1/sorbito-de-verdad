@@ -28,7 +28,7 @@ const userRole = computed(() => authStore.user?.role?.toUpperCase() || '');
 const navItems = computed(() => {
   const items = [
     { to: '/admin', name: 'AdminDashboard', icon: 'fa-chart-line', label: 'Dashboard' },
-    { to: '/admin/productos', name: 'AdminProducts', icon: 'fa-box', label: 'Productos' },
+    { to: '/admin/productos', name: 'AdminProducts', icon: 'fa-mug-hot', label: 'Productos' },
     { to: '/admin/categorias', name: 'AdminCategories', icon: 'fa-tag', label: 'Categorías' },
     { to: '/admin/ordenes', name: 'AdminOrders', icon: 'fa-clipboard-list', label: 'Órdenes' },
   ];
@@ -90,13 +90,14 @@ function handleLogout() {
       <!-- Sidebar Footer -->
       <div class="admin-sidebar__footer">
         <div class="admin-sidebar__divider"></div>
-        <div class="admin-sidebar__user">
+        <RouterLink to="/perfil" class="admin-sidebar__user admin-sidebar__user--link" @click="closeSidebar">
           <div class="admin-sidebar__avatar">{{ userInitials }}</div>
           <div class="admin-sidebar__user-info">
             <span class="admin-sidebar__user-name">{{ authStore.user?.name }}</span>
             <span class="admin-sidebar__user-role">{{ userRole }}</span>
           </div>
-        </div>
+          <i class="fa-solid fa-circle-user admin-sidebar__user-profile-icon"></i>
+        </RouterLink>
         <a href="/" target="_blank" class="admin-sidebar__store-link">
           <i class="fa-solid fa-store"></i>
           <span>Ver tienda</span>
@@ -298,6 +299,28 @@ function handleLogout() {
     align-items: center;
     gap: 0.75rem;
     padding: 0.875rem 0.5rem;
+
+    &--link {
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.15s ease;
+      padding: 0.75rem 0.5rem;
+
+      &:hover {
+        background-color: $admin-sidebar-hover;
+
+        .admin-sidebar__user-profile-icon { opacity: 1; }
+      }
+    }
+  }
+
+  &__user-profile-icon {
+    margin-left: auto;
+    font-size: 0.875rem;
+    color: $admin-text-muted;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
   }
 
   &__avatar {

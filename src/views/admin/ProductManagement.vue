@@ -3,6 +3,9 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminLayout from '../../layout/AdminLayout.vue';
 import { adminService } from '../../services/admin.service';
+import { useUIStore } from '../../stores/ui';
+
+const ui = useUIStore();
 
 interface Product {
   _id: string;
@@ -79,8 +82,10 @@ async function toggleActive(product: Product) {
   try {
     await adminService.updateProduct(product._id, { isActive: !product.isActive });
     product.isActive = !product.isActive;
-  } catch (e) {
-    console.error(e);
+    ui.success(product.isActive ? 'Producto activado' : 'Producto desactivado');
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } }; message?: string };
+    ui.error(err?.response?.data?.message || 'Error al cambiar estado del producto');
   }
 }
 
@@ -89,8 +94,10 @@ async function deleteProduct(id: string) {
     await adminService.deleteProduct(id);
     products.value = products.value.filter((p) => p._id !== id);
     deleteConfirmId.value = null;
-  } catch (e) {
-    console.error(e);
+    ui.success('Producto eliminado correctamente');
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } }; message?: string };
+    ui.error(err?.response?.data?.message || 'Error al eliminar el producto');
   }
 }
 </script>

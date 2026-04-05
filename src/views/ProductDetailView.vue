@@ -62,8 +62,14 @@ function selectImage(img: string) {
 function addToCart() {
   if (!product.value) return;
   cartStore.addToCart(product.value, quantity.value);
-  uiStore.showNotification(`"${product.value.name}" agregado al carrito`, 'success');
-  uiStore.openCart();
+  uiStore.success(
+    `${product.value.name} agregado al carrito`,
+    4500,
+    {
+      image: activeImage.value || product.value.mainImage || product.value.images?.[0],
+      action: { label: 'Ver carrito', to: '/carrito' },
+    }
+  );
 }
 
 function formatPrice(val: number) {
@@ -258,7 +264,7 @@ function formatPrice(val: number) {
   }
 
   &__related {
-    background-color: $color-bg-subtle;
+    background-color: var(--color-bg-subtle);
     padding: 4rem 0;
     margin-top: 4rem;
   }
@@ -267,7 +273,7 @@ function formatPrice(val: number) {
     font-family: var(--font-heading);
     font-size: 1.75rem;
     font-weight: 700;
-    color: $color-primary;
+    color: var(--color-primary);
     margin-bottom: 2rem;
   }
 
@@ -316,7 +322,7 @@ function formatPrice(val: number) {
 
   &__link {
     font-size: 0.875rem;
-    color: $color-muted;
+    color: var(--color-muted);
     text-decoration: none;
     transition: color 0.2s ease;
 
@@ -324,13 +330,13 @@ function formatPrice(val: number) {
   }
 
   &__sep {
-    color: $color-border;
+    color: var(--color-border);
     font-size: 0.875rem;
   }
 
   &__current {
     font-size: 0.875rem;
-    color: $color-primary;
+    color: var(--color-primary);
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -349,8 +355,8 @@ function formatPrice(val: number) {
     aspect-ratio: 1 / 1;
     border-radius: $radius-lg;
     overflow: hidden;
-    background-color: $color-bg-subtle;
-    border: 1px solid $color-border;
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
   }
 
   &__main-img {
@@ -366,7 +372,7 @@ function formatPrice(val: number) {
     position: absolute;
     top: 1rem;
     left: 1rem;
-    background-color: $color-error;
+    background-color: var(--color-error);
     color: white;
     font-size: 0.8125rem;
     font-weight: 700;
@@ -385,7 +391,7 @@ function formatPrice(val: number) {
     height: 72px;
     border-radius: $radius-sm;
     overflow: hidden;
-    border: 2px solid $color-border;
+    border: 2px solid var(--color-border);
     cursor: pointer;
     transition: border-color 0.2s ease;
     background: none;
@@ -398,7 +404,7 @@ function formatPrice(val: number) {
     }
 
     &--active { border-color: $color-accent; }
-    &:hover:not(&--active) { border-color: $color-accent-light; }
+    &:hover:not(&--active) { border-color: var(--color-accent-light); }
   }
 }
 
@@ -421,24 +427,24 @@ function formatPrice(val: number) {
     border-radius: $radius-full;
     letter-spacing: 0.02em;
 
-    &--boscan { background: $color-primary; color: white; }
-    &--moni { background: $color-rose; color: white; }
+    &--boscan { background: var(--color-primary); color: white; }
+    &--moni { background: var(--color-rose); color: white; }
     &--rustica { background: $color-accent; color: white; }
-    &--set { background: $color-muted; color: white; }
-    &--featured { background: $color-accent-light; color: $color-accent; }
+    &--set { background: var(--color-muted); color: white; }
+    &--featured { background: var(--color-accent-light); color: $color-accent; }
   }
 
   &__name {
     font-family: var(--font-heading);
     font-size: clamp(1.5rem, 3vw, 2.25rem);
     font-weight: 700;
-    color: $color-primary;
+    color: var(--color-primary);
     line-height: 1.2;
   }
 
   &__sku {
     font-size: 0.8125rem;
-    color: $color-muted;
+    color: var(--color-muted);
     font-family: monospace;
   }
 
@@ -452,18 +458,18 @@ function formatPrice(val: number) {
     font-family: var(--font-heading);
     font-size: 1.875rem;
     font-weight: 700;
-    color: $color-primary;
+    color: var(--color-primary);
   }
 
   &__compare {
     font-size: 1.125rem;
-    color: $color-muted;
+    color: var(--color-muted);
     text-decoration: line-through;
   }
 
   &__short-desc {
     font-size: 1rem;
-    color: $color-muted;
+    color: var(--color-muted);
     line-height: 1.7;
   }
 
@@ -471,9 +477,9 @@ function formatPrice(val: number) {
     font-size: 0.9rem;
     font-weight: 500;
 
-    &--in { color: $color-success; }
-    &--low { color: $color-warning; }
-    &--out { color: $color-error; }
+    &--in { color: var(--color-success); }
+    &--low { color: var(--color-warning); }
+    &--out { color: var(--color-error); }
   }
 
   &__purchase {
@@ -492,14 +498,14 @@ function formatPrice(val: number) {
   &__qty-label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: $color-primary;
+    color: var(--color-primary);
   }
 
   &__qty-controls {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border: 1px solid $color-border;
+    border: 1px solid var(--color-border);
     border-radius: $radius-sm;
     padding: 0.25rem;
   }
@@ -510,7 +516,7 @@ function formatPrice(val: number) {
     border: none;
     background: none;
     font-size: 1.125rem;
-    color: $color-primary;
+    color: var(--color-primary);
     cursor: pointer;
     border-radius: $radius-sm;
     display: flex;
@@ -518,7 +524,7 @@ function formatPrice(val: number) {
     justify-content: center;
     transition: background-color 0.2s ease;
 
-    &:hover { background-color: $color-bg-subtle; }
+    &:hover { background-color: var(--color-bg-subtle); }
   }
 
   &__qty-value {
@@ -552,8 +558,8 @@ function formatPrice(val: number) {
     }
 
     &:disabled {
-      background-color: $color-border;
-      color: $color-muted;
+      background-color: var(--color-border);
+      color: var(--color-muted);
       cursor: not-allowed;
     }
   }
@@ -568,33 +574,33 @@ function formatPrice(val: number) {
   &__tags-label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: $color-muted;
+    color: var(--color-muted);
   }
 
   &__tag {
     font-size: 0.8125rem;
-    color: $color-muted;
-    background-color: $color-bg-subtle;
+    color: var(--color-muted);
+    background-color: var(--color-bg-subtle);
     padding: 0.25rem 0.625rem;
     border-radius: $radius-full;
-    border: 1px solid $color-border;
+    border: 1px solid var(--color-border);
   }
 
   &__description {
-    border-top: 1px solid $color-border;
+    border-top: 1px solid var(--color-border);
     padding-top: 1.25rem;
 
     &-title {
       font-family: var(--font-heading);
       font-size: 1.125rem;
       font-weight: 700;
-      color: $color-primary;
+      color: var(--color-primary);
       margin-bottom: 0.75rem;
     }
 
     &-text {
       font-size: 0.9375rem;
-      color: $color-muted;
+      color: var(--color-muted);
       line-height: 1.8;
       white-space: pre-line;
     }
@@ -611,7 +617,7 @@ function formatPrice(val: number) {
   &__main {
     aspect-ratio: 1;
     border-radius: $radius-lg;
-    background-color: $color-border;
+    background-color: var(--color-border);
     animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
 
@@ -624,7 +630,7 @@ function formatPrice(val: number) {
     width: 72px;
     height: 72px;
     border-radius: $radius-sm;
-    background-color: $color-border;
+    background-color: var(--color-border);
     animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
 
@@ -637,13 +643,13 @@ function formatPrice(val: number) {
 
   &__line {
     border-radius: $radius-sm;
-    background-color: $color-border;
+    background-color: var(--color-border);
     animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
 }
 
 .skeleton {
-  background-color: $color-border;
+  background-color: var(--color-border);
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 </style>

@@ -63,6 +63,10 @@ export const adminService = {
     return data.data;
   },
 
+  async deleteImage(publicId: string): Promise<void> {
+    await httpBase.delete(`/upload/${encodeURIComponent(publicId)}`);
+  },
+
   // Users (owner only)
   async getUsers() {
     const { data } = await httpBase.get('/admin/users');

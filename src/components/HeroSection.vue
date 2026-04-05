@@ -341,7 +341,7 @@ const STACK_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_au
 
   &__stat-heart {
     font-size: 1.25rem;
-    color: $color-rose;
+    color: var(--color-rose);
   }
 
   &__stat-label {

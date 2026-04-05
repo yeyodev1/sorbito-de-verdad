@@ -17,6 +17,36 @@ interface CreateOrderPayload {
   email: string;
 }
 
+interface PayphoneOrderPayload {
+  items: Array<{
+    product: string;
+    quantity: number;
+    price: number;
+  }>;
+  shippingAddress: {
+    name: string;
+    phone: string;
+    street: string;
+    city: string;
+    country: string;
+  };
+  phone: string;
+  countryCode: string;
+  email: string;
+  notes?: string;
+}
+
+interface PayphoneInitResponse {
+  orderId: string;
+  clientTransactionId: string;
+  payphoneTransactionId?: string;
+}
+
+interface PaymentStatusResponse {
+  paymentStatus: 'pending' | 'paid' | 'failed';
+  status: string;
+}
+
 export const orderService = {
   async createOrder(cartItems: CartItem[], shippingAddress: CreateOrderPayload['shippingAddress'], email: string): Promise<ApiResponse<Order>> {
     const payload: CreateOrderPayload = {
@@ -29,6 +59,35 @@ export const orderService = {
       email,
     };
     const { data } = await httpBase.post('/orders', payload);
+    return data;
+  },
+
+  async initiatePayphonePayment(
+    cartItems: CartItem[],
+    shippingAddress: CreateOrderPayload['shippingAddress'],
+    phone: string,
+    email: string,
+    countryCode = '593',
+    notes?: string,
+  ): Promise<ApiResponse<PayphoneInitResponse>> {
+    const payload: PayphoneOrderPayload = {
+      items: cartItems.map(item => ({
+        product: item.product._id,
+        quantity: item.quantity,
+        price: item.product.price,
+      })),
+      shippingAddress,
+      phone,
+      countryCode,
+      email,
+      notes,
+    };
+    const { data } = await httpBase.post('/orders/payphone', payload);
+    return data;
+  },
+
+  async getPaymentStatus(orderId: string): Promise<ApiResponse<PaymentStatusResponse>> {
+    const { data } = await httpBase.get(`/orders/${orderId}/payment-status`);
     return data;
   },
 

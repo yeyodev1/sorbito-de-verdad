@@ -32,16 +32,46 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: 'Finalizar Compra', requiresAuth: true },
   },
   {
+    path: '/pago/pendiente',
+    name: 'PaymentPending',
+    component: () => import('../views/PaymentPendingView.vue'),
+    meta: { title: 'Pago Pendiente' },
+  },
+  {
+    path: '/pago/confirmado',
+    name: 'PaymentSuccess',
+    component: () => import('../views/PaymentSuccessView.vue'),
+    meta: { title: 'Pago Confirmado' },
+  },
+  {
+    path: '/pago/rechazado',
+    name: 'PaymentRejected',
+    component: () => import('../views/PaymentRejectedView.vue'),
+    meta: { title: 'Pago Rechazado' },
+  },
+  {
     path: '/nosotros',
     name: 'About',
     component: () => import('../views/AboutView.vue'),
     meta: { title: 'Nosotros' },
   },
   {
+    path: '/aliados',
+    name: 'Aliados',
+    component: () => import('../views/AliadosView.vue'),
+    meta: { title: 'Nuestros Aliados' },
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('../views/LoginView.vue'),
     meta: { title: 'Iniciar Sesión', guestOnly: true },
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('../views/ResetPasswordView.vue'),
+    meta: { title: 'Nueva Contraseña' },
   },
   {
     path: '/perfil',

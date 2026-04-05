@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AdminLayout from '../../layout/AdminLayout.vue';
 import { adminService } from '../../services/admin.service';
+import { useUIStore } from '../../stores/ui';
+
+const ui = useUIStore();
 
 interface Category {
   _id: string;
@@ -35,20 +38,53 @@ const form = ref({
   shortDescription: '',
   description: '',
   sku: '',
-  price: 0,
-  compareAtPrice: 0,
-  stock: 0,
+  price: '' as string | number,
+  compareAtPrice: '' as string | number,
+  stock: '' as string | number,
   category: '',
   productCollection: '',
   tags: [] as string[],
   isFeatured: false,
+  allowBackorder: false,
   isActive: true,
   images: [] as ImageItem[],
   mainImage: '',
 });
 
+// Format helpers — strip non-numeric chars except decimal point
+function sanitizePrice(val: string): number {
+  const clean = String(val).replace(/[^0-9.]/g, '');
+  const parsed = parseFloat(clean);
+  return isNaN(parsed) ? 0 : parsed;
+}
+function sanitizeInt(val: string): number {
+  const clean = String(val).replace(/[^0-9]/g, '');
+  const parsed = parseInt(clean, 10);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+function onPriceBlur(field: 'price' | 'compareAtPrice') {
+  const raw = String(form.value[field]);
+  const num = sanitizePrice(raw);
+  form.value[field] = num > 0 ? num.toFixed(2) : '';
+}
+
+function onStockBlur() {
+  const raw = String(form.value.stock);
+  form.value.stock = sanitizeInt(raw) || 0;
+}
+
 const tagInput = ref('');
-const collections = ['boscan', 'moni', 'rustica', 'set'];
+const skuManuallyEdited = ref(false);
+
+// Auto-generate SKU from product name (only when creating, only if not manually edited)
+watch(() => form.value.name, (newName) => {
+  if (isEditing.value || skuManuallyEdited.value) return;
+  const words = newName.trim().split(/\s+/).filter(Boolean);
+  const initials = words.map((w: string) => w[0]?.toUpperCase() || '').join('').slice(0, 5);
+  const num = String(Math.floor(Math.random() * 900) + 100);
+  form.value.sku = initials ? `SDV-${initials}-${num}` : '';
+});
 
 onMounted(async () => {
   // Load categories
@@ -69,18 +105,21 @@ onMounted(async () => {
       const arr = Array.isArray(products) ? products : (products?.products || []);
       const product = arr.find((p: { _id: string }) => p._id === route.params.id) || arr[0];
       if (product) {
+        const price = product.price || 0;
+        const compareAtPrice = product.compareAtPrice || 0;
         form.value = {
           name: product.name || '',
           shortDescription: product.shortDescription || '',
           description: product.description || '',
           sku: product.sku || '',
-          price: product.price || 0,
-          compareAtPrice: product.compareAtPrice || 0,
-          stock: product.stock || 0,
+          price: price > 0 ? price.toFixed(2) : '',
+          compareAtPrice: compareAtPrice > 0 ? compareAtPrice.toFixed(2) : '',
+          stock: product.stock ?? 0,
           category: typeof product.category === 'object' ? product.category?._id : product.category || '',
           productCollection: product.productCollection || '',
           tags: product.tags || [],
           isFeatured: product.isFeatured || false,
+          allowBackorder: product.allowBackorder || false,
           isActive: product.isActive !== false,
           images: (product.images || []).map((img: string | ImageItem) =>
             typeof img === 'string' ? { url: img } : img
@@ -166,11 +205,17 @@ async function handleFiles(files: FileList) {
   if (fileInputRef.value) fileInputRef.value.value = '';
 }
 
-function removeImage(index: number) {
+async function removeImage(index: number) {
   const removed = form.value.images[index];
   form.value.images.splice(index, 1);
   if (removed && form.value.mainImage === removed.url) {
     form.value.mainImage = form.value.images[0]?.url || '';
+  }
+  // Delete from Cloudinary if we have the publicId
+  if (removed?.publicId) {
+    adminService.deleteImage(removed.publicId).catch((e) =>
+      console.warn('Cloudinary delete failed:', e)
+    );
   }
 }
 
@@ -179,8 +224,13 @@ function setMainImage(url: string) {
 }
 
 async function handleSubmit() {
-  if (!form.value.name || !form.value.sku || form.value.price <= 0) {
-    errorMsg.value = 'Por favor completa los campos requeridos: nombre, SKU y precio.';
+  const priceNum = sanitizePrice(String(form.value.price));
+  if (!form.value.name || !form.value.sku || priceNum <= 0) {
+    ui.error('Por favor completa los campos requeridos: nombre, SKU y precio.');
+    return;
+  }
+  if (!form.value.productCollection) {
+    ui.error('Por favor selecciona una colección para el producto.');
     return;
   }
 
@@ -190,21 +240,24 @@ async function handleSubmit() {
 
   const payload = {
     ...form.value,
+    price: priceNum,
+    compareAtPrice: sanitizePrice(String(form.value.compareAtPrice)),
+    stock: sanitizeInt(String(form.value.stock)),
     images: form.value.images.map((img) => img.url),
   };
 
   try {
     if (isEditing.value) {
       await adminService.updateProduct(route.params.id as string, payload);
-      successMsg.value = 'Producto actualizado exitosamente.';
+      ui.success('Producto actualizado exitosamente');
     } else {
       await adminService.createProduct(payload);
-      successMsg.value = 'Producto creado exitosamente.';
+      ui.success('Producto creado exitosamente');
     }
     setTimeout(() => router.push('/admin/productos'), 1200);
   } catch (e: unknown) {
     const err = e as { response?: { data?: { message?: string } }; message?: string };
-    errorMsg.value = err?.response?.data?.message || err?.message || 'Error al guardar el producto.';
+    ui.error(err?.response?.data?.message || err?.message || 'Error al guardar el producto.');
   } finally {
     saving.value = false;
   }
@@ -277,8 +330,25 @@ async function handleSubmit() {
               </div>
 
               <div class="pf__field">
-                <label class="pf__label">SKU <span class="pf__required">*</span></label>
-                <input v-model="form.sku" type="text" class="pf__input" placeholder="SDV-001" required />
+                <label class="pf__label">
+                  SKU <span class="pf__required">*</span>
+                  <span v-if="!isEditing && !skuManuallyEdited" class="pf__hint-badge">Se genera automáticamente</span>
+                  <span v-else-if="!isEditing && skuManuallyEdited" class="pf__sku-manual-badge">
+                    <i class="fa-solid fa-pen-to-square"></i> Editado manualmente
+                  </span>
+                </label>
+                <input
+                  v-model="form.sku"
+                  type="text"
+                  class="pf__input"
+                  placeholder="SDV-TAZA-001"
+                  required
+                  @input="skuManuallyEdited = (form.sku.trim() !== '')"
+                />
+                <span v-if="!isEditing && skuManuallyEdited" class="pf__field-hint">
+                  <i class="fa-solid fa-circle-info"></i>
+                  Borra el SKU para volver a generarlo automáticamente
+                </span>
               </div>
             </div>
           </div>
@@ -286,24 +356,112 @@ async function handleSubmit() {
           <!-- Pricing & Stock -->
           <div class="pf__card">
             <h3 class="pf__card-title">Precio & Stock</h3>
-            <div class="pf__fields pf__fields--grid">
+
+            <!-- Prices -->
+            <div class="pf__price-grid">
+              <!-- Main price -->
               <div class="pf__field">
-                <label class="pf__label">Precio <span class="pf__required">*</span></label>
-                <div class="pf__input-prefix">
-                  <span class="pf__prefix">$</span>
-                  <input v-model.number="form.price" type="number" min="0" step="0.01" class="pf__input pf__input--prefixed" required />
+                <label class="pf__label">
+                  Precio de Venta <span class="pf__required">*</span>
+                  <span class="pf__currency-badge">USD</span>
+                </label>
+                <div class="pf__money-wrap">
+                  <span class="pf__money-symbol">$</span>
+                  <input
+                    v-model="form.price"
+                    type="text"
+                    inputmode="decimal"
+                    class="pf__input pf__money-input"
+                    placeholder="0.00"
+                    @blur="onPriceBlur('price')"
+                  />
                 </div>
+                <span class="pf__field-hint">Precio final que paga el cliente</span>
               </div>
+
+              <!-- Compare price -->
               <div class="pf__field">
-                <label class="pf__label">Precio Comparar <span class="pf__hint">(tachado)</span></label>
-                <div class="pf__input-prefix">
-                  <span class="pf__prefix">$</span>
-                  <input v-model.number="form.compareAtPrice" type="number" min="0" step="0.01" class="pf__input pf__input--prefixed" />
+                <label class="pf__label">
+                  Precio Original
+                  <span class="pf__hint-badge">Opcional — se muestra tachado</span>
+                </label>
+                <div class="pf__money-wrap">
+                  <span class="pf__money-symbol pf__money-symbol--compare">$</span>
+                  <input
+                    v-model="form.compareAtPrice"
+                    type="text"
+                    inputmode="decimal"
+                    class="pf__input pf__money-input pf__money-input--compare"
+                    placeholder="0.00"
+                    @blur="onPriceBlur('compareAtPrice')"
+                  />
                 </div>
+                <span class="pf__field-hint">Para mostrar descuento (ej: 25.00 → tachado)</span>
               </div>
-              <div class="pf__field">
-                <label class="pf__label">Stock</label>
-                <input v-model.number="form.stock" type="number" min="0" class="pf__input" />
+            </div>
+
+            <!-- Price preview -->
+            <div v-if="form.price" class="pf__price-preview">
+              <span class="pf__price-preview-label">Vista previa:</span>
+              <span v-if="form.compareAtPrice && Number(form.compareAtPrice) > 0" class="pf__price-preview-compare">
+                ${{ Number(form.compareAtPrice).toFixed(2) }}
+              </span>
+              <span class="pf__price-preview-main">${{ Number(form.price).toFixed(2) }}</span>
+              <span v-if="form.compareAtPrice && Number(form.compareAtPrice) > Number(form.price)" class="pf__price-preview-discount">
+                {{ Math.round((1 - Number(form.price) / Number(form.compareAtPrice)) * 100) }}% OFF
+              </span>
+            </div>
+
+            <div class="pf__divider"></div>
+
+            <!-- Stock -->
+            <div class="pf__stock-section">
+              <div class="pf__field pf__field--stock">
+                <label class="pf__label">Unidades en Stock</label>
+                <div class="pf__stock-wrap">
+                  <button type="button" class="pf__stock-btn" @click="form.stock = Math.max(0, Number(form.stock) - 1)">
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
+                  <input
+                    v-model="form.stock"
+                    type="text"
+                    inputmode="numeric"
+                    class="pf__input pf__stock-input"
+                    placeholder="0"
+                    @blur="onStockBlur"
+                  />
+                  <button type="button" class="pf__stock-btn" @click="form.stock = Number(form.stock) + 1">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+                <span class="pf__field-hint">
+                  <i class="fa-solid fa-circle-info"></i>
+                  {{ Number(form.stock) === 0 ? 'Sin stock disponible' : `${form.stock} unidades disponibles` }}
+                </span>
+              </div>
+
+              <!-- Sell without stock toggle -->
+              <div class="pf__backorder-card" :class="{ 'pf__backorder-card--active': form.allowBackorder }">
+                <div class="pf__backorder-info">
+                  <div class="pf__backorder-title">
+                    <i :class="['fa-solid', form.allowBackorder ? 'fa-bolt' : 'fa-bolt-slash']"></i>
+                    Vender sin stock (Pre-venta)
+                  </div>
+                  <p class="pf__backorder-desc">
+                    {{ form.allowBackorder
+                      ? 'Activo — Los clientes pueden comprar aunque no haya stock disponible.'
+                      : 'Inactivo — El producto no se puede comprar cuando llega a 0 unidades.' }}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  :class="['pf__toggle', { 'pf__toggle--on': form.allowBackorder }]"
+                  @click="form.allowBackorder = !form.allowBackorder"
+                  :aria-checked="form.allowBackorder"
+                  role="switch"
+                >
+                  <span class="pf__toggle-thumb"></span>
+                </button>
               </div>
             </div>
           </div>
@@ -312,19 +470,40 @@ async function handleSubmit() {
           <div class="pf__card">
             <h3 class="pf__card-title">Clasificación</h3>
             <div class="pf__fields">
+
+              <!-- No categories warning -->
+              <div v-if="categories.length === 0" class="pf__no-categories">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                  <strong>No hay categorías creadas.</strong>
+                  El producto se guardará sin categoría.
+                  <RouterLink to="/admin/categorias" class="pf__no-categories-link" target="_blank">
+                    Crear categorías →
+                  </RouterLink>
+                </div>
+              </div>
+
               <div class="pf__fields--grid">
                 <div class="pf__field">
-                  <label class="pf__label">Categoría</label>
+                  <label class="pf__label">
+                    Categoría
+                    <RouterLink v-if="categories.length > 0" to="/admin/categorias" target="_blank" class="pf__label-action">
+                      <i class="fa-solid fa-plus"></i> Gestionar
+                    </RouterLink>
+                  </label>
                   <select v-model="form.category" class="pf__input pf__select">
-                    <option value="">Sin categoría</option>
+                    <option value="">— Sin categoría —</option>
                     <option v-for="cat in categories" :key="cat._id" :value="cat._id">{{ cat.name }}</option>
                   </select>
                 </div>
                 <div class="pf__field">
-                  <label class="pf__label">Colección</label>
-                  <select v-model="form.productCollection" class="pf__input pf__select">
-                    <option value="">Sin colección</option>
-                    <option v-for="c in collections" :key="c" :value="c">{{ c }}</option>
+                  <label class="pf__label">Colección <span class="pf__required">*</span></label>
+                  <select v-model="form.productCollection" class="pf__input pf__select" required>
+                    <option value="">— Seleccionar —</option>
+                    <option value="boscan">Boscan</option>
+                    <option value="moni">La Moni</option>
+                    <option value="rustica">Artesanal Rústica</option>
+                    <option value="set">Set / Colección</option>
                   </select>
                 </div>
               </div>
@@ -391,20 +570,33 @@ async function handleSubmit() {
 
         <!-- Right column — Images -->
         <div class="pf__right">
-          <div class="pf__card pf__card--sticky">
-            <h3 class="pf__card-title">Imágenes del Producto</h3>
+
+          <!-- Images upload card -->
+          <div class="pf__card">
+            <h3 class="pf__card-title">
+              Imágenes del Producto
+              <span v-if="form.images.length > 0" class="pf__images-counter">
+                {{ form.images.length }} {{ form.images.length === 1 ? 'imagen' : 'imágenes' }}
+              </span>
+            </h3>
 
             <!-- Drop Zone -->
             <div
-              :class="['pf__dropzone', { 'pf__dropzone--over': isDragOver }]"
+              :class="['pf__dropzone', { 'pf__dropzone--over': isDragOver, 'pf__dropzone--has-images': form.images.length > 0 }]"
               @dragover="onDragOver"
               @dragleave="onDragLeave"
               @drop="onDrop"
               @click="fileInputRef?.click()"
             >
               <i class="fa-solid fa-cloud-arrow-up pf__dropzone-icon"></i>
-              <p class="pf__dropzone-text">Arrastra tus imágenes aquí<br />o haz clic para seleccionar</p>
-              <p class="pf__dropzone-sub">PNG, JPG, WEBP — máx. 10MB por imagen</p>
+              <p class="pf__dropzone-text">
+                {{ form.images.length > 0 ? 'Agregar más imágenes' : 'Arrastra tus imágenes aquí' }}<br />
+                <span class="pf__dropzone-cta">o haz clic para seleccionar</span>
+              </p>
+              <p class="pf__dropzone-sub">
+                <i class="fa-solid fa-images"></i>
+                Puedes seleccionar <strong>varias imágenes a la vez</strong> — PNG, JPG, WEBP · máx. 10MB c/u
+              </p>
               <input
                 ref="fileInputRef"
                 type="file"
@@ -451,9 +643,9 @@ async function handleSubmit() {
               <i class="fa-solid fa-circle-info"></i>
               Haz clic en una imagen para usarla como imagen principal
             </p>
-          </div>
-        </div>
-      </div>
+          </div><!-- /images card -->
+        </div><!-- /pf__right -->
+      </div><!-- /pf__layout -->
 
       <!-- Form Actions -->
       <div class="pf__actions">
@@ -548,17 +740,30 @@ async function handleSubmit() {
     display: grid;
     grid-template-columns: 1fr 380px;
     gap: 1.5rem;
+    align-items: start; // critical: prevents columns from stretching
 
     @media (max-width: 1100px) {
       grid-template-columns: 1fr;
     }
   }
 
-  &__left,
+  &__left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
   &__right {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+
+    @media (max-width: 1100px) {
+      position: static;
+    }
   }
 
   &__card {
@@ -566,24 +771,21 @@ async function handleSubmit() {
     border: 1px solid $admin-border;
     border-radius: 12px;
     padding: 1.5rem;
-
-    &--sticky {
-      position: sticky;
-      top: 1.5rem;
-    }
+    flex-shrink: 0; // don't shrink inside the sticky right column
   }
 
   &__card-title {
-    font-size: 0.9375rem;
+    font-size: 0.8125rem;
     font-weight: 600;
-    color: $admin-text;
+    color: $admin-text-muted;
     margin: 0 0 1.25rem;
     padding-bottom: 0.875rem;
     border-bottom: 1px solid $admin-border;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-size: 0.8125rem;
-    color: $admin-text-muted;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   &__fields {
@@ -622,6 +824,49 @@ async function handleSubmit() {
   &__required {
     color: $admin-error;
     margin-left: 0.25rem;
+  }
+
+  &__no-categories {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background-color: rgba(#F59E0B, 0.08);
+    border: 1px solid rgba(#F59E0B, 0.3);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #F59E0B;
+
+    i { flex-shrink: 0; margin-top: 2px; }
+
+    strong { display: block; margin-bottom: 0.25rem; }
+  }
+
+  &__no-categories-link {
+    color: $admin-accent;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.25rem;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__label-action {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $admin-accent;
+    text-decoration: none;
+    text-transform: none;
+    letter-spacing: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    opacity: 0.8;
+    transition: opacity 0.15s ease;
+
+    &:hover { opacity: 1; }
+
+    i { font-size: 0.625rem; }
   }
 
   &__hint {
@@ -678,6 +923,309 @@ async function handleSubmit() {
     color: $admin-text-muted;
     font-size: 0.9375rem;
     pointer-events: none;
+  }
+
+  // ── Price section ────────────────────────────────────────
+  &__price-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1rem;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__currency-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    background-color: rgba($admin-success, 0.12);
+    border: 1px solid rgba($admin-success, 0.25);
+    border-radius: 4px;
+    color: $admin-success;
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: none;
+    margin-left: auto;
+  }
+
+  &__hint-badge {
+    font-size: 0.6875rem;
+    font-weight: 400;
+    color: $admin-text-muted;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  &__field-hint {
+    font-size: 0.75rem;
+    color: $admin-text-muted;
+    margin-top: 0.125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    i { font-size: 0.6875rem; color: $admin-info; }
+  }
+
+  &__money-wrap {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid $admin-border;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: $admin-sidebar-active;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:focus-within {
+      border-color: $admin-accent;
+      box-shadow: 0 0 0 3px rgba($admin-accent, 0.12);
+    }
+  }
+
+  &__money-symbol {
+    display: flex;
+    align-items: center;
+    padding: 0 0.875rem;
+    background-color: rgba($admin-success, 0.1);
+    border-right: 1px solid $admin-border;
+    color: $admin-success;
+    font-size: 1.125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    user-select: none;
+
+    &--compare {
+      background-color: $admin-sidebar-hover;
+      color: $admin-text-muted;
+      font-size: 1rem;
+    }
+  }
+
+  &__money-input {
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0.75rem 1rem;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: $admin-text;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+
+    /* Remove native number spinners */
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    &:focus { outline: none; }
+    &::placeholder { color: #666; font-weight: 400; font-size: 0.9375rem; }
+
+    &--compare {
+      color: $admin-text-muted;
+      font-weight: 500;
+    }
+  }
+
+  &__price-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: $admin-sidebar-hover;
+    border: 1px solid $admin-border;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  &__price-preview-label {
+    font-size: 0.75rem;
+    color: $admin-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+
+  &__price-preview-compare {
+    font-size: 0.9375rem;
+    color: $admin-text-muted;
+    text-decoration: line-through;
+  }
+
+  &__price-preview-main {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: $admin-accent;
+  }
+
+  &__price-preview-discount {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    background-color: rgba($admin-success, 0.15);
+    color: $admin-success;
+    border-radius: 4px;
+  }
+
+  &__divider {
+    height: 1px;
+    background-color: $admin-border;
+    margin: 1.25rem 0;
+  }
+
+  // ── Stock section ────────────────────────────────────────
+  &__stock-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__field--stock {
+    max-width: 220px;
+  }
+
+  &__stock-wrap {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid $admin-border;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: $admin-sidebar-active;
+    transition: border-color 0.15s ease;
+
+    &:focus-within {
+      border-color: $admin-accent;
+      box-shadow: 0 0 0 3px rgba($admin-accent, 0.12);
+    }
+  }
+
+  &__stock-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    flex-shrink: 0;
+    background-color: $admin-sidebar-hover;
+    border: none;
+    color: $admin-text-muted;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background-color: rgba($admin-accent, 0.15);
+      color: $admin-accent;
+    }
+
+    &:first-child { border-right: 1px solid $admin-border; }
+    &:last-child  { border-left: 1px solid $admin-border; }
+  }
+
+  &__stock-input {
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-align: center;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: $admin-text;
+    padding: 0.625rem 0.5rem;
+    width: 80px;
+    flex-shrink: 0;
+    font-family: 'Inter', sans-serif;
+
+    -moz-appearance: textfield;
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    &:focus { outline: none; }
+    &::placeholder { color: #666; font-weight: 400; }
+  }
+
+  // ── Backorder card ───────────────────────────────────────
+  &__backorder-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.125rem 1.25rem;
+    border: 1.5px dashed $admin-border;
+    border-radius: 10px;
+    background-color: $admin-sidebar-active;
+    transition: all 0.2s ease;
+
+    &--active {
+      border-style: solid;
+      border-color: rgba($admin-accent, 0.5);
+      background-color: rgba($admin-accent, 0.05);
+    }
+  }
+
+  &__backorder-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__backorder-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $admin-text;
+    margin-bottom: 0.25rem;
+
+    i { font-size: 0.875rem; color: $admin-accent; }
+  }
+
+  &__backorder-desc {
+    font-size: 0.8125rem;
+    color: $admin-text-muted;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  // ── Images counter + SKU manual badge ───────────────────
+  &__images-counter {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 0.2rem 0.625rem;
+    background-color: rgba($admin-accent, 0.12);
+    color: $admin-accent;
+    border-radius: 4px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  &__sku-manual-badge {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: $admin-info;
+    text-transform: none;
+    letter-spacing: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    i { font-size: 0.5625rem; }
+  }
+
+  &__dropzone-cta {
+    font-weight: 400;
+    opacity: 0.7;
+    font-size: 0.875rem;
+  }
+
+  &__dropzone--has-images {
+    padding: 1.25rem 1.5rem;
   }
 
   &__textarea {

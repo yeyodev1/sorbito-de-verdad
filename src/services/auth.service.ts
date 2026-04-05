@@ -41,6 +41,25 @@ export const authService = {
     return data;
   },
 
+  async forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
+    const { data } = await httpBase.post('/auth/forgot-password', { email });
+    return data;
+  },
+
+  async resetPassword(token: string, password: string): Promise<ApiResponse<AuthData>> {
+    const { data } = await httpBase.post('/auth/reset-password', { token, password });
+    if (data.data?.token) {
+      localStorage.setItem('access_token', data.data.token);
+      localStorage.setItem('user_id', data.data.user._id);
+    }
+    return data;
+  },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    const { data } = await httpBase.post('/auth/change-password', { currentPassword, newPassword });
+    return data;
+  },
+
   logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_id');

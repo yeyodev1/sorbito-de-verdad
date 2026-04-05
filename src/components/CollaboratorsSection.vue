@@ -1,16 +1,16 @@
 <script setup lang="ts">
-// ── Cinematic header images ───────────────────────────────────────────────
+import { RouterLink } from 'vue-router';
+
+// ── Cinematic header ──────────────────────────────────────────────────────
 const HEADER_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_1400/v1775351861/sorbito-de-verdad/products/i465dbepm8eiumhj5qc9.jpg';
 
-// ── Collaborator card visuals ─────────────────────────────────────────────
-// Senefelder: dark bg + their logo
+// ── Card images ───────────────────────────────────────────────────────────
 const SENEFELDER_LOGO = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto/v1775354051/sorbito-de-verdad/collaborators/senefelder-logo.png';
-// Franz: his design work — the Boscan taza is literally his creation
-const FRANZ_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_800/v1775351847/sorbito-de-verdad/products/ergzx1oqfuyxjdr07jpc.jpg';
-// Doga: the rustic artisan taza they handcraft
-const DOGA_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_800/v1775351850/sorbito-de-verdad/products/mgw2nzrguzruderiy2dn.jpg';
-// Bakano: their brand image
-const BAKANO_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_800/v1775354052/sorbito-de-verdad/collaborators/bakano-logo.png';
+const FRANZ_IMG       = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_800/v1775351847/sorbito-de-verdad/products/ergzx1oqfuyxjdr07jpc.jpg';
+const DOGA_IMG        = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_800/v1775351850/sorbito-de-verdad/products/mgw2nzrguzruderiy2dn.jpg';
+// Real Bakano logo (white version) + team group photo as background
+const BAKANO_LOGO     = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto/v1775355499/sorbito-de-verdad/collaborators/bakano-logo-real.png';
+const BAKANO_TEAM_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_800/v1775355503/sorbito-de-verdad/collaborators/bakano-team-photo.jpg';
 
 const collaborators = [
   {
@@ -21,7 +21,9 @@ const collaborators = [
     description: 'Industria gráfica ecuatoriana certificada ISO 9001:2015. Dan vida al packaging que protege cada taza con la misma elegancia con la que fue creada.',
     url: 'https://www.senefelder.com',
     logo: SENEFELDER_LOGO,
+    logoFilter: 'brightness(0) invert(1)',   // dark logo → invert to white
     bgColor: '#0D1117',
+    bgImage: null,
     accentColor: '#E8B84B',
     country: 'Ecuador',
     cta: 'senefelder.com',
@@ -34,7 +36,9 @@ const collaborators = [
     description: 'El artista que dibujó las gafas de Boscan y las pestañas de La Moni. Diseño venezolano con propósito y alma, visible en cada taza.',
     url: 'https://www.instagram.com/franzdelcastillo/',
     logo: null,
+    logoFilter: null,
     bgImage: FRANZ_IMG,
+    bgColor: null,
     accentColor: '#A855F7',
     country: 'Venezuela',
     cta: '@franzdelcastillo',
@@ -47,7 +51,9 @@ const collaborators = [
     description: 'Las artesanas que moldean, pintan y hornean cada taza de manera individual. Tradición cerámica ecuatoriana hecha arte funcional.',
     url: 'https://www.instagram.com/doga.designs/',
     logo: null,
+    logoFilter: null,
     bgImage: DOGA_IMG,
+    bgColor: null,
     accentColor: '#C8956C',
     country: 'Ecuador',
     cta: '@doga.designs',
@@ -57,10 +63,12 @@ const collaborators = [
     eyebrow: 'Marketing & Tecnología Digital',
     name: 'Bakano',
     tagline: 'Conectamos marcas con personas.',
-    description: 'Agencia de marketing digital #1 en Ecuador. Responsables de que puedas encontrar, conocer y comprar tu taza desde aquí.',
+    description: 'La agencia #1 en Ecuador que se obsesiona con que sus clientes facturen más. +40 negocios con experiencia real. Detrás de que puedas encontrar y comprar tu taza desde aquí.',
     url: 'https://bakano.ec/',
-    logo: BAKANO_IMG,
-    bgColor: '#0b0815',
+    logo: BAKANO_LOGO,
+    logoFilter: 'none',                      // already white logo
+    bgImage: BAKANO_TEAM_IMG,
+    bgColor: null,
     accentColor: '#C8956C',
     country: 'Ecuador',
     cta: 'bakano.ec',
@@ -95,34 +103,51 @@ const collaborators = [
     <!-- ── Cards ────────────────────────────────────────── -->
     <div class="collab__grid-section">
       <div class="container">
+
+        <!-- Bakano — featured wide card FIRST -->
+        <a
+          href="https://bakano.ec/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="collab__card collab__card--featured"
+        >
+          <div class="collab__card-bg" :style="{ backgroundImage: `url(${BAKANO_TEAM_IMG})` }"></div>
+          <div class="collab__card-overlay collab__card-overlay--featured"></div>
+          <div class="collab__card-featured-badge">
+            <i class="fa-solid fa-star"></i> Aliado Digital Oficial
+          </div>
+          <div class="collab__card-content collab__card-content--featured">
+            <img :src="BAKANO_LOGO" alt="Bakano" class="collab__card-featured-logo" />
+            <p class="collab__card-tagline" style="color: #C8956C; font-size: 1.05rem;">"Conectamos marcas con personas."</p>
+            <p class="collab__card-desc" style="max-width: 560px;">Agencia de marketing digital #1 en Ecuador. Detrás de la estrategia digital y el desarrollo web de Sorbito de Verdad.</p>
+            <div class="collab__card-cta" style="border-color: rgba(200,149,108,0.5); color: #C8956C; margin-top: 0.5rem;">
+              <span>bakano.ec</span>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </div>
+          </div>
+        </a>
+
+        <!-- Other 3 collaborators -->
         <div class="collab__grid">
           <a
-            v-for="c in collaborators"
+            v-for="c in collaborators.filter(x => x.id !== 'bakano')"
             :key="c.id"
             :href="c.url"
             target="_blank"
             rel="noopener noreferrer"
             class="collab__card"
           >
-            <!-- Background: image or solid color -->
             <div
               class="collab__card-bg"
               :style="c.bgImage
                 ? { backgroundImage: `url(${c.bgImage})` }
-                : { backgroundColor: c.bgColor }"
+                : { backgroundColor: c.bgColor ?? '#0D1117' }"
             ></div>
-            <!-- Dark gradient overlay always -->
-            <div
-              class="collab__card-overlay"
-              :style="{ background: `linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.72) 55%, rgba(0,0,0,0.95) 100%)` }"
-            ></div>
+            <div class="collab__card-overlay"></div>
 
-            <!-- Logo badge (for Senefelder and Bakano) -->
             <div v-if="c.logo" class="collab__card-logo-wrap">
-              <img :src="c.logo" :alt="c.name + ' logo'" class="collab__card-logo" />
+              <img :src="c.logo" :alt="c.name + ' logo'" class="collab__card-logo" :style="{ filter: c.logoFilter || 'none' }" />
             </div>
-
-            <!-- Eyebrow (for cards without logo) -->
             <div v-else class="collab__card-eyebrow-top">
               <span class="collab__card-badge" :style="{ color: c.accentColor, borderColor: c.accentColor + '55' }">
                 <i class="fa-brands fa-instagram"></i>
@@ -130,13 +155,9 @@ const collaborators = [
               </span>
             </div>
 
-            <!-- Content at bottom -->
             <div class="collab__card-content">
               <div class="collab__card-meta">
-                <span class="collab__card-country">
-                  <i class="fa-solid fa-location-dot"></i>
-                  {{ c.country }}
-                </span>
+                <span class="collab__card-country"><i class="fa-solid fa-location-dot"></i> {{ c.country }}</span>
                 <span class="collab__card-role">{{ c.eyebrow }}</span>
               </div>
               <h3 class="collab__card-name">{{ c.name }}</h3>
@@ -149,6 +170,15 @@ const collaborators = [
             </div>
           </a>
         </div>
+
+        <!-- Ver todos link -->
+        <div class="collab__footer">
+          <RouterLink to="/aliados" class="collab__see-all">
+            Conocer a todos nuestros aliados
+            <i class="fa-solid fa-arrow-right"></i>
+          </RouterLink>
+        </div>
+
       </div>
     </div>
 
@@ -248,15 +278,41 @@ const collaborators = [
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
+    margin-top: 1.25rem;
 
-    @media (max-width: 1100px) {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    @media (max-width: 560px) {
+    @media (max-width: 900px) {
       grid-template-columns: 1fr;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 2.5rem;
+  }
+
+  &__see-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $color-accent;
+    text-decoration: none;
+    border: 1.5px solid $color-accent;
+    border-radius: $radius-full;
+    padding: 0.6rem 1.5rem;
+    transition: all 0.22s ease;
+    letter-spacing: 0.02em;
+
+    i { font-size: 0.75rem; transition: transform 0.22s ease; }
+
+    &:hover {
+      background-color: $color-accent;
+      color: white;
+      i { transform: translateX(3px); }
     }
   }
 
@@ -305,6 +361,74 @@ const collaborators = [
     position: absolute;
     inset: 0;
     z-index: 1;
+    background: linear-gradient(
+      180deg,
+      rgba(0,0,0,0.15) 0%,
+      rgba(0,0,0,0.65) 50%,
+      rgba(0,0,0,0.93) 100%
+    );
+
+    &--featured {
+      background: linear-gradient(
+        90deg,
+        rgba(#0b0815, 0.95) 0%,
+        rgba(#0b0815, 0.80) 45%,
+        rgba(#0b0815, 0.45) 75%,
+        transparent 100%
+      );
+
+      @media (max-width: 768px) {
+        background: linear-gradient(180deg, rgba(#0b0815, 0.4) 0%, rgba(#0b0815, 0.95) 100%);
+      }
+    }
+  }
+
+  &__card--featured {
+    min-height: 340px;
+    border-radius: $radius-xl;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+
+    &:hover {
+      transform: translateY(-6px) scale(1.005);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  &__card-featured-badge {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: $color-accent;
+    background-color: rgba($color-accent, 0.12);
+    border: 1px solid rgba($color-accent, 0.35);
+    padding: 0.3rem 0.75rem;
+    border-radius: $radius-full;
+    backdrop-filter: blur(8px);
+
+    i { font-size: 0.6rem; }
+  }
+
+  &__card-content--featured {
+    padding: 2rem 2.5rem;
+
+    @media (max-width: 768px) { padding: 1.5rem; }
+  }
+
+  &__card-featured-logo {
+    max-width: 160px;
+    max-height: 52px;
+    object-fit: contain;
+    filter: none;
+    margin-bottom: 0.5rem;
+    display: block;
   }
 
   &__card-logo-wrap {
@@ -322,11 +446,11 @@ const collaborators = [
   }
 
   &__card-logo {
-    max-width: 140px;
-    max-height: 80px;
+    max-width: 160px;
+    max-height: 90px;
     object-fit: contain;
-    filter: brightness(0) invert(1);
-    opacity: 0.92;
+    opacity: 0.95;
+    drop-shadow: 0 2px 8px rgba(0,0,0,0.5);
   }
 
   &__card-eyebrow-top {
