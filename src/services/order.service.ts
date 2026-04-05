@@ -22,6 +22,7 @@ interface PayphoneOrderPayload {
     product: string;
     quantity: number;
     price: number;
+    sizeName?: string;
   }>;
   shippingAddress: {
     name: string;
@@ -29,9 +30,9 @@ interface PayphoneOrderPayload {
     street: string;
     city: string;
     country: string;
+    state?: string;
+    zip?: string;
   };
-  phone: string;
-  countryCode: string;
   email: string;
   notes?: string;
   shippingZoneId?: string;
@@ -40,7 +41,7 @@ interface PayphoneOrderPayload {
 interface PayphoneInitResponse {
   orderId: string;
   clientTransactionId: string;
-  payphoneTransactionId?: string;
+  payWithCard: string;
 }
 
 interface PaymentStatusResponse {
@@ -66,10 +67,8 @@ export const orderService = {
 
   async initiatePayphonePayment(
     cartItems: CartItem[],
-    shippingAddress: CreateOrderPayload['shippingAddress'],
-    phone: string,
+    shippingAddress: PayphoneOrderPayload['shippingAddress'],
     email: string,
-    countryCode = '593',
     notes?: string,
     shippingZoneId?: string,
   ): Promise<ApiResponse<PayphoneInitResponse>> {
@@ -81,8 +80,6 @@ export const orderService = {
         ...(item.selectedSize && { sizeName: item.selectedSize.name }),
       })),
       shippingAddress,
-      phone,
-      countryCode,
       email,
       notes,
       ...(shippingZoneId && { shippingZoneId }),

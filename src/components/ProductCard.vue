@@ -115,13 +115,17 @@ function formatPrice(val: number) {
       </div>
 
       <div class="product-card__footer">
-        <div class="product-card__pricing">
-          <span class="product-card__price">{{ formatPrice(displayPrice) }}</span>
-          <span class="product-card__price-note">IVA + envío incl.</span>
+        <!-- Price row -->
+        <div class="product-card__price-row">
+          <div class="product-card__pricing">
+            <span class="product-card__price">{{ formatPrice(displayPrice) }}</span>
+            <span class="product-card__price-note">IVA + envío incl.</span>
+          </div>
+          <div v-if="isOutOfStock" class="product-card__oos-label">Sin stock</div>
         </div>
 
-        <!-- Qty stepper + add -->
-        <div class="product-card__actions" v-if="!isOutOfStock">
+        <!-- Qty stepper + Add -->
+        <div v-if="!isOutOfStock" class="product-card__actions">
           <div class="product-card__qty">
             <button class="product-card__qty-btn" @click.prevent="decQty" :disabled="qty <= 1" aria-label="Menos">−</button>
             <span class="product-card__qty-num">{{ qty }}</span>
@@ -133,7 +137,7 @@ function formatPrice(val: number) {
             aria-label="Agregar al carrito"
           >
             <i v-if="isPreorder" class="fa-solid fa-bolt"></i>
-            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
               <line x1="3" y1="6" x2="21" y2="6"/>
               <path d="M16 10a4 4 0 01-8 0"/>
@@ -141,13 +145,15 @@ function formatPrice(val: number) {
             Agregar
           </button>
         </div>
-        <div v-else class="product-card__oos-label">Sin stock</div>
       </div>
 
       <!-- Buy now -->
       <button v-if="!isOutOfStock" class="product-card__btn-buy-now" @click.prevent="buyNow">
-        <i class="fa-solid fa-bolt"></i>
-        Comprar ahora · {{ formatPrice(displayPrice * qty) }}
+        <span class="product-card__buy-now-left">
+          <i class="fa-solid fa-bolt"></i>
+          Comprar ahora
+        </span>
+        <span class="product-card__buy-now-price">{{ formatPrice(displayPrice * qty) }}</span>
       </button>
     </div>
   </article>
@@ -320,19 +326,23 @@ function formatPrice(val: number) {
 
   &__footer {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 0.625rem;
     margin-top: auto;
     padding-top: 0.75rem;
     border-top: 1px solid var(--color-border);
-    gap: 0.5rem;
+  }
+
+  &__price-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
   }
 
   &__pricing {
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
-    flex-shrink: 0;
   }
 
   &__price {
@@ -358,8 +368,8 @@ function formatPrice(val: number) {
   &__actions {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
-    flex-shrink: 0;
+    gap: 0.5rem;
+    width: 100%;
   }
 
   &__qty {
@@ -403,8 +413,10 @@ function formatPrice(val: number) {
   &__btn {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.45rem 0.75rem;
+    justify-content: center;
+    gap: 0.35rem;
+    flex: 1;
+    padding: 0 0.875rem;
     background-color: $color-accent;
     color: white;
     border: none;
@@ -414,11 +426,13 @@ function formatPrice(val: number) {
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: var(--font-body);
-    height: 30px;
+    height: 32px;
+    white-space: nowrap;
 
     &:hover:not(:disabled) {
       background-color: color.adjust($color-accent, $lightness: -8%);
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba($color-accent, 0.35);
     }
 
     &:disabled {
@@ -428,32 +442,48 @@ function formatPrice(val: number) {
     }
   }
 
-  // ── Buy now full-width bar ─────────────────────
+  // ── Buy now bar ────────────────────────────────
   &__btn-buy-now {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    width: calc(100% + 2rem);    // bleed to card edges
-    margin: 0.5rem -1rem -1rem;  // compensate body padding
-    padding: 0.6rem 1rem;
-    background-color: var(--color-bg-subtle);
-    color: $color-accent;
+    justify-content: space-between;
+    width: calc(100% + 2rem);
+    margin: 0.25rem -1rem -1rem;
+    padding: 0.7rem 1.25rem;
+    background: linear-gradient(135deg, var(--color-primary) 0%, color.adjust(#1A1A1A, $lightness: 8%) 100%);
+    color: white;
     border: none;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid rgba(white, 0.06);
     font-size: 0.8125rem;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.22s ease;
     font-family: var(--font-body);
-    letter-spacing: 0.01em;
+  }
 
-    i { font-size: 0.7rem; }
+  &__buy-now-left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: rgba(white, 0.82);
 
-    &:hover {
-      background-color: $color-accent;
-      color: white;
+    i {
+      color: $color-accent;
+      font-size: 0.7rem;
     }
+  }
+
+  &__buy-now-price {
+    font-family: var(--font-heading);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: $color-accent;
+  }
+
+  &__btn-buy-now:hover {
+    background: linear-gradient(135deg, color.adjust(#1A1A1A, $lightness: 10%) 0%, color.adjust(#1A1A1A, $lightness: 18%) 100%);
+
+    .product-card__buy-now-left { color: white; }
   }
 }
 </style>

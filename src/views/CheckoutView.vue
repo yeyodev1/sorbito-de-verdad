@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
+import { RouterLink } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
 import { useCartStore } from '../stores/cart';
 import { useAuthStore } from '../stores/auth';
@@ -9,7 +9,6 @@ import { shippingZoneService, type ShippingZone } from '../services/shippingZone
 
 const cartStore = useCartStore();
 const authStore = useAuthStore();
-const router = useRouter();
 const loading = ref(false);
 const errorMessage = ref('');
 const zones = ref<ShippingZone[]>([]);
@@ -65,7 +64,6 @@ const form = ref({
   name: authStore.user?.name || '',
   email: authStore.user?.email || '',
   phone: '',
-  payphonePhone: '',
   street: '',
   city: '',
   state: '',
@@ -123,14 +121,13 @@ async function handleSubmit() {
     const response = await orderService.initiatePayphonePayment(
       items.value,
       shippingAddress,
-      form.value.payphonePhone,
       form.value.email,
-      '593',
       undefined,
       selectedZoneId.value || undefined,
     );
     cartStore.clearCart();
-    router.push(`/pago/pendiente?orderId=${response.data.orderId}`);
+    // Redirect to PayPhone hosted payment page
+    window.location.href = response.data.payWithCard;
   } catch (err: unknown) {
     type AxiosErr = { response?: { data?: { message?: string } }; message?: string };
     const e = err as AxiosErr;
@@ -352,33 +349,16 @@ function formatPrice(val: number) {
                 <span class="co__step-badge co__step-badge--accent">3</span>
                 <div>
                   <h2 class="co__section-title">Pago con tarjeta</h2>
-                  <p class="co__section-desc">Pago seguro procesado por PayPhone</p>
+                  <p class="co__section-desc">Pago seguro con tarjeta de crédito o débito</p>
                 </div>
                 <div class="co__payphone-badge">
                   <i class="fa-solid fa-shield-halved"></i>
                   Seguro
                 </div>
               </div>
-              <div class="co__fields">
-                <div class="co__field">
-                  <label class="co__label" for="co-payphone">Tu número de teléfono PayPhone</label>
-                  <div class="co__input-wrap">
-                    <i class="fa-solid fa-mobile-screen co__input-icon"></i>
-                    <input
-                      id="co-payphone"
-                      v-model="form.payphonePhone"
-                      type="tel"
-                      class="co__input"
-                      placeholder="0984 123 456"
-                      required
-                      autocomplete="tel"
-                    />
-                  </div>
-                  <p class="co__field-hint">
-                    <i class="fa-solid fa-circle-info"></i>
-                    Recibirás una notificación en tu app PayPhone para confirmar el pago.
-                  </p>
-                </div>
+              <div class="co__payphone-info">
+                <i class="fa-solid fa-credit-card"></i>
+                <p>Serás redirigido a una página segura para ingresar los datos de tu tarjeta.</p>
               </div>
             </div>
 
@@ -648,6 +628,31 @@ function formatPrice(val: number) {
     white-space: nowrap;
 
     i { font-size: 0.6875rem; }
+  }
+
+  &__payphone-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background-color: rgba($color-accent, 0.06);
+    border: 1px solid rgba($color-accent, 0.2);
+    border-radius: $radius-md;
+    margin-top: 0.5rem;
+
+    i {
+      color: $color-accent;
+      font-size: 1.125rem;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--color-muted);
+      line-height: 1.6;
+    }
   }
 
   // ── Fields ──────────────────────────────────────────────────
