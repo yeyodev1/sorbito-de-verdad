@@ -33,6 +33,11 @@ const successMsg = ref('');
 const isDragOver = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
+interface SizeItem {
+  name: string;
+  price: string | number;
+}
+
 const form = ref({
   name: '',
   shortDescription: '',
@@ -40,6 +45,7 @@ const form = ref({
   sku: '',
   price: '' as string | number,
   compareAtPrice: '' as string | number,
+  sizes: [] as SizeItem[],
   stock: '' as string | number,
   category: '',
   productCollection: '',
@@ -50,6 +56,22 @@ const form = ref({
   images: [] as ImageItem[],
   mainImage: '',
 });
+
+function addSize() {
+  form.value.sizes.push({ name: '', price: '' });
+}
+
+function removeSize(index: number) {
+  form.value.sizes.splice(index, 1);
+}
+
+function onSizePriceBlur(index: number) {
+  const raw = String(form.value.sizes[index]?.price || '');
+  const num = sanitizePrice(raw);
+  if (form.value.sizes[index]) {
+    form.value.sizes[index].price = num > 0 ? num.toFixed(2) : '';
+  }
+}
 
 // Format helpers — strip non-numeric chars except decimal point
 function sanitizePrice(val: string): number {
@@ -114,6 +136,10 @@ onMounted(async () => {
           sku: product.sku || '',
           price: price > 0 ? price.toFixed(2) : '',
           compareAtPrice: compareAtPrice > 0 ? compareAtPrice.toFixed(2) : '',
+          sizes: (product.sizes || []).map((s: { name: string; price: number }) => ({
+            name: s.name,
+            price: s.price > 0 ? s.price.toFixed(2) : '',
+          })),
           stock: product.stock ?? 0,
           category: typeof product.category === 'object' ? product.category?._id : product.category || '',
           productCollection: product.productCollection || '',
@@ -242,6 +268,9 @@ async function handleSubmit() {
     ...form.value,
     price: priceNum,
     compareAtPrice: sanitizePrice(String(form.value.compareAtPrice)),
+    sizes: form.value.sizes
+      .filter(s => s.name.trim() && sanitizePrice(String(s.price)) > 0)
+      .map(s => ({ name: s.name.trim(), price: sanitizePrice(String(s.price)) })),
     stock: sanitizeInt(String(form.value.stock)),
     images: form.value.images.map((img) => img.url),
   };
@@ -410,6 +439,45 @@ async function handleSubmit() {
               <span v-if="form.compareAtPrice && Number(form.compareAtPrice) > Number(form.price)" class="pf__price-preview-discount">
                 {{ Math.round((1 - Number(form.price) / Number(form.compareAtPrice)) * 100) }}% OFF
               </span>
+            </div>
+
+            <div class="pf__divider"></div>
+
+            <!-- Sizes -->
+            <div class="pf__field">
+              <label class="pf__label">
+                Tamaños / Variantes de precio
+                <span class="pf__hint-badge">Opcional — si hay tamaños, el cliente elige en la tienda</span>
+              </label>
+              <div class="pf__sizes-list">
+                <div v-for="(size, i) in form.sizes" :key="i" class="pf__size-row">
+                  <input
+                    v-model="size.name"
+                    type="text"
+                    class="pf__input pf__input--sm"
+                    placeholder="Ej: Estándar o XXL"
+                  />
+                  <div class="pf__money-wrap pf__money-wrap--sm">
+                    <span class="pf__money-symbol">$</span>
+                    <input
+                      v-model="size.price"
+                      type="text"
+                      inputmode="decimal"
+                      class="pf__input pf__money-input pf__input--sm"
+                      placeholder="0.00"
+                      @blur="onSizePriceBlur(i)"
+                    />
+                  </div>
+                  <button type="button" class="pf__size-remove" @click="removeSize(i)" aria-label="Eliminar tamaño">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="pf__size-add" @click="addSize">
+                <i class="fa-solid fa-plus"></i>
+                Agregar tamaño
+              </button>
+              <span class="pf__field-hint">Ejemplo: Estándar $25 · XXL $49. Deja vacío si no hay variantes.</span>
             </div>
 
             <div class="pf__divider"></div>
@@ -1077,6 +1145,68 @@ async function handleSubmit() {
     height: 1px;
     background-color: $admin-border;
     margin: 1.25rem 0;
+  }
+
+  // ── Sizes ────────────────────────────────────────────────
+  &__sizes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.625rem;
+  }
+
+  &__size-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__input--sm {
+    max-width: 180px !important;
+    font-size: 0.875rem !important;
+    padding: 0.4rem 0.75rem !important;
+  }
+
+  &__money-wrap--sm {
+    max-width: 120px;
+  }
+
+  &__size-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid $admin-border;
+    border-radius: 6px;
+    background: none;
+    color: $admin-text-muted;
+    cursor: pointer;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+
+    &:hover { border-color: #e53e3e; color: #e53e3e; }
+  }
+
+  &__size-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.875rem;
+    border: 1.5px dashed $admin-border;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: $admin-text-muted;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+
+    i { font-size: 0.7rem; }
+
+    &:hover { border-color: $admin-accent; color: $admin-accent; }
   }
 
   // ── Stock section ────────────────────────────────────────

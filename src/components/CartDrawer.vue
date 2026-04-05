@@ -58,7 +58,7 @@ function formatPrice(val: number) {
         <!-- Items -->
         <div v-else class="cart-drawer__body">
           <ul class="cart-drawer__list">
-            <li v-for="item in items" :key="item.product._id" class="cart-item">
+            <li v-for="item in items" :key="`${item.product._id}-${item.selectedSize?.name}`" class="cart-item">
               <div class="cart-item__image-wrap">
                 <img
                   :src="item.product.mainImage || '/placeholder-cup.jpg'"
@@ -71,16 +71,17 @@ function formatPrice(val: number) {
                 <RouterLink :to="`/tienda/${item.product.slug}`" class="cart-item__name" @click="uiStore.closeCart()">
                   {{ item.product.name }}
                 </RouterLink>
-                <span class="cart-item__price">{{ formatPrice(item.product.price) }}</span>
+                <span v-if="item.selectedSize" class="cart-item__size-tag">{{ item.selectedSize.name }}</span>
+                <span class="cart-item__price">{{ formatPrice(item.selectedSize?.price ?? item.product.price) }}</span>
                 <div class="cart-item__controls">
-                  <button class="cart-item__qty-btn" @click="cartStore.updateQuantity(item.product._id, item.quantity - 1)" aria-label="Reducir cantidad">−</button>
+                  <button class="cart-item__qty-btn" @click="cartStore.updateQuantity(item.product._id, item.quantity - 1, item.selectedSize?.name)" aria-label="Reducir cantidad">−</button>
                   <span class="cart-item__qty">{{ item.quantity }}</span>
-                  <button class="cart-item__qty-btn" @click="cartStore.updateQuantity(item.product._id, item.quantity + 1)" aria-label="Aumentar cantidad">+</button>
+                  <button class="cart-item__qty-btn" @click="cartStore.updateQuantity(item.product._id, item.quantity + 1, item.selectedSize?.name)" aria-label="Aumentar cantidad">+</button>
                 </div>
               </div>
               <div class="cart-item__right">
-                <span class="cart-item__subtotal">{{ formatPrice(item.product.price * item.quantity) }}</span>
-                <button class="cart-item__remove" @click="cartStore.removeFromCart(item.product._id)" aria-label="Eliminar producto">
+                <span class="cart-item__subtotal">{{ formatPrice((item.selectedSize?.price ?? item.product.price) * item.quantity) }}</span>
+                <button class="cart-item__remove" @click="cartStore.removeFromCart(item.product._id, item.selectedSize?.name)" aria-label="Eliminar producto">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"/>
                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
@@ -339,6 +340,17 @@ function formatPrice(val: number) {
     &:hover {
       color: $color-accent;
     }
+  }
+
+  &__size-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: $color-accent;
+    background-color: rgba($color-accent, 0.1);
+    border-radius: $radius-full;
+    padding: 0.1rem 0.5rem;
+    margin-bottom: 0.1rem;
   }
 
   &__price {

@@ -34,6 +34,7 @@ interface PayphoneOrderPayload {
   countryCode: string;
   email: string;
   notes?: string;
+  shippingZoneId?: string;
 }
 
 interface PayphoneInitResponse {
@@ -53,7 +54,8 @@ export const orderService = {
       items: cartItems.map(item => ({
         product: item.product._id,
         quantity: item.quantity,
-        price: item.product.price,
+        price: item.selectedSize?.price ?? item.product.price,
+        ...(item.selectedSize && { sizeName: item.selectedSize.name }),
       })),
       shippingAddress,
       email,
@@ -69,18 +71,21 @@ export const orderService = {
     email: string,
     countryCode = '593',
     notes?: string,
+    shippingZoneId?: string,
   ): Promise<ApiResponse<PayphoneInitResponse>> {
     const payload: PayphoneOrderPayload = {
       items: cartItems.map(item => ({
         product: item.product._id,
         quantity: item.quantity,
-        price: item.product.price,
+        price: item.selectedSize?.price ?? item.product.price,
+        ...(item.selectedSize && { sizeName: item.selectedSize.name }),
       })),
       shippingAddress,
       phone,
       countryCode,
       email,
       notes,
+      ...(shippingZoneId && { shippingZoneId }),
     };
     const { data } = await httpBase.post('/orders/payphone', payload);
     return data;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
-import type { Product } from '../types';
+import type { Product, ProductSize } from '../types';
 import { useCartStore } from '../stores/cart';
 import { useUIStore } from '../stores/ui';
 
@@ -16,6 +16,19 @@ const cartStore = useCartStore();
 const uiStore = useUIStore();
 const router = useRouter();
 
+const hasSizes = computed(() => props.product.sizes && props.product.sizes.length > 1);
+const selectedSize = ref<ProductSize | undefined>(
+  props.product.sizes?.length ? props.product.sizes[0] : undefined
+);
+const qty = ref(1);
+
+const displayPrice = computed(() =>
+  selectedSize.value?.price ?? props.product.price
+);
+
+function incQty() { qty.value++; }
+function decQty() { if (qty.value > 1) qty.value--; }
+
 const collectionLabel = computed(() => {
   const labels: Record<string, string> = {
     boscan: 'Boscan',
@@ -26,35 +39,33 @@ const collectionLabel = computed(() => {
   return labels[props.product.collection] || props.product.collection;
 });
 
-const discount = computed(() => {
-  if (props.product.compareAtPrice && props.product.compareAtPrice > props.product.price) {
-    return Math.round((1 - props.product.price / props.product.compareAtPrice) * 100);
-  }
-  return null;
-});
-
 const isOutOfStock = computed(() => props.product.stock === 0 && !props.product.allowBackorder);
 const isPreorder = computed(() => props.product.stock === 0 && props.product.allowBackorder);
 
+function selectSize(size: ProductSize) {
+  selectedSize.value = size;
+}
+
 function addToCart() {
-  cartStore.addToCart(props.product, 1);
+  cartStore.addToCart(props.product, qty.value, selectedSize.value);
   uiStore.success(
-    `${props.product.name} agregado al carrito`,
+    `${props.product.name}${selectedSize.value ? ` (${selectedSize.value.name})` : ''} agregado`,
     4500,
     {
       image: props.product.mainImage || props.product.images?.[0],
       action: { label: 'Ver carrito', to: '/carrito' },
     }
   );
+  qty.value = 1;
 }
 
 function buyNow() {
-  cartStore.addToCart(props.product, 1);
+  cartStore.addToCart(props.product, qty.value, selectedSize.value);
   router.push('/checkout');
 }
 
 function formatPrice(val: number) {
-  return `$${val.toFixed(2)}`;
+  return `$${val.toFixed(0)}`;
 }
 </script>
 
@@ -72,12 +83,6 @@ function formatPrice(val: number) {
         <span :class="['product-card__badge', `product-card__badge--${product.collection}`]">
           {{ collectionLabel }}
         </span>
-        <span v-if="product.isFeatured" class="product-card__badge product-card__badge--featured">
-          Destacado
-        </span>
-        <span v-if="discount" class="product-card__badge product-card__badge--discount">
-          -{{ discount }}%
-        </span>
       </div>
       <!-- Out of stock overlay -->
       <div v-if="isOutOfStock" class="product-card__oos">Sin stock</div>
@@ -94,37 +99,56 @@ function formatPrice(val: number) {
       <p v-if="product.shortDescription" class="product-card__desc">
         {{ product.shortDescription }}
       </p>
+
+      <!-- Size selector -->
+      <div v-if="hasSizes" class="product-card__sizes">
+        <button
+          v-for="size in product.sizes"
+          :key="size.name"
+          :class="['product-card__size-chip', { 'product-card__size-chip--active': selectedSize?.name === size.name }]"
+          @click.prevent="selectSize(size)"
+          :aria-label="`Tamaño ${size.name}`"
+        >
+          {{ size.name }}
+          <span class="product-card__size-price">{{ formatPrice(size.price) }}</span>
+        </button>
+      </div>
+
       <div class="product-card__footer">
         <div class="product-card__pricing">
-          <span class="product-card__price">{{ formatPrice(product.price) }}</span>
-          <span v-if="product.compareAtPrice" class="product-card__compare">{{ formatPrice(product.compareAtPrice) }}</span>
+          <span class="product-card__price">{{ formatPrice(displayPrice) }}</span>
+          <span class="product-card__price-note">IVA + envío incl.</span>
         </div>
-        <div class="product-card__btn-group">
+
+        <!-- Qty stepper + add -->
+        <div class="product-card__actions" v-if="!isOutOfStock">
+          <div class="product-card__qty">
+            <button class="product-card__qty-btn" @click.prevent="decQty" :disabled="qty <= 1" aria-label="Menos">−</button>
+            <span class="product-card__qty-num">{{ qty }}</span>
+            <button class="product-card__qty-btn" @click.prevent="incQty" aria-label="Más">+</button>
+          </div>
           <button
             :class="['product-card__btn', { 'product-card__btn--preorder': isPreorder }]"
-            :disabled="isOutOfStock"
             @click.prevent="addToCart"
             aria-label="Agregar al carrito"
           >
             <i v-if="isPreorder" class="fa-solid fa-bolt"></i>
-            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
               <line x1="3" y1="6" x2="21" y2="6"/>
               <path d="M16 10a4 4 0 01-8 0"/>
             </svg>
-            {{ isPreorder ? 'Pre-ordenar' : 'Agregar' }}
-          </button>
-          <button
-            v-if="!isOutOfStock"
-            class="product-card__btn-buy-now"
-            @click.prevent="buyNow"
-            aria-label="Comprar ahora"
-          >
-            <i class="fa-solid fa-bolt"></i>
-            Comprar ahora
+            Agregar
           </button>
         </div>
+        <div v-else class="product-card__oos-label">Sin stock</div>
       </div>
+
+      <!-- Buy now -->
+      <button v-if="!isOutOfStock" class="product-card__btn-buy-now" @click.prevent="buyNow">
+        <i class="fa-solid fa-bolt"></i>
+        Comprar ahora · {{ formatPrice(displayPrice * qty) }}
+      </button>
     </div>
   </article>
 </template>
@@ -184,30 +208,10 @@ function formatPrice(val: number) {
     letter-spacing: 0.02em;
     line-height: 1.4;
 
-    &--boscan {
-      background-color: var(--color-primary);
-      color: white;
-    }
-    &--moni {
-      background-color: var(--color-rose);
-      color: white;
-    }
-    &--rustica {
-      background-color: $color-accent;
-      color: white;
-    }
-    &--set {
-      background-color: var(--color-muted);
-      color: white;
-    }
-    &--featured {
-      background-color: var(--color-accent-light);
-      color: $color-accent;
-    }
-    &--discount {
-      background-color: #e53e3e;
-      color: white;
-    }
+    &--boscan  { background-color: var(--color-primary); color: white; }
+    &--moni    { background-color: var(--color-rose); color: white; }
+    &--rustica { background-color: $color-accent; color: white; }
+    &--set     { background-color: var(--color-muted); color: white; }
   }
 
   &__oos {
@@ -244,32 +248,28 @@ function formatPrice(val: number) {
   }
 
   &__body {
-    padding: 1.125rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     flex: 1;
   }
 
-  &__name-link {
-    text-decoration: none;
-  }
+  &__name-link { text-decoration: none; }
 
   &__name {
     font-family: var(--font-heading);
-    font-size: 1.0625rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--color-primary);
     line-height: 1.3;
     transition: color 0.2s ease;
 
-    .product-card:hover & {
-      color: $color-accent;
-    }
+    .product-card:hover & { color: $color-accent; }
   }
 
   &__desc {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: var(--color-muted);
     line-height: 1.5;
     display: -webkit-box;
@@ -278,55 +278,143 @@ function formatPrice(val: number) {
     overflow: hidden;
   }
 
+  // ── Size chips ─────────────────────────────────
+  &__sizes {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.125rem;
+  }
+
+  &__size-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.6rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: $radius-sm;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    background: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.18s ease;
+
+    &:hover {
+      border-color: $color-accent;
+      color: $color-accent;
+    }
+
+    &--active {
+      border-color: $color-accent;
+      background-color: rgba($color-accent, 0.1);
+      color: $color-accent;
+    }
+  }
+
+  &__size-price {
+    font-weight: 700;
+    color: inherit;
+  }
+
   &__footer {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     margin-top: auto;
     padding-top: 0.75rem;
     border-top: 1px solid var(--color-border);
-  }
-
-  &__btn-group {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 
   &__pricing {
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
+    flex-shrink: 0;
   }
 
   &__price {
-    font-size: 1.125rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     color: var(--color-primary);
     font-family: var(--font-heading);
+    line-height: 1.1;
   }
 
-  &__compare {
+  &__price-note {
+    font-size: 0.65rem;
+    color: var(--color-muted);
+  }
+
+  &__oos-label {
     font-size: 0.8125rem;
     color: var(--color-muted);
-    text-decoration: line-through;
+    font-weight: 500;
+  }
+
+  // ── Qty + Add row ──────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-shrink: 0;
+  }
+
+  &__qty {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--color-border);
+    border-radius: $radius-sm;
+    overflow: hidden;
+  }
+
+  &__qty-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    color: var(--color-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    font-family: var(--font-body);
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) { background-color: var(--color-bg-subtle); color: var(--color-primary); }
+    &:disabled { opacity: 0.3; cursor: default; }
+  }
+
+  &__qty-num {
+    min-width: 24px;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    line-height: 28px;
   }
 
   &__btn {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.875rem;
+    gap: 0.3rem;
+    padding: 0.45rem 0.75rem;
     background-color: $color-accent;
     color: white;
     border: none;
     border-radius: $radius-sm;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.8125rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: var(--font-body);
+    height: 30px;
 
     &:hover:not(:disabled) {
       background-color: color.adjust($color-accent, $lightness: -8%);
@@ -338,38 +426,33 @@ function formatPrice(val: number) {
       color: var(--color-muted);
       cursor: not-allowed;
     }
-
-    &--preorder {
-      background-color: darken($color-accent, 8%);
-      gap: 0.4rem;
-
-      &:hover:not(:disabled) {
-        background-color: darken($color-accent, 14%);
-      }
-    }
   }
 
+  // ── Buy now full-width bar ─────────────────────
   &__btn-buy-now {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.35rem 0.75rem;
-    background-color: transparent;
+    justify-content: center;
+    gap: 0.4rem;
+    width: calc(100% + 2rem);    // bleed to card edges
+    margin: 0.5rem -1rem -1rem;  // compensate body padding
+    padding: 0.6rem 1rem;
+    background-color: var(--color-bg-subtle);
     color: $color-accent;
-    border: 1px solid $color-accent;
-    border-radius: $radius-sm;
-    font-size: 0.8rem;
-    font-weight: 500;
+    border: none;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.8125rem;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: var(--font-body);
+    letter-spacing: 0.01em;
 
     i { font-size: 0.7rem; }
 
     &:hover {
       background-color: $color-accent;
       color: white;
-      transform: translateY(-1px);
     }
   }
 }

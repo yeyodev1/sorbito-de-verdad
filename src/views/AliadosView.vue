@@ -17,10 +17,10 @@ const DOGA_IMG        = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_aut
 const otherPartners = [
   {
     id: 'senefelder',
-    eyebrow: 'Packaging & Artes Gráficas',
+    eyebrow: 'Empaque',
     name: 'Senefelder',
-    tagline: 'Más de 100 años imprimiendo historia.',
-    description: 'Industria gráfica ecuatoriana certificada ISO 9001:2015. Dan vida al packaging que protege y presenta cada taza con la misma elegancia con la que fue creada.',
+    tagline: 'El empaque que protege y presenta tu taza.',
+    description: 'Industria gráfica ecuatoriana certificada ISO 9001:2015, con más de 100 años de experiencia. Ellos diseñaron y fabricaron la caja que recibe tu taza: el primer toque de magia antes de abrirla.',
     url: 'https://www.senefelder.com',
     logo: SENEFELDER_LOGO,
     bgImg: null,
@@ -32,10 +32,10 @@ const otherPartners = [
   },
   {
     id: 'franz',
-    eyebrow: 'Diseño & Identidad Visual',
+    eyebrow: 'Diseñó las tazas',
     name: 'Franz Del Castillo',
-    tagline: 'El trazo detrás de cada colección.',
-    description: 'El artista que dibujó las gafas de Boscan y las pestañas de La Moni. Diseño venezolano con propósito y alma, visible en cada taza.',
+    tagline: 'El artista detrás de cada trazo.',
+    description: 'Uno de los artistas pictóricos más reconocidos del Ecuador. Franz dibujó las gafas y el bigote de Boscan, las pestañas y los labios de La Moni — cada línea en cada taza lleva su firma.',
     url: 'https://www.instagram.com/franzdelcastillo/',
     logo: null,
     bgImg: FRANZ_IMG,
@@ -47,10 +47,10 @@ const otherPartners = [
   },
   {
     id: 'doga',
-    eyebrow: 'Artesanía & Cerámica',
+    eyebrow: 'Fabricó las tazas',
     name: 'Doga Designs',
-    tagline: 'Las manos que dan vida a cada pieza.',
-    description: 'Las artesanas que moldean, pintan y hornean cada taza de manera individual. Tradición cerámica ecuatoriana hecha arte funcional e irrepetible.',
+    tagline: 'Las manos que moldean cada pieza.',
+    description: 'Los artesanos que fabrican cada taza a mano: moldean la arcilla, pintan el diseño y hornean una a una. Sin ellos, los dibujos de Franz nunca habrían cobrado vida en cerámica.',
     url: 'https://www.instagram.com/doga.designs/',
     logo: null,
     bgImg: DOGA_IMG,
@@ -103,8 +103,8 @@ const bakanoStats = [
           <div class="bakano-feature__content">
             <!-- Badge -->
             <div class="bakano-feature__badge">
-              <i class="fa-solid fa-star"></i>
-              Aliado Digital Oficial
+              <i class="fa-solid fa-chart-line"></i>
+              Estrategia Digital
             </div>
 
             <!-- Logo -->
@@ -115,11 +115,11 @@ const bakanoStats = [
             </p>
 
             <p class="bakano-feature__desc">
-              La agencia de marketing digital <strong>#1 en Ecuador</strong> que se obsesiona con
-              una sola cosa: que sus clientes <strong>facturen más</strong>. Con más de 40 negocios
-              con experiencia real, Bakano combina estrategia data-driven, tecnología y crecimiento
-              medible. Son el equipo detrás de que puedas encontrar, conocer y comprar tu taza
-              desde aquí. Si estás leyendo esto, fue gracias a ellos.
+              La agencia de <strong>estrategia digital</strong> detrás de Sorbito de Verdad.
+              Bakano diseñó toda la presencia online: desde esta tienda hasta la estrategia
+              que hizo que llegaras aquí. Si estás leyendo esto, fue gracias a ellos.
+              Trabajan con más de 40 negocios en Ecuador combinando tecnología,
+              marketing data-driven y <strong>crecimiento real y medible</strong>.
             </p>
 
             <!-- Stats -->

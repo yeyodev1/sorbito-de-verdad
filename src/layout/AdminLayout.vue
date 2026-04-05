@@ -30,6 +30,7 @@ const navItems = computed(() => {
     { to: '/admin', name: 'AdminDashboard', icon: 'fa-chart-line', label: 'Dashboard' },
     { to: '/admin/productos', name: 'AdminProducts', icon: 'fa-mug-hot', label: 'Productos' },
     { to: '/admin/categorias', name: 'AdminCategories', icon: 'fa-tag', label: 'Categorías' },
+    { to: '/admin/envios', name: 'AdminShipping', icon: 'fa-truck', label: 'Envíos' },
     { to: '/admin/ordenes', name: 'AdminOrders', icon: 'fa-clipboard-list', label: 'Órdenes' },
   ];
   if (authStore.isOwner) {

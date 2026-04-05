@@ -123,6 +123,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: 'Usuarios', requiresAuth: true, requiresAdmin: true, requiresOwner: true },
   },
   {
+    path: '/admin/envios',
+    name: 'AdminShipping',
+    component: () => import('../views/admin/ShippingManagement.vue'),
+    meta: { title: 'Zonas de Envío', requiresAuth: true, requiresAdmin: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },

@@ -15,10 +15,10 @@ const loading = computed(() => productsStore.loading);
     <div class="container">
       <div class="featured-products__header">
         <div>
-          <span class="featured-products__eyebrow">Selección especial</span>
-          <h2 class="featured-products__title">Nuestros Favoritos</h2>
+          <span class="featured-products__eyebrow">La colección completa</span>
+          <h2 class="featured-products__title">Nuestras Tazas</h2>
           <p class="featured-products__subtitle">
-            Piezas que enamoran desde el primer sorbo. Cada una, única e irrepetible.
+            4 modelos únicos · Tamaño Estándar (250 ml) o XXL · Hechos a mano en Venezuela.
           </p>
         </div>
         <RouterLink to="/tienda" class="featured-products__see-all">

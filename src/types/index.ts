@@ -1,3 +1,8 @@
+export interface ProductSize {
+  name: string;   // 'Estándar' | 'XXL'
+  price: number;
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -6,6 +11,7 @@ export interface Product {
   shortDescription: string;
   price: number;
   compareAtPrice?: number;
+  sizes: ProductSize[];
   mainImage: string;
   images: string[];
   category: Category | string;
@@ -30,6 +36,7 @@ export interface Category {
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedSize?: ProductSize;
 }
 
 export interface User {
