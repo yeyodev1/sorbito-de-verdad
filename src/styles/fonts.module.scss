@@ -1,0 +1,15 @@
+// ============================================
+// Sorbito de Verdad — Typography
+// ============================================
+
+:root {
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+$font-heading: 'Playfair Display', Georgia, serif;
+$font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+// Backwards compat
+$font-principal: 'Inter', system-ui, -apple-system, sans-serif;
+$font-secondary: 'Playfair Display', Georgia, serif;
