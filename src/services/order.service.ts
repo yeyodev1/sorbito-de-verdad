@@ -41,7 +41,10 @@ interface PayphoneOrderPayload {
 interface PayphoneInitResponse {
   orderId: string;
   clientTransactionId: string;
-  payWithCard: string;
+  amount: number;
+  amountWithoutTax: number;
+  token: string;
+  storeId: string;
 }
 
 interface PaymentStatusResponse {
@@ -93,8 +96,8 @@ export const orderService = {
     return data;
   },
 
-  async verifyPayment(orderId: string, payphoneTransactionId: string): Promise<ApiResponse<PaymentStatusResponse>> {
-    const { data } = await httpBase.post('/orders/verify-payment', { orderId, payphoneTransactionId });
+  async confirmPayment(id: number, clientTransactionId: string): Promise<ApiResponse<{ orderId: string; paymentStatus: string; approved: boolean }>> {
+    const { data } = await httpBase.post('/orders/confirm-payment', { id, clientTransactionId });
     return data;
   },
 
