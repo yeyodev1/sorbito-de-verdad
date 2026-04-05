@@ -103,46 +103,6 @@ onMounted(async () => {
   }
 });
 
-// PayPhone widget state
-const paymentParams = ref<{ orderId: string; clientTransactionId: string; amount: number; amountWithoutTax: number; token: string; storeId: string } | null>(null);
-const showPaymentWidget = ref(false);
-
-async function loadPayPhoneSDK(): Promise<void> {
-  if (document.getElementById('pp-sdk-css')) return;
-
-  const link = document.createElement('link');
-  link.id = 'pp-sdk-css';
-  link.rel = 'stylesheet';
-  link.href = 'https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css';
-  document.head.appendChild(link);
-
-  return new Promise((resolve) => {
-    const script = document.createElement('script');
-    script.id = 'pp-sdk-js';
-    script.type = 'module';
-    script.src = 'https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js';
-    script.onload = () => setTimeout(resolve, 200);
-    document.head.appendChild(script);
-  });
-}
-
-function initPayPhoneWidget(params: NonNullable<typeof paymentParams.value>) {
-  const ppbClass = (window as unknown as Record<string, unknown>)['PPaymentButtonBox'] as (new (cfg: Record<string, unknown>) => { render(id: string): void }) | undefined;
-  if (!ppbClass) {
-    errorMessage.value = 'No se pudo cargar el módulo de pago. Recarga la página.';
-    return;
-  }
-  new ppbClass({
-    token: params.token,
-    clientTransactionId: params.clientTransactionId,
-    amount: params.amount,
-    amountWithoutTax: params.amountWithoutTax,
-    currency: 'USD',
-    storeId: params.storeId,
-    reference: 'Sorbito de Verdad',
-  }).render('pp-payment-container');
-}
-
 async function handleSubmit() {
   if (loading.value || items.value.length === 0) return;
   loading.value = true;
@@ -165,13 +125,9 @@ async function handleSubmit() {
       undefined,
       selectedZoneId.value || undefined,
     );
-    paymentParams.value = response.data;
-    showPaymentWidget.value = true;
     cartStore.clearCart();
-    await loadPayPhoneSDK();
-    // nextTick to ensure #pp-payment-container is in DOM
-    await new Promise(r => setTimeout(r, 100));
-    initPayPhoneWidget(response.data);
+    // Redirect to PayPhone's hosted payment page
+    window.location.href = response.data.payWithPayPhone;
   } catch (err: unknown) {
     type AxiosErr = { response?: { data?: { message?: string } }; message?: string };
     const e = err as AxiosErr;
@@ -496,18 +452,6 @@ function formatPrice(val: number) {
       </div>
     </div>
 
-    <!-- PayPhone Payment Modal -->
-    <Teleport to="body">
-      <div v-if="showPaymentWidget" class="pp-modal-overlay">
-        <div class="pp-modal">
-          <div class="pp-modal__header">
-            <i class="fa-solid fa-lock"></i>
-            <span>Pago seguro</span>
-          </div>
-          <div id="pp-payment-container"></div>
-        </div>
-      </div>
-    </Teleport>
   </MainLayout>
 </template>
 
@@ -1272,44 +1216,3 @@ function formatPrice(val: number) {
 }
 </style>
 
-<style>
-/* PayPhone modal — unscoped so Teleport works */
-.pp-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(6px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-}
-
-.pp-modal {
-  background: #ffffff;
-  border-radius: 16px;
-  overflow: hidden;
-  max-width: 480px;
-  width: 100%;
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4);
-}
-
-.pp-modal__header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 1.5rem;
-  background: #1A1A1A;
-  color: #C8956C;
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-
-  i { font-size: 0.8rem; }
-}
-
-#pp-payment-container {
-  padding: 1rem;
-}
-</style>

@@ -41,10 +41,7 @@ interface PayphoneOrderPayload {
 interface PayphoneInitResponse {
   orderId: string;
   clientTransactionId: string;
-  amount: number;
-  amountWithoutTax: number;
-  token: string;
-  storeId: string;
+  payWithPayPhone: string;
 }
 
 interface PaymentStatusResponse {
