@@ -127,7 +127,7 @@ async function loadPayPhoneSDK(): Promise<void> {
 }
 
 function initPayPhoneWidget(params: NonNullable<typeof paymentParams.value>) {
-  const ppbClass = (window as Record<string, unknown>)['PPaymentButtonBox'] as (new (cfg: Record<string, unknown>) => { render(id: string): void }) | undefined;
+  const ppbClass = (window as unknown as Record<string, unknown>)['PPaymentButtonBox'] as (new (cfg: Record<string, unknown>) => { render(id: string): void }) | undefined;
   if (!ppbClass) {
     errorMessage.value = 'No se pudo cargar el módulo de pago. Recarga la página.';
     return;

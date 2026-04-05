@@ -11,11 +11,11 @@ const status = ref<'verifying' | 'success' | 'failed' | 'error'>('verifying');
 const message = ref('Verificando tu pago...');
 
 onMounted(async () => {
-  // PayPhone adds: ?id=<payphoneTransactionId>&clientTransactionID=<clientTransactionID>&orderId=<orderId>
-  const orderId = route.query.orderId as string | undefined;
-  const payphoneId = route.query.id as string | undefined;
+  // PayPhone redirects with: ?id=<number>&clientTransactionId=<string>
+  const id = route.query.id as string | undefined;
+  const clientTransactionId = route.query.clientTransactionId as string | undefined;
 
-  if (!orderId || !payphoneId) {
+  if (!id || !clientTransactionId) {
     status.value = 'error';
     message.value = 'No se encontró información del pago.';
     setTimeout(() => router.replace('/'), 4000);
@@ -23,10 +23,10 @@ onMounted(async () => {
   }
 
   try {
-    const response = await orderService.verifyPayment(orderId, payphoneId);
-    const { paymentStatus } = response.data;
+    const response = await orderService.confirmPayment(Number(id), clientTransactionId);
+    const { approved, orderId } = response.data;
 
-    if (paymentStatus === 'paid') {
+    if (approved) {
       status.value = 'success';
       router.replace(`/pago/confirmado?orderId=${orderId}`);
     } else {
