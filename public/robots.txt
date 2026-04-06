@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /perfil
+Disallow: /mis-pedidos/
+Disallow: /checkout
+Disallow: /carrito
+Disallow: /pago/
+Disallow: /pay-response
+
+Sitemap: https://sorbitodeverdad.com/sitemap.xml
