@@ -111,7 +111,7 @@ const bakanoStats = [
             <img :src="BAKANO_LOGO" alt="Bakano" class="bakano-feature__logo" />
 
             <p class="bakano-feature__tagline">
-              "Conectamos marcas con personas que las merecen."
+              "Nosotros hacemos procesos de marketing y ventas. Conectamos a tus clientes potenciales con tu canal de transacción para que tu negocio crezca."
             </p>
 
             <p class="bakano-feature__desc">

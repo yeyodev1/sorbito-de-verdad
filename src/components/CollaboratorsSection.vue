@@ -59,7 +59,7 @@ const collaborators = [
     id: 'bakano',
     eyebrow: 'Marketing & Tecnología Digital',
     name: 'Bakano',
-    tagline: 'Conectamos marcas con personas.',
+    tagline: 'Nosotros hacemos procesos de marketing y ventas. Conectamos a tus clientes potenciales con tu canal de transacción para que tu negocio crezca.',
     description: 'La agencia #1 en Ecuador que se obsesiona con que sus clientes facturen más. +40 negocios con experiencia real. Detrás de que puedas encontrar y comprar tu taza desde aquí.',
     url: 'https://bakano.ec/',
     logo: BAKANO_LOGO,
@@ -113,7 +113,7 @@ const collaborators = [
           </div>
           <div class="collab__card-content collab__card-content--featured">
             <img :src="BAKANO_LOGO" alt="Bakano" class="collab__card-featured-logo" />
-            <p class="collab__card-tagline" style="color: #C8956C; font-size: 1.05rem;">"Conectamos marcas con personas."</p>
+            <p class="collab__card-tagline" style="color: #C8956C; font-size: 1.05rem;">"Nosotros hacemos procesos de marketing y ventas. Conectamos a tus clientes potenciales con tu canal de transacción para que tu negocio crezca."</p>
             <p class="collab__card-desc" style="max-width: 560px;">Agencia de marketing digital #1 en Ecuador. Detrás de la estrategia digital y el desarrollo web de Sorbito de Verdad.</p>
             <div class="collab__card-cta" style="border-color: rgba(200,149,108,0.5); color: #C8956C; margin-top: 0.5rem;">
               <span>bakano.ec</span>
