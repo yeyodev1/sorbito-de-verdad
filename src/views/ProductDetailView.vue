@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard.vue';
 import { useProductsStore } from '../stores/products';
 import { useCartStore } from '../stores/cart';
 import { useUIStore } from '../stores/ui';
+import type { ProductSize } from '../types';
 
 const route = useRoute();
 const productsStore = useProductsStore();
@@ -20,6 +21,13 @@ const relatedProducts = computed(() =>
 
 const quantity = ref(1);
 const activeImage = ref('');
+const selectedSize = ref<ProductSize | undefined>(undefined);
+
+const hasSizes = computed(() => product.value?.sizes && product.value.sizes.length > 1);
+
+const displayPrice = computed(() =>
+  selectedSize.value?.price ?? product.value?.price ?? 0
+);
 
 const collectionLabel = computed(() => {
   const labels: Record<string, string> = {
@@ -39,7 +47,10 @@ async function loadProduct(slug: string) {
   await productsStore.fetchProductBySlug(slug);
   if (productsStore.currentProduct) {
     activeImage.value = productsStore.currentProduct.mainImage;
-    // Fetch related products
+    // Initialize size selection to first size
+    selectedSize.value = productsStore.currentProduct.sizes?.length
+      ? productsStore.currentProduct.sizes[0]
+      : undefined;
     await productsStore.fetchProducts(1);
   }
 }
@@ -47,6 +58,7 @@ async function loadProduct(slug: string) {
 watch(() => route.params.slug, (newSlug) => {
   if (newSlug) {
     quantity.value = 1;
+    selectedSize.value = undefined;
     loadProduct(newSlug as string);
   }
 });
@@ -59,11 +71,15 @@ function selectImage(img: string) {
   activeImage.value = img;
 }
 
+function selectSize(size: ProductSize) {
+  selectedSize.value = size;
+}
+
 function addToCart() {
   if (!product.value) return;
-  cartStore.addToCart(product.value, quantity.value);
+  cartStore.addToCart(product.value, quantity.value, selectedSize.value);
   uiStore.success(
-    `${product.value.name} agregado al carrito`,
+    `${product.value.name}${selectedSize.value ? ` (${selectedSize.value.name})` : ''} agregado al carrito`,
     4500,
     {
       image: activeImage.value || product.value.mainImage || product.value.images?.[0],
@@ -147,8 +163,8 @@ function formatPrice(val: number) {
             <p class="product-info__sku">SKU: {{ product.sku }}</p>
 
             <div class="product-info__pricing">
-              <span class="product-info__price">{{ formatPrice(product.price) }}</span>
-              <span v-if="product.compareAtPrice" class="product-info__compare">{{ formatPrice(product.compareAtPrice) }}</span>
+              <span class="product-info__price">{{ formatPrice(displayPrice) }}</span>
+              <span v-if="product.compareAtPrice && !selectedSize" class="product-info__compare">{{ formatPrice(product.compareAtPrice) }}</span>
             </div>
 
             <p class="product-info__short-desc">{{ product.shortDescription }}</p>
@@ -158,6 +174,27 @@ function formatPrice(val: number) {
               <span v-if="product.stock > 5" class="product-info__stock--in">En stock ({{ product.stock }} disponibles)</span>
               <span v-else-if="product.stock > 0" class="product-info__stock--low">¡Solo {{ product.stock }} en stock!</span>
               <span v-else class="product-info__stock--out">Sin stock</span>
+            </div>
+
+            <!-- Size selector -->
+            <div v-if="hasSizes" class="product-info__sizes-wrap">
+              <p class="product-info__sizes-label">
+                <i class="fa-solid fa-ruler-horizontal"></i>
+                Elige tu tamaño
+                <span class="product-info__sizes-required">*obligatorio</span>
+              </p>
+              <div class="product-info__sizes">
+                <button
+                  v-for="size in product.sizes"
+                  :key="size.name"
+                  :class="['product-info__size-chip', { 'product-info__size-chip--active': selectedSize?.name === size.name }]"
+                  @click="selectSize(size)"
+                  :aria-label="`Seleccionar tamaño ${size.name}`"
+                >
+                  <span class="product-info__size-name">{{ size.name }}</span>
+                  <span class="product-info__size-price">{{ formatPrice(size.price) }}</span>
+                </button>
+              </div>
             </div>
 
             <!-- Quantity + Add to Cart -->
@@ -172,7 +209,7 @@ function formatPrice(val: number) {
               </div>
               <button
                 class="product-info__add-btn"
-                :disabled="product.stock === 0"
+                :disabled="product.stock === 0 || (hasSizes && !selectedSize)"
                 @click="addToCart"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -180,7 +217,9 @@ function formatPrice(val: number) {
                   <line x1="3" y1="6" x2="21" y2="6"/>
                   <path d="M16 10a4 4 0 01-8 0"/>
                 </svg>
-                {{ product.stock === 0 ? 'Sin stock' : 'Agregar al carrito' }}
+                <span v-if="product.stock === 0">Sin stock</span>
+                <span v-else-if="hasSizes && !selectedSize">Selecciona un tamaño</span>
+                <span v-else>Agregar al carrito</span>
               </button>
             </div>
 
@@ -479,6 +518,94 @@ function formatPrice(val: number) {
     &--in { color: var(--color-success); }
     &--low { color: var(--color-warning); }
     &--out { color: var(--color-error); }
+  }
+
+  // ── Size selector ──────────────────────────────
+  &__sizes-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background-color: var(--color-bg-subtle);
+    border: 2px solid var(--color-border);
+    border-radius: $radius-md;
+  }
+
+  &__sizes-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+
+    i { color: $color-accent; }
+  }
+
+  &__sizes-required {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-error, #e53e3e);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  &__sizes {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  &__size-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid var(--color-border);
+    border-radius: $radius-md;
+    background: white;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+    min-width: 80px;
+
+    &:hover {
+      border-color: $color-accent;
+      background-color: rgba($color-accent, 0.05);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba($color-accent, 0.15);
+    }
+
+    &--active {
+      border-color: $color-accent;
+      background-color: $color-accent;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba($color-accent, 0.35);
+
+      .product-info__size-name { color: white; }
+      .product-info__size-price { color: rgba(white, 0.85); }
+    }
+  }
+
+  &__size-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    line-height: 1;
+    transition: color 0.2s ease;
+  }
+
+  &__size-price {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    line-height: 1;
+    transition: color 0.2s ease;
   }
 
   &__purchase {

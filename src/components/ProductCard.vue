@@ -101,17 +101,23 @@ function formatPrice(val: number) {
       </p>
 
       <!-- Size selector -->
-      <div v-if="hasSizes" class="product-card__sizes">
-        <button
-          v-for="size in product.sizes"
-          :key="size.name"
-          :class="['product-card__size-chip', { 'product-card__size-chip--active': selectedSize?.name === size.name }]"
-          @click.prevent="selectSize(size)"
-          :aria-label="`Tamaño ${size.name}`"
-        >
-          {{ size.name }}
-          <span class="product-card__size-price">{{ formatPrice(size.price) }}</span>
-        </button>
+      <div v-if="hasSizes" class="product-card__sizes-wrap">
+        <p class="product-card__sizes-label">
+          <i class="fa-solid fa-ruler-horizontal"></i>
+          Elige tu tamaño
+        </p>
+        <div class="product-card__sizes">
+          <button
+            v-for="size in product.sizes"
+            :key="size.name"
+            :class="['product-card__size-chip', { 'product-card__size-chip--active': selectedSize?.name === size.name }]"
+            @click.prevent="selectSize(size)"
+            :aria-label="`Tamaño ${size.name}`"
+          >
+            <span class="product-card__size-name">{{ size.name }}</span>
+            <span class="product-card__size-price">{{ formatPrice(size.price) }}</span>
+          </button>
+        </div>
       </div>
 
       <div class="product-card__footer">
@@ -285,43 +291,75 @@ function formatPrice(val: number) {
   }
 
   // ── Size chips ─────────────────────────────────
+  &__sizes-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
+  }
+
+  &__sizes-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+
+    i { color: $color-accent; font-size: 0.65rem; }
+  }
+
   &__sizes {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
-    margin-top: 0.125rem;
   }
 
   &__size-chip {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.3rem 0.6rem;
-    border: 1.5px solid var(--color-border);
+    gap: 0.1rem;
+    padding: 0.45rem 0.8rem;
+    border: 2px solid var(--color-border);
     border-radius: $radius-sm;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-muted);
     background: none;
     cursor: pointer;
     font-family: var(--font-body);
     transition: all 0.18s ease;
+    min-width: 54px;
 
     &:hover {
       border-color: $color-accent;
-      color: $color-accent;
+      background-color: rgba($color-accent, 0.06);
     }
 
     &--active {
       border-color: $color-accent;
-      background-color: color.adjust($color-accent, $lightness: -8%);
-      color: $color-accent;
+      background-color: $color-accent;
+
+      .product-card__size-name { color: white; }
+      .product-card__size-price { color: rgba(white, 0.85); }
     }
   }
 
-  &__size-price {
+  &__size-name {
+    font-size: 0.8125rem;
     font-weight: 700;
-    color: inherit;
+    color: var(--color-primary);
+    line-height: 1;
+    transition: color 0.18s ease;
+  }
+
+  &__size-price {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    line-height: 1;
+    transition: color 0.18s ease;
   }
 
   &__footer {
