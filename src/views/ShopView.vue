@@ -79,6 +79,7 @@ onMounted(() => {
 });
 
 watch(selectedSort, () => applyFilters(1));
+watch(selectedCollection, () => applyFilters(1));
 </script>
 
 <template>

@@ -5,37 +5,49 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     name: 'Home',
     component: () => import('../views/HomeView.vue'),
-    meta: { title: 'Inicio' },
+    meta: {
+      title: 'Tazas Artesanales Personalizadas en Ecuador',
+      description: 'Tazas artesanales personalizadas hechas a mano en Ecuador. Colecciones Boscan y La Moni. Diseño único, cerámica artesanal y envío a todo el país.',
+    },
   },
   {
     path: '/tienda',
     name: 'Shop',
     component: () => import('../views/ShopView.vue'),
-    meta: { title: 'Tienda' },
+    meta: {
+      title: 'Tienda — Compra Tazas Artesanales',
+      description: 'Compra tazas artesanales personalizadas en Ecuador. 4 modelos únicos: Boscan, La Moni, Rústica y Colección completa. Envío a domicilio.',
+    },
   },
   {
     path: '/tienda/:slug',
     name: 'ProductDetail',
     component: () => import('../views/ProductDetailView.vue'),
-    meta: { title: 'Producto' },
+    meta: {
+      title: 'Producto',
+      description: 'Taza artesanal personalizada hecha a mano en Ecuador. Diseño único, cerámica de calidad. Compra en Sorbito de Verdad.',
+    },
   },
   {
     path: '/carrito',
     name: 'Cart',
     component: () => import('../views/CartView.vue'),
-    meta: { title: 'Carrito' },
+    meta: { title: 'Carrito de Compras', noindex: true },
   },
   {
     path: '/checkout',
     name: 'Checkout',
     component: () => import('../views/CheckoutView.vue'),
-    meta: { title: 'Finalizar Compra' },
+    meta: { title: 'Finalizar Compra', noindex: true },
   },
   {
     path: '/rastrear',
     name: 'TrackOrder',
     component: () => import('../views/TrackOrderView.vue'),
-    meta: { title: 'Rastrear Pedido' },
+    meta: {
+      title: 'Rastrear Pedido',
+      description: 'Rastrea tu pedido de Sorbito de Verdad. Ingresa tu número de pedido o correo electrónico para ver el estado de tu envío.',
+    },
   },
   {
     path: '/pay-response',
@@ -65,13 +77,19 @@ const routes: Array<RouteRecordRaw> = [
     path: '/nosotros',
     name: 'About',
     component: () => import('../views/AboutView.vue'),
-    meta: { title: 'Nosotros' },
+    meta: {
+      title: 'Nuestra Historia — Tazas Artesanales en Ecuador',
+      description: 'Conoce la historia de Sorbito de Verdad. Tazas artesanales hechas a mano en Ecuador con diseño, cerámica y pasión. 100% talento ecuatoriano.',
+    },
   },
   {
     path: '/aliados',
     name: 'Aliados',
     component: () => import('../views/AliadosView.vue'),
-    meta: { title: 'Nuestros Aliados' },
+    meta: {
+      title: 'Nuestros Aliados — Talento Ecuatoriano',
+      description: 'Los aliados detrás de Sorbito de Verdad: Senefelder (packaging), Franz Del Castillo (diseño), Doga Designs (cerámica) y Bakano (tecnología).',
+    },
   },
   {
     path: '/login',
@@ -166,9 +184,36 @@ router.beforeEach((to, _from, next) => {
   const guestOnly = to.matched.some((record) => record.meta?.guestOnly)
 
   // Update document title
-  if (to.meta?.title) {
-    document.title = `${to.meta.title} — Sorbito de Verdad`
+  const baseTitle = 'Sorbito de Verdad'
+  document.title = to.meta?.title
+    ? `${to.meta.title} | ${baseTitle}`
+    : `${baseTitle} — Tazas Artesanales en Ecuador`
+
+  // Update meta description
+  const desc = (to.meta?.description as string | undefined) ||
+    'Tazas artesanales personalizadas hechas a mano en Ecuador. Colecciones Boscan y La Moni. Envío a todo el país.'
+  let metaDesc = document.querySelector('meta[name="description"]')
+  if (!metaDesc) {
+    metaDesc = document.createElement('meta')
+    metaDesc.setAttribute('name', 'description')
+    document.head.appendChild(metaDesc)
   }
+  metaDesc.setAttribute('content', desc)
+
+  // Update og:title and og:description
+  const ogTitle = document.querySelector('meta[property="og:title"]')
+  if (ogTitle) ogTitle.setAttribute('content', document.title)
+  const ogDesc = document.querySelector('meta[property="og:description"]')
+  if (ogDesc) ogDesc.setAttribute('content', desc)
+
+  // noindex for private/checkout pages
+  let robotsMeta = document.querySelector('meta[name="robots"]')
+  if (!robotsMeta) {
+    robotsMeta = document.createElement('meta')
+    robotsMeta.setAttribute('name', 'robots')
+    document.head.appendChild(robotsMeta)
+  }
+  robotsMeta.setAttribute('content', to.meta?.noindex ? 'noindex, nofollow' : 'index, follow')
 
   if (requiresAuth && !hasToken) {
     return next({ path: '/login', query: { redirect: to.fullPath }, replace: true })
