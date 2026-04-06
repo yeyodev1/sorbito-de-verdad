@@ -268,7 +268,7 @@ function confirmLogout() {
     align-items: center;
     gap: 0.25rem;
 
-    @media (max-width: 768px) {
+    @media (max-width: 1100px) {
       display: none;
     }
   }
@@ -366,7 +366,7 @@ function confirmLogout() {
     align-items: center;
     gap: 0.25rem;
 
-    @media (max-width: 768px) {
+    @media (max-width: 1100px) {
       display: none;
     }
   }
@@ -377,7 +377,7 @@ function confirmLogout() {
     background-color: var(--color-border);
     flex-shrink: 0;
 
-    @media (max-width: 768px) {
+    @media (max-width: 1100px) {
       display: none;
     }
   }
@@ -531,7 +531,7 @@ function confirmLogout() {
     border-radius: $radius-sm;
     transition: background-color 0.2s ease;
 
-    @media (max-width: 768px) {
+    @media (max-width: 1100px) {
       display: flex;
     }
 

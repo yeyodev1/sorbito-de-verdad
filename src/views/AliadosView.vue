@@ -41,7 +41,7 @@ const otherPartners = [
     bgImg: FRANZ_IMG,
     bgColor: null,
     accent: '#A855F7',
-    country: 'Venezuela 🇻🇪',
+    country: 'Ecuador',
     cta: '@franzdelcastillo',
     icon: 'fa-solid fa-palette',
   },

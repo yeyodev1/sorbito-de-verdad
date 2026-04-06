@@ -18,11 +18,11 @@ const loading = computed(() => productsStore.loading);
 const pagination = computed(() => productsStore.pagination);
 
 const collections = [
-  { value: '', label: 'Todas', icon: '✦' },
-  { value: 'boscan', label: 'Boscan', icon: '🎩' },
-  { value: 'moni', label: 'La Moni', icon: '💋' },
-  { value: 'rustica', label: 'Rústica', icon: '🏺' },
-  { value: 'set', label: 'Colección', icon: '🎁' },
+  { value: '', label: 'Todas', icon: 'fa-solid fa-border-all' },
+  { value: 'boscan', label: 'Boscan', icon: 'fa-solid fa-mug-hot' },
+  { value: 'moni', label: 'La Moni', icon: 'fa-solid fa-heart' },
+  { value: 'rustica', label: 'Rústica', icon: 'fa-solid fa-hands' },
+  { value: 'set', label: 'Colección', icon: 'fa-solid fa-layer-group' },
 ];
 
 const sorts = [
@@ -120,7 +120,7 @@ watch(selectedSort, () => applyFilters(1));
               :class="['shop-filter-pill', { 'shop-filter-pill--active': selectedCollection === col.value }]"
               @click="selectedCollection = col.value"
             >
-              <span class="shop-filter-pill__icon">{{ col.icon }}</span>
+              <i :class="[col.icon, 'shop-filter-pill__icon']"></i>
               {{ col.label }}
             </button>
           </div>

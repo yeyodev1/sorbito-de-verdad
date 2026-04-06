@@ -18,7 +18,7 @@ const loading = computed(() => productsStore.loading);
           <span class="featured-products__eyebrow">La colección completa</span>
           <h2 class="featured-products__title">Nuestras Tazas</h2>
           <p class="featured-products__subtitle">
-            4 modelos únicos · Tamaño Estándar (250 ml) o XXL · Hechos a mano en Venezuela.
+            4 modelos únicos · Tamaño Estándar (250 ml) o XXL · Hechos a mano en Ecuador.
           </p>
         </div>
         <RouterLink to="/tienda" class="featured-products__see-all">

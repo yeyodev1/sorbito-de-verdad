@@ -32,7 +32,7 @@ const STACK_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_au
         </h1>
 
         <p class="hero__subheading">
-          Tazas únicas, hechas a mano con alma venezolana.
+          Tazas únicas, hechas a mano en Ecuador.
           Diseñadas para quienes saben que el café merece algo especial.
         </p>
 

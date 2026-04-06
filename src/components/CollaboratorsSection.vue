@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 
-// ── Cinematic header ──────────────────────────────────────────────────────
-const HEADER_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_1400/v1775351861/sorbito-de-verdad/products/i465dbepm8eiumhj5qc9.jpg';
-
 // ── Card images ───────────────────────────────────────────────────────────
 const SENEFELDER_LOGO = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto/v1775354051/sorbito-de-verdad/collaborators/senefelder-logo.png';
 const FRANZ_IMG       = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_auto,w_800/v1775351847/sorbito-de-verdad/products/ergzx1oqfuyxjdr07jpc.jpg';
@@ -15,13 +12,13 @@ const BAKANO_TEAM_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_aut
 const collaborators = [
   {
     id: 'senefelder',
-    eyebrow: 'Packaging & Artes Gráficas',
+    eyebrow: 'Empaques & Artes Gráficas',
     name: 'Senefelder',
-    tagline: 'Más de 100 años imprimiendo historia.',
-    description: 'Industria gráfica ecuatoriana certificada ISO 9001:2015. Dan vida al packaging que protege cada taza con la misma elegancia con la que fue creada.',
+    tagline: 'Ellos hacen los empaques de cada taza.',
+    description: 'Industria gráfica ecuatoriana con más de 100 años de historia, certificada ISO 9001:2015. Cada caja, cada empaque que protege y presenta tu taza lleva su sello de calidad.',
     url: 'https://www.senefelder.com',
     logo: SENEFELDER_LOGO,
-    logoFilter: 'brightness(0) invert(1)',   // dark logo → invert to white
+    logoFilter: 'brightness(0) invert(1)',
     bgColor: '#0D1117',
     bgImage: null,
     accentColor: '#E8B84B',
@@ -30,25 +27,25 @@ const collaborators = [
   },
   {
     id: 'franz',
-    eyebrow: 'Diseño & Identidad Visual',
+    eyebrow: 'Diseño de cada taza',
     name: 'Franz Del Castillo',
-    tagline: 'El trazo detrás de cada colección.',
-    description: 'El artista que dibujó las gafas de Boscan y las pestañas de La Moni. Diseño venezolano con propósito y alma, visible en cada taza.',
+    tagline: 'Él diseñó cada taza que ves aquí.',
+    description: 'Diseñador ecuatoriano que dio vida a los íconos de cada colección: las gafas de Boscan, las pestañas de La Moni. Su trazo convierte cerámica en identidad.',
     url: 'https://www.instagram.com/franzdelcastillo/',
     logo: null,
     logoFilter: null,
     bgImage: FRANZ_IMG,
     bgColor: null,
     accentColor: '#A855F7',
-    country: 'Venezuela',
+    country: 'Ecuador',
     cta: '@franzdelcastillo',
   },
   {
     id: 'doga',
-    eyebrow: 'Artesanía & Cerámica',
+    eyebrow: 'Las manos artesanas',
     name: 'Doga Designs',
-    tagline: 'Las manos que dan vida a cada pieza.',
-    description: 'Las artesanas que moldean, pintan y hornean cada taza de manera individual. Tradición cerámica ecuatoriana hecha arte funcional.',
+    tagline: 'Sus manos moldean cada taza, una por una.',
+    description: 'Las artesanas ecuatorianas que moldean, pintan y hornean cada taza de forma individual. Sin producción en masa — cada pieza es única, hecha a mano con dedicación.',
     url: 'https://www.instagram.com/doga.designs/',
     logo: null,
     logoFilter: null,
@@ -79,10 +76,8 @@ const collaborators = [
 <template>
   <section class="collab">
 
-    <!-- ── Cinematic header ──────────────────────────────── -->
+    <!-- ── Header ────────────────────────────────────────── -->
     <div class="collab__header">
-      <img :src="HEADER_IMG" alt="" class="collab__header-bg" loading="lazy" />
-      <div class="collab__header-overlay"></div>
       <div class="container collab__header-content">
         <span class="collab__eyebrow">
           <i class="fa-solid fa-handshake-simple"></i>
@@ -93,9 +88,9 @@ const collaborators = [
           <em>posible cada sorbo</em>
         </h2>
         <p class="collab__subtitle">
-          Desde las artes gráficas ecuatorianas hasta el diseño venezolano,
-          pasando por las artesanas que dan forma a cada taza.
-          Sorbito de Verdad es el encuentro extraordinario de estos talentos.
+          Cada taza es el resultado de talento ecuatoriano puro: el diseño, la cerámica, el empaque
+          y la tecnología — todo hecho en Ecuador, con orgullo y dedicación.
+          <strong style="color: #C8956C; display: block; margin-top: 0.75rem;">100% manos ecuatorianas.</strong>
         </p>
       </div>
     </div>
@@ -191,47 +186,23 @@ const collaborators = [
   // ── Header ───────────────────────────────────────────
 
   &__header {
-    position: relative;
-    min-height: 500px;
-    overflow: hidden;
+    background-color: #1A1A1A;
     display: flex;
     align-items: center;
-
-    @media (max-width: 768px) {
-      min-height: 400px;
-    }
-  }
-
-  &__header-bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center 30%;
-  }
-
-  &__header-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      110deg,
-      rgba(#070707, 0.95) 0%,
-      rgba(#070707, 0.78) 45%,
-      rgba(#070707, 0.4) 70%,
-      transparent 100%
-    );
   }
 
   &__header-content {
-    position: relative;
-    z-index: 1;
     padding-top: 5rem;
     padding-bottom: 5rem;
     max-width: 660px;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+
+    @media (max-width: 768px) {
+      padding-top: 3.5rem;
+      padding-bottom: 3.5rem;
+    }
   }
 
   &__eyebrow {

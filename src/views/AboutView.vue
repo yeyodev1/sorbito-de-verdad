@@ -28,10 +28,10 @@ const values = [
     text: 'Cada pedido lleva nuestro cuidado personal. Empacamos como si se lo entregáramos a un amigo.',
   },
   {
-    icon: 'fa-solid fa-star',
+    icon: 'fa-solid fa-flag',
     color: '#F59E0B',
-    title: 'Orgullo Venezolano',
-    text: 'Nacimos en Venezuela, donde el café no es solo bebida, es identidad. Eso vive en cada pieza.',
+    title: 'Orgullo Ecuatoriano',
+    text: '100% hecho en Ecuador. Cada taza, cada empaque, cada diseño — talento ecuatoriano de principio a fin.',
   },
 ];
 </script>

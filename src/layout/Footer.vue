@@ -18,8 +18,8 @@ import { RouterLink } from 'vue-router';
           </div>
         </RouterLink>
         <p class="footer__tagline">
-          Un sorbito con alma venezolana.<br />
-          Hecho con amor, arcilla y café.
+          Tazas artesanales hechas con amor en Ecuador.<br />
+          Arcilla, diseño y café en cada pieza.
         </p>
         <div class="footer__social">
           <a href="https://instagram.com/sorbitodeverdad" target="_blank" rel="noopener" class="footer__social-link" aria-label="Instagram">
@@ -74,7 +74,7 @@ import { RouterLink } from 'vue-router';
     <div class="footer__bottom">
       <div class="container footer__bottom-inner">
         <p class="footer__copyright">
-          © 2026 Sorbito de Verdad · Hecho con amor en Venezuela 🇻🇪
+          © 2026 Sorbito de Verdad · Hecho con amor en Ecuador <i class="fa-solid fa-location-dot" style="color:#C8956C;font-size:0.75em;"></i>
         </p>
         <div class="footer__credits">
           <span class="footer__credits-item">
