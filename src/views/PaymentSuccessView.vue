@@ -1,13 +1,30 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
 import { useAuthStore } from '../stores/auth';
+import { useUIStore } from '../stores/ui';
+import { orderService } from '../services/order.service';
 
 const route = useRoute();
 const authStore = useAuthStore();
+const uiStore = useUIStore();
 const orderId = computed(() => (route.query.orderId as string) || '');
 const isGuest = computed(() => !authStore.isAuthenticated);
+const resending = ref(false);
+
+async function resendEmail() {
+  if (!orderId.value || resending.value) return;
+  resending.value = true;
+  try {
+    await orderService.resendConfirmation(orderId.value);
+    uiStore.success('Correo de confirmación reenviado exitosamente');
+  } catch {
+    uiStore.error('No se pudo reenviar el correo. Intenta más tarde.');
+  } finally {
+    resending.value = false;
+  }
+}
 </script>
 
 <template>
@@ -44,6 +61,16 @@ const isGuest = computed(() => !authStore.isAuthenticated);
             <i class="fa-solid fa-store"></i>
             Seguir comprando
           </RouterLink>
+          <button
+            v-if="!isGuest && orderId"
+            class="payment-success-view__btn-resend"
+            :disabled="resending"
+            @click="resendEmail"
+          >
+            <i v-if="resending" class="fa-solid fa-circle-notch fa-spin"></i>
+            <i v-else class="fa-solid fa-paper-plane"></i>
+            {{ resending ? 'Enviando...' : 'Reenviar correo de confirmación' }}
+          </button>
         </div>
       </div>
     </div>
@@ -173,6 +200,34 @@ const isGuest = computed(() => !authStore.isAuthenticated);
     transition: border-color 0.2s ease;
 
     &:hover { border-color: var(--color-primary); }
+  }
+
+  &__btn-resend {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border: 1.5px dashed var(--color-border);
+    color: var(--color-muted);
+    background: none;
+    border-radius: $radius-md;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: var(--font-body);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $color-accent;
+      color: $color-accent;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 
   &__email-notice {

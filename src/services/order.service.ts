@@ -107,4 +107,9 @@ export const orderService = {
     const { data } = await httpBase.get(`/orders/${id}`);
     return data;
   },
+
+  async resendConfirmation(orderId: string): Promise<ApiResponse<{ message: string }>> {
+    const { data } = await httpBase.post(`/orders/${orderId}/resend-email`);
+    return data;
+  },
 };
