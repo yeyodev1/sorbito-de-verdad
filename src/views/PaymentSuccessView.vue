@@ -13,14 +13,14 @@ const orderId = computed(() => (route.query.orderId as string) || '');
 const isGuest = computed(() => !authStore.isAuthenticated);
 const resending = ref(false);
 
-async function resendEmail() {
+async function resendCredentials() {
   if (!orderId.value || resending.value) return;
   resending.value = true;
   try {
-    await orderService.resendConfirmation(orderId.value);
-    uiStore.success('Correo de confirmación reenviado exitosamente');
+    await orderService.resendCredentials(orderId.value);
+    uiStore.success('Credenciales de acceso reenviadas a tu correo');
   } catch {
-    uiStore.error('No se pudo reenviar el correo. Intenta más tarde.');
+    uiStore.error('No se pudo reenviar. Intenta más tarde.');
   } finally {
     resending.value = false;
   }
@@ -44,6 +44,10 @@ async function resendEmail() {
           <div>
             <strong>Revisa tu correo electrónico</strong>
             <p>Te enviamos los datos de acceso a tu cuenta para que puedas rastrear tu pedido.</p>
+            <p class="payment-success-view__spam-tip">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              ¿No lo ves? Revisa tu carpeta de <strong>Spam</strong> o <strong>Correo no deseado</strong> y márcalo como "No es spam".
+            </p>
           </div>
         </div>
 
@@ -62,14 +66,14 @@ async function resendEmail() {
             Seguir comprando
           </RouterLink>
           <button
-            v-if="!isGuest && orderId"
+            v-if="isGuest && orderId"
             class="payment-success-view__btn-resend"
             :disabled="resending"
-            @click="resendEmail"
+            @click="resendCredentials"
           >
             <i v-if="resending" class="fa-solid fa-circle-notch fa-spin"></i>
-            <i v-else class="fa-solid fa-paper-plane"></i>
-            {{ resending ? 'Enviando...' : 'Reenviar correo de confirmación' }}
+            <i v-else class="fa-solid fa-key"></i>
+            {{ resending ? 'Enviando...' : 'Reenviar datos de acceso a mi cuenta' }}
           </button>
         </div>
       </div>
@@ -261,6 +265,24 @@ async function resendEmail() {
       color: var(--color-muted);
       line-height: 1.5;
     }
+  }
+
+  &__spam-tip {
+    margin-top: 0.5rem !important;
+    font-size: 0.8125rem !important;
+    color: var(--color-muted) !important;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+
+    i {
+      color: #d97706;
+      font-size: 0.75rem;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    strong { color: var(--color-primary); }
   }
 }
 </style>
