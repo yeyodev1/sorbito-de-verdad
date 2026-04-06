@@ -44,6 +44,7 @@ const updatingId = ref<string | null>(null);
 // Draft notes per order (keyed by _id), only committed on save
 const draftNotes = ref<Record<string, string>>({});
 const savingNotes = ref<string | null>(null);
+const resendingEmail = ref<string | null>(null);
 
 const allStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -118,6 +119,18 @@ async function updateStatus(order: Order, newStatus: string) {
     ui.error(err?.response?.data?.message || 'Error al actualizar la orden');
   } finally {
     updatingId.value = null;
+  }
+}
+
+async function resendEmail(order: Order) {
+  resendingEmail.value = order._id;
+  try {
+    await adminService.resendOrderEmail(order._id);
+    ui.success(`Correo reenviado a ${order.user?.email || 'el cliente'}`);
+  } catch {
+    ui.error('Error al reenviar el correo');
+  } finally {
+    resendingEmail.value = null;
   }
 }
 
@@ -315,6 +328,16 @@ function getItemCount(order: Order) {
                             <i v-if="savingNotes === order._id" class="fa-solid fa-circle-notch fa-spin"></i>
                             <i v-else class="fa-solid fa-floppy-disk"></i>
                             {{ savingNotes === order._id ? 'Guardando...' : 'Guardar nota' }}
+                          </button>
+                          <button
+                            class="om__resend-btn"
+                            :disabled="resendingEmail === order._id"
+                            @click="resendEmail(order)"
+                            title="Reenvía el correo de confirmación al cliente"
+                          >
+                            <i v-if="resendingEmail === order._id" class="fa-solid fa-circle-notch fa-spin"></i>
+                            <i v-else class="fa-solid fa-paper-plane"></i>
+                            {{ resendingEmail === order._id ? 'Enviando...' : 'Reenviar correo' }}
                           </button>
                         </div>
                       </div>
@@ -590,6 +613,8 @@ function getItemCount(order: Order) {
   &__note-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 0.625rem;
+    flex-wrap: wrap;
   }
 
   &__note-save {
@@ -608,6 +633,25 @@ function getItemCount(order: Order) {
     transition: opacity 0.15s;
 
     &:hover { opacity: 0.85; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &__resend-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: transparent;
+    color: $admin-accent;
+    border: 1px solid $admin-accent;
+    border-radius: 7px;
+    padding: 0.5rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+
+    &:hover { background: rgba($admin-accent, 0.1); }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
 

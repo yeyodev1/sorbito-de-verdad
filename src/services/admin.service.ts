@@ -52,6 +52,10 @@ export const adminService = {
     const { data } = await httpBase.patch(`/orders/${id}/status`, { status, paymentStatus, adminNotes });
     return data;
   },
+  async resendOrderEmail(id: string) {
+    const { data } = await httpBase.post(`/orders/${id}/resend-email`);
+    return data;
+  },
 
   // Upload
   async uploadImage(file: File): Promise<{ url: string; publicId: string }> {
