@@ -3,10 +3,8 @@ import { computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
 import { useCartStore } from '../stores/cart';
-import { useAuthStore } from '../stores/auth';
 
 const cartStore = useCartStore();
-const authStore = useAuthStore();
 const router = useRouter();
 
 const items = computed(() => cartStore.items);
