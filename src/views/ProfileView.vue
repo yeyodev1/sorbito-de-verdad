@@ -117,7 +117,7 @@ onMounted(() => { loadOrders(); });
 <template>
   <component :is="layoutComponent" :title="isAdmin ? 'Mi Perfil' : undefined">
     <div :class="isAdmin ? 'admin-profile' : 'profile-page'">
-      <div :class="isAdmin ? '' : 'container'">
+      <div :class="isAdmin ? 'container admin-profile__inner' : 'container'">
 
         <!-- ══════════════════════════════════════════════
              ADMIN / OWNER PROFILE VIEW
@@ -408,9 +408,13 @@ onMounted(() => { loadOrders(); });
 // ══════════════════════════════════════════════════════════
 
 .admin-profile {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  padding: 2rem 0 4rem;
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
 }
 
 // Hero card
@@ -421,8 +425,8 @@ onMounted(() => { loadOrders(); });
     gap: 1.25rem;
     background-color: $admin-card;
     border: 1px solid $admin-border;
-    border-radius: 14px;
-    padding: 1.75rem 2rem;
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
 
     @media (max-width: 600px) {
       flex-direction: column;
@@ -542,12 +546,12 @@ onMounted(() => { loadOrders(); });
   &__section {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
 
     &--card {
       background-color: $admin-card;
       border: 1px solid $admin-border;
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
       gap: 0;
     }
@@ -559,6 +563,8 @@ onMounted(() => { loadOrders(); });
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid $admin-border;
     margin-bottom: 0.25rem;
   }
 
@@ -593,24 +599,24 @@ onMounted(() => { loadOrders(); });
   &__mgmt-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.875rem;
+    gap: 1rem;
 
-    @media (max-width: 640px) { grid-template-columns: 1fr; gap: 0.625rem; }
+    @media (max-width: 640px) { grid-template-columns: 1fr; gap: 0.75rem; }
   }
 
   &__mgmt-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem 1.375rem;
+    gap: 1.125rem;
+    padding: 1.5rem 1.75rem;
     background-color: $admin-card;
     border: 1px solid $admin-border;
-    border-radius: 12px;
+    border-radius: 14px;
     text-decoration: none;
-    transition: all 0.15s ease;
+    transition: all 0.18s ease;
 
     @media (max-width: 640px) {
-      padding: 1rem 1.125rem;
+      padding: 1.125rem 1.25rem;
     }
 
     &:hover {
