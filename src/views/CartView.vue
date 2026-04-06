@@ -16,11 +16,7 @@ const shipping = computed(() => subtotal.value >= 50 ? 0 : 5.99);
 const total = computed(() => subtotal.value + shipping.value);
 
 function goToCheckout() {
-  if (!authStore.isAuthenticated) {
-    router.push('/login?redirect=/checkout');
-  } else {
-    router.push('/checkout');
-  }
+  router.push('/checkout');
 }
 
 function formatPrice(val: number) {
@@ -114,9 +110,6 @@ function formatPrice(val: number) {
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
             </button>
-            <p v-if="!authStore.isAuthenticated" class="cart-summary__auth-note">
-              Deberás <RouterLink to="/login" class="cart-summary__auth-link">iniciar sesión</RouterLink> para continuar.
-            </p>
           </aside>
         </div>
       </div>
