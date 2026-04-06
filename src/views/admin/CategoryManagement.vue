@@ -311,6 +311,7 @@ async function deleteCategory(id: string) {
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
 
 .cm {
   &__toolbar {
@@ -331,7 +332,7 @@ async function deleteCategory(id: string) {
   &__skeleton-row {
     height: 56px;
     border-bottom: 1px solid $admin-border;
-    background: linear-gradient(90deg, $admin-border 25%, lighten(#2A2A2A, 5%) 50%, $admin-border 75%);
+    background: linear-gradient(90deg, $admin-border 25%, color.adjust(#2A2A2A, $lightness: 5%) 50%, $admin-border 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
 
@@ -480,7 +481,7 @@ async function deleteCategory(id: string) {
   font-family: 'Inter', sans-serif;
   border: none;
 
-  &:hover:not(:disabled) { background-color: darken(#C8956C, 8%); }
+  &:hover:not(:disabled) { background-color: color.adjust(#C8956C, $lightness: -8%); }
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
@@ -517,7 +518,7 @@ async function deleteCategory(id: string) {
   font-family: 'Inter', sans-serif;
   border: none;
 
-  &:hover { background-color: darken(#EF4444, 8%); }
+  &:hover { background-color: color.adjust(#EF4444, $lightness: -8%); }
 }
 
 // Modal

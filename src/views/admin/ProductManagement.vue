@@ -234,6 +234,7 @@ async function deleteProduct(id: string) {
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
 
 .pm {
   &__toolbar {
@@ -319,7 +320,7 @@ async function deleteProduct(id: string) {
   &__skeleton-row {
     height: 56px;
     border-bottom: 1px solid $admin-border;
-    background: linear-gradient(90deg, $admin-border 25%, lighten(#2A2A2A, 5%) 50%, $admin-border 75%);
+    background: linear-gradient(90deg, $admin-border 25%, color.adjust(#2A2A2A, $lightness: 5%) 50%, $admin-border 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
 
@@ -594,7 +595,7 @@ async function deleteProduct(id: string) {
   white-space: nowrap;
 
   &:hover {
-    background-color: darken(#C8956C, 8%);
+    background-color: color.adjust(#C8956C, $lightness: -8%);
   }
 }
 
@@ -635,7 +636,7 @@ async function deleteProduct(id: string) {
   border: none;
 
   &:hover {
-    background-color: darken(#EF4444, 8%);
+    background-color: color.adjust(#EF4444, $lightness: -8%);
   }
 }
 

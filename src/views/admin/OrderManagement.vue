@@ -105,9 +105,7 @@ const filtered = computed(() => {
   return orders.value.filter((o) => o.status === filterStatus.value);
 });
 
-function toggleExpand(id: string) {
-  expandedId.value = expandedId.value === id ? null : id;
-}
+
 
 async function updateStatus(order: Order, newStatus: string) {
   updatingId.value = order._id;
@@ -333,6 +331,7 @@ function getItemCount(order: Order) {
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
 
 .om {
   &__toolbar {
@@ -391,7 +390,7 @@ function getItemCount(order: Order) {
   &__skeleton-row {
     height: 60px;
     border-bottom: 1px solid $admin-border;
-    background: linear-gradient(90deg, $admin-border 25%, lighten(#2A2A2A, 5%) 50%, $admin-border 75%);
+    background: linear-gradient(90deg, $admin-border 25%, color.adjust(#2A2A2A, $lightness: 5%) 50%, $admin-border 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
 

@@ -71,6 +71,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
 
 .cm-overlay {
   position: fixed;
@@ -191,7 +192,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
     color: white;
 
     &:hover {
-      background-color: darken(#ef4444, 8%);
+      background-color: color.adjust(#ef4444, $lightness: -8%);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(#ef4444, 0.4);
     }
@@ -202,7 +203,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
     color: white;
 
     &:hover {
-      background-color: darken(#f59e0b, 8%);
+      background-color: color.adjust(#f59e0b, $lightness: -8%);
       transform: translateY(-1px);
     }
   }
@@ -212,7 +213,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
     color: white;
 
     &:hover {
-      background-color: darken($color-accent, 8%);
+      background-color: color.adjust($color-accent, $lightness: -8%);
       transform: translateY(-1px);
     }
   }

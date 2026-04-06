@@ -114,6 +114,7 @@ async function handleSubmit() {
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
 
 .newsletter {
   position: relative;
@@ -274,7 +275,7 @@ async function handleSubmit() {
     white-space: nowrap;
 
     &:hover:not(:disabled) {
-      background-color: lighten(#C8956C, 8%);
+      background-color: color.adjust(#C8956C, $lightness: 8%);
     }
 
     &:disabled {

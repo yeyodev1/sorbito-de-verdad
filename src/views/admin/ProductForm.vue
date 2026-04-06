@@ -732,6 +732,7 @@ async function handleSubmit() {
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
 
 .pf {
   &__breadcrumb {
@@ -1687,7 +1688,7 @@ async function handleSubmit() {
   border: none;
 
   &:hover:not(:disabled) {
-    background-color: darken(#C8956C, 8%);
+    background-color: color.adjust(#C8956C, $lightness: -8%);
   }
 
   &:disabled {

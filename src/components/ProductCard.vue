@@ -223,7 +223,7 @@ function formatPrice(val: number) {
   &__oos {
     position: absolute;
     inset: 0;
-    background-color: rgba(white, 0.75);
+    background-color: color.adjust(#C8956C, $lightness: 8%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,7 +243,7 @@ function formatPrice(val: number) {
     justify-content: center;
     gap: 0.375rem;
     padding: 0.375rem 0;
-    background: linear-gradient(to right, rgba($color-accent, 0.9), rgba(darken($color-accent, 10%), 0.9));
+    background: linear-gradient(to right, rgba($color-accent, 0.9), rgba(color.adjust($color-accent, $lightness: -10%), 0.9));
     color: white;
     font-size: 0.8125rem;
     font-weight: 700;
@@ -314,7 +314,7 @@ function formatPrice(val: number) {
 
     &--active {
       border-color: $color-accent;
-      background-color: rgba($color-accent, 0.1);
+      background-color: color.adjust($color-accent, $lightness: -8%);
       color: $color-accent;
     }
   }

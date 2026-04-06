@@ -198,6 +198,7 @@ const values = [
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
 
 // ── Shared eyebrow ────────────────────────────────────────
 .about-section-eyebrow {
@@ -635,7 +636,7 @@ const values = [
     background: linear-gradient(
       135deg,
       rgba($color-accent, 0.92) 0%,
-      rgba(darken($color-accent, 15%), 0.88) 100%
+      rgba(color.adjust($color-accent, $lightness: -15%), 0.88) 100%
     );
   }
 

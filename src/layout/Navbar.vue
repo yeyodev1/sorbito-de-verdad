@@ -192,6 +192,7 @@ function confirmLogout() {
 </template>
 
 <style lang="scss" scoped>
+@use "sass:color";
 
 .navbar {
   position: sticky;
@@ -344,13 +345,13 @@ function confirmLogout() {
     i { font-size: 0.8125rem; }
 
     &:hover {
-      background-color: darken(#C8956C, 8%);
+      background-color: color.adjust(#C8956C, $lightness: -8%);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba($color-accent, 0.35);
     }
 
     &.router-link-active, &.router-link-exact-active {
-      background-color: darken(#C8956C, 8%);
+      background-color: color.adjust(#C8956C, $lightness: -8%);
     }
   }
 
