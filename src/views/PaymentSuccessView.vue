@@ -2,9 +2,12 @@
 import { computed } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
+import { useAuthStore } from '../stores/auth';
 
 const route = useRoute();
+const authStore = useAuthStore();
 const orderId = computed(() => (route.query.orderId as string) || '');
+const isGuest = computed(() => !authStore.isAuthenticated);
 </script>
 
 <template>
@@ -17,6 +20,15 @@ const orderId = computed(() => (route.query.orderId as string) || '');
 
         <h1 class="payment-success-view__title">¡Pago confirmado!</h1>
         <p class="payment-success-view__subtitle">Tu pedido ha sido procesado exitosamente.</p>
+
+        <!-- Guest account notice -->
+        <div v-if="isGuest" class="payment-success-view__email-notice">
+          <i class="fa-solid fa-envelope-circle-check"></i>
+          <div>
+            <strong>Revisa tu correo electrónico</strong>
+            <p>Te enviamos los datos de acceso a tu cuenta para que puedas rastrear tu pedido.</p>
+          </div>
+        </div>
 
         <div v-if="orderId" class="payment-success-view__order">
           <span class="payment-success-view__order-label">Pedido</span>
@@ -161,6 +173,39 @@ const orderId = computed(() => (route.query.orderId as string) || '');
     transition: border-color 0.2s ease;
 
     &:hover { border-color: var(--color-primary); }
+  }
+
+  &__email-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    background: rgba($color-accent, 0.08);
+    border: 1px solid rgba($color-accent, 0.25);
+    border-radius: $radius-md;
+    padding: 1rem 1.25rem;
+    text-align: left;
+    width: 100%;
+
+    i {
+      font-size: 1.5rem;
+      color: $color-accent;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    strong {
+      display: block;
+      font-size: 0.9375rem;
+      color: var(--color-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      line-height: 1.5;
+    }
   }
 }
 </style>
