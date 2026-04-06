@@ -34,6 +34,7 @@ interface PayphoneOrderPayload {
     zip?: string;
   };
   email: string;
+  identificationNumber?: string;
   notes?: string;
   shippingZoneId?: string;
 }
@@ -71,6 +72,7 @@ export const orderService = {
     email: string,
     notes?: string,
     shippingZoneId?: string,
+    identificationNumber?: string,
   ): Promise<ApiResponse<PayphoneInitResponse>> {
     const payload: PayphoneOrderPayload = {
       items: cartItems.map(item => ({
@@ -82,6 +84,7 @@ export const orderService = {
       shippingAddress,
       email,
       notes,
+      ...(identificationNumber && { identificationNumber }),
       ...(shippingZoneId && { shippingZoneId }),
     };
     const { data } = await httpBase.post('/orders/payphone', payload);

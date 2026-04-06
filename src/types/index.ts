@@ -61,6 +61,7 @@ export interface Order {
   total: number;
   status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  identificationNumber?: string;
   payphoneTransactionId?: string;
   clientTransactionId?: string;
   shippingAddress: {

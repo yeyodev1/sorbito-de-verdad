@@ -64,6 +64,7 @@ const form = ref({
   name: authStore.user?.name || '',
   email: authStore.user?.email || '',
   phone: '',
+  identificationNumber: '',
   street: '',
   city: '',
   state: '',
@@ -83,7 +84,7 @@ const isGuest = computed(() => !authStore.user);
 const isFormValid = computed(() => {
   const f = form.value;
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email);
-  const baseOk = f.name.trim() !== '' && emailOk && f.phone.trim() !== '' && f.street.trim() !== '' && f.city.trim() !== '';
+  const baseOk = f.name.trim() !== '' && emailOk && f.phone.trim() !== '' && f.identificationNumber.trim() !== '' && f.street.trim() !== '' && f.city.trim() !== '';
   const intlOk = !isInternational.value || (f.zip.trim() !== '');
   return baseOk && intlOk && items.value.length > 0 && !!selectedZoneId.value;
 });
@@ -134,6 +135,7 @@ async function handleSubmit() {
       form.value.email,
       undefined,
       selectedZoneId.value || undefined,
+      form.value.identificationNumber || undefined,
     );
     cartStore.clearCart();
     // Redirect to PayPhone's hosted payment page
@@ -215,8 +217,19 @@ function formatPrice(val: number) {
                   <label class="co__label" for="co-phone">Teléfono de contacto</label>
                   <div class="co__input-wrap">
                     <i class="fa-solid fa-phone co__input-icon"></i>
-                    <input id="co-phone" v-model="form.phone" type="tel" class="co__input" placeholder="+58 414 000 0000" required autocomplete="tel" />
+                    <input id="co-phone" v-model="form.phone" type="tel" class="co__input" placeholder="+593 99 000 0000" required autocomplete="tel" />
                   </div>
+                </div>
+                <div class="co__field">
+                  <label class="co__label" for="co-id">Cédula / Identificación</label>
+                  <div class="co__input-wrap">
+                    <i class="fa-solid fa-id-card co__input-icon"></i>
+                    <input id="co-id" v-model="form.identificationNumber" type="text" class="co__input" placeholder="Ej: 0912345678" required inputmode="numeric" autocomplete="off" />
+                  </div>
+                  <p class="co__field-hint">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Requerida para procesar el envío y la factura.
+                  </p>
                 </div>
                 <div class="co__field">
                   <label class="co__label" for="co-country">País de destino</label>

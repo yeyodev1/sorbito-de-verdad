@@ -32,6 +32,7 @@ interface Order {
   status?: string;
   paymentStatus?: string;
   shippingAddress?: ShippingAddress;
+  identificationNumber?: string;
   notes?: string;
   createdAt?: string;
 }
@@ -290,6 +291,7 @@ function getItemCount(order: Order) {
                         <h4 class="om__details-title">Dirección de Envío</h4>
                         <div class="om__address">
                           <p v-if="order.shippingAddress.name"><span class="om__address-key">Nombre:</span> {{ order.shippingAddress.name }}</p>
+                          <p v-if="order.identificationNumber"><span class="om__address-key">Cédula / ID:</span> {{ order.identificationNumber }}</p>
                           <p v-if="order.shippingAddress.phone"><span class="om__address-key">Teléfono:</span> {{ order.shippingAddress.phone }}</p>
                           <p v-if="order.shippingAddress.street"><span class="om__address-key">Dirección:</span> {{ order.shippingAddress.street }}</p>
                           <p v-if="order.shippingAddress.city"><span class="om__address-key">Ciudad:</span> {{ order.shippingAddress.city }}<span v-if="order.shippingAddress.state">, {{ order.shippingAddress.state }}</span></p>
