@@ -4,18 +4,22 @@ import { RouterView } from 'vue-router';
 import CartDrawer from './components/CartDrawer.vue';
 import ToastStack from './components/ToastStack.vue';
 import ConfirmModal from './components/ConfirmModal.vue';
+import AppUpdateModal from './components/AppUpdateModal.vue';
 import { useAuthStore } from './stores/auth';
 import { useCartStore } from './stores/cart';
 import { useUIStore } from './stores/ui';
+import { useUpdateCheck } from './composables/useUpdateCheck';
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
 const uiStore = useUIStore();
+const { updateAvailable, start: startUpdateCheck, reload } = useUpdateCheck();
 
 onMounted(async () => {
   uiStore.applyTheme();
   cartStore.loadFromStorage();
   await authStore.initAuth();
+  startUpdateCheck();
 });
 </script>
 
@@ -29,6 +33,7 @@ onMounted(async () => {
     <CartDrawer />
     <ToastStack />
     <ConfirmModal />
+    <AppUpdateModal :show="updateAvailable" @reload="reload" />
   </div>
 </template>
 

@@ -1,9 +1,20 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import fs from 'node:fs'
+import path from 'node:path'
+
+// Writes public/version.json on every build so the deployed app can detect updates
+const buildVersionPlugin = {
+  name: 'build-version',
+  buildStart() {
+    const versionFile = path.resolve(__dirname, 'public/version.json');
+    fs.writeFileSync(versionFile, JSON.stringify({ buildTime: new Date().toISOString() }));
+  },
+};
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), buildVersionPlugin],
   css: {
     preprocessorOptions: {
       scss: {
