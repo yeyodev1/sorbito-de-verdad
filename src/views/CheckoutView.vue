@@ -228,7 +228,7 @@ function formatPrice(val: number) {
                   </div>
                   <p class="co__field-hint">
                     <i class="fa-solid fa-circle-info"></i>
-                    Requerida para procesar el envío y la factura.
+                    Requerida para procesar el envío.
                   </p>
                 </div>
                 <div class="co__field">
@@ -518,7 +518,10 @@ function formatPrice(val: number) {
     color: var(--color-muted);
     text-decoration: none;
     transition: color 0.2s ease;
-    &:hover { color: $color-accent; }
+
+    &:hover {
+      color: $color-accent;
+    }
   }
 
   &__breadcrumb-sep {
@@ -582,7 +585,9 @@ function formatPrice(val: number) {
     font-size: 0.9rem;
     color: var(--color-error);
 
-    i { flex-shrink: 0; }
+    i {
+      flex-shrink: 0;
+    }
   }
 
   // ── Section card ────────────────────────────────────────────
@@ -598,14 +603,14 @@ function formatPrice(val: number) {
 
     &--payment {
       border-color: rgba($color-accent, 0.4);
-      background: linear-gradient(
-        135deg,
-        var(--color-bg-card) 0%,
-        rgba($color-accent, 0.03) 100%
-      );
+      background: linear-gradient(135deg,
+          var(--color-bg-card) 0%,
+          rgba($color-accent, 0.03) 100%);
     }
 
-    @media (max-width: 600px) { padding: 1.25rem; }
+    @media (max-width: 600px) {
+      padding: 1.25rem;
+    }
   }
 
   &__section-head {
@@ -665,7 +670,9 @@ function formatPrice(val: number) {
     color: #16a34a;
     white-space: nowrap;
 
-    i { font-size: 0.6875rem; }
+    i {
+      font-size: 0.6875rem;
+    }
   }
 
   &__payphone-info {
@@ -704,7 +711,9 @@ function formatPrice(val: number) {
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
 
-      @media (max-width: 560px) { grid-template-columns: 1fr; }
+      @media (max-width: 560px) {
+        grid-template-columns: 1fr;
+      }
     }
   }
 
@@ -713,7 +722,9 @@ function formatPrice(val: number) {
     flex-direction: column;
     gap: 0.375rem;
 
-    &--full { grid-column: 1 / -1; }
+    &--full {
+      grid-column: 1 / -1;
+    }
   }
 
   &__label {
@@ -783,8 +794,10 @@ function formatPrice(val: number) {
       border-color: $color-accent;
       box-shadow: 0 0 0 3px rgba($color-accent, 0.12);
 
-      ~ .co__input-icon,
-      & + .co__input-icon { color: $color-accent; }
+      ~.co__input-icon,
+      &+.co__input-icon {
+        color: $color-accent;
+      }
     }
   }
 
@@ -808,11 +821,19 @@ function formatPrice(val: number) {
     line-height: 1.5;
     margin: 0.375rem 0 0;
 
-    i { margin-top: 2px; flex-shrink: 0; font-size: 0.75rem; color: $color-accent; }
+    i {
+      margin-top: 2px;
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      color: $color-accent;
+    }
 
     &--info {
       color: #2563EB;
-      i { color: #2563EB; }
+
+      i {
+        color: #2563EB;
+      }
     }
   }
 
@@ -828,7 +849,11 @@ function formatPrice(val: number) {
     color: #92400E;
     margin-bottom: 1.25rem;
 
-    i { color: #D97706; margin-top: 2px; flex-shrink: 0; }
+    i {
+      color: #D97706;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
   }
 
   // ── Shipping zone cards ──────────────────────────────────────
@@ -849,7 +874,10 @@ function formatPrice(val: number) {
     letter-spacing: 0.1em;
     margin: 0 0 1rem;
 
-    i { color: $color-accent; font-size: 0.75rem; }
+    i {
+      color: $color-accent;
+      font-size: 0.75rem;
+    }
   }
 
   &__zone-list {
@@ -890,14 +918,17 @@ function formatPrice(val: number) {
       .co__zone-dot {
         border-color: $color-accent;
       }
+
       .co__zone-dot-inner {
         opacity: 1;
         transform: scale(1);
       }
+
       .co__zone-icon {
         color: $color-accent;
         background-color: rgba($color-accent, 0.15);
       }
+
       .co__zone-name {
         color: var(--color-primary);
         font-weight: 700;
@@ -971,7 +1002,9 @@ function formatPrice(val: number) {
     font-size: 0.75rem;
     color: var(--color-muted);
 
-    i { font-size: 0.6875rem; }
+    i {
+      font-size: 0.6875rem;
+    }
   }
 
   &__zone-price-wrap {
@@ -1032,7 +1065,9 @@ function formatPrice(val: number) {
     font-family: var(--font-body);
     letter-spacing: 0.01em;
 
-    i { font-size: 0.9375rem; }
+    i {
+      font-size: 0.9375rem;
+    }
 
     &:hover:not(:disabled) {
       background-color: color.adjust($color-accent, $lightness: -8%);
@@ -1060,7 +1095,10 @@ function formatPrice(val: number) {
     margin: 0;
     opacity: 0.75;
 
-    i { color: $color-accent; font-size: 0.75rem; }
+    i {
+      color: $color-accent;
+      font-size: 0.75rem;
+    }
   }
 
   &__secure-note {
@@ -1072,7 +1110,10 @@ function formatPrice(val: number) {
     color: var(--color-muted);
     margin: 0;
 
-    i { color: #16a34a; font-size: 0.75rem; }
+    i {
+      color: #16a34a;
+      font-size: 0.75rem;
+    }
   }
 
   // ── Summary sidebar ──────────────────────────────────────────
@@ -1087,7 +1128,9 @@ function formatPrice(val: number) {
     position: sticky;
     top: 90px;
 
-    @media (max-width: 600px) { padding: 1.25rem; }
+    @media (max-width: 600px) {
+      padding: 1.25rem;
+    }
   }
 
   &__summary-header {
@@ -1189,7 +1232,9 @@ function formatPrice(val: number) {
     padding: 0.1rem 0.5rem;
     width: fit-content;
 
-    i { font-size: 0.6rem; }
+    i {
+      font-size: 0.6rem;
+    }
   }
 
   &__summary-item-unit {
@@ -1229,7 +1274,10 @@ function formatPrice(val: number) {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    i { font-size: 0.75rem; }
+
+    i {
+      font-size: 0.75rem;
+    }
   }
 
   &__summary-shipping-hint {
