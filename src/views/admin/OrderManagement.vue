@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import ExcelJS from 'exceljs';
 import AdminLayout from '../../layout/AdminLayout.vue';
+import DateRangePicker from '../../components/DateRangePicker.vue';
 import { adminService } from '../../services/admin.service';
 import { useUIStore } from '../../stores/ui';
 
@@ -37,12 +39,18 @@ interface Order {
   createdAt?: string;
 }
 
+// ⚠️ Cambiar al número real de WhatsApp de facturación (formato: código país + número, sin +)
+const BILLING_WHATSAPP = '593XXXXXXXXX';
+
 const orders = ref<Order[]>([]);
 const loading = ref(true);
 const filterStatus = ref('');
+const dateFrom = ref('');  // UTC ISO string from DateRangePicker
+const dateTo   = ref('');  // UTC ISO string from DateRangePicker
+const statusCounts = ref<Record<string, number>>({});
+const totalCount = ref(0);
 const expandedId = ref<string | null>(null);
 const updatingId = ref<string | null>(null);
-// Draft notes per order (keyed by _id), only committed on save
 const draftNotes = ref<Record<string, string>>({});
 const savingNotes = ref<string | null>(null);
 const resendingEmail = ref<string | null>(null);
@@ -71,13 +79,32 @@ onMounted(async () => {
   await loadOrders();
 });
 
+// Cada vez que cambia el filtro o las fechas → nueva llamada al backend
+watch([filterStatus, dateFrom, dateTo], async () => {
+  await loadOrders();
+});
+
 async function loadOrders() {
   loading.value = true;
+  expandedId.value = null;
   try {
-    const res = await adminService.getOrders({ sort: '-createdAt', limit: 100 });
-    const data = res?.data || res;
-    orders.value = Array.isArray(data) ? data : (data?.orders || []);
-    // Seed draft notes from existing order notes
+    const params: Record<string, unknown> = { sort: '-createdAt', limit: 200 };
+    if (filterStatus.value) params.status = filterStatus.value;
+    if (dateFrom.value)     params.dateFrom = dateFrom.value;
+    if (dateTo.value)       params.dateTo = dateTo.value;
+
+    const res = await adminService.getOrders(params);
+
+    // El backend ahora devuelve { data: orders[], counts: {}, total: number }
+    const raw = res?.data ?? res;
+    orders.value = Array.isArray(raw) ? raw : (raw?.data ?? raw?.orders ?? []);
+
+    // Conteos reales desde el backend (siempre presentes, sin importar el filtro)
+    if (res?.counts) {
+      statusCounts.value = res.counts;
+      totalCount.value   = res.total ?? Object.values(res.counts as Record<string, number>).reduce((a, b) => a + b, 0);
+    }
+
     for (const o of orders.value) {
       if (o.notes && !(o._id in draftNotes.value)) {
         draftNotes.value[o._id] = o.notes;
@@ -88,6 +115,11 @@ async function loadOrders() {
   } finally {
     loading.value = false;
   }
+}
+
+function onDateChange(range: { from: string; to: string }) {
+  dateFrom.value = range.from;
+  dateTo.value   = range.to;
 }
 
 function openExpand(id: string) {
@@ -102,10 +134,6 @@ function openExpand(id: string) {
   }
 }
 
-const filtered = computed(() => {
-  if (!filterStatus.value) return orders.value;
-  return orders.value.filter((o) => o.status === filterStatus.value);
-});
 
 
 
@@ -164,40 +192,244 @@ function formatCurrency(amount?: number) {
 function getItemCount(order: Order) {
   return (order.items || []).reduce((sum, item) => sum + (item.quantity || 1), 0);
 }
+
+function buildOrderMessage(order: Order): string {
+  const lines: string[] = [];
+
+  lines.push(`🧾 *ORDEN #${order.orderNumber || order._id?.slice(-6).toUpperCase()}*`);
+  lines.push(`📅 ${formatDate(order.createdAt)}`);
+  lines.push(`💳 Pago: ${order.paymentStatus === 'paid' ? '✅ Pagado' : '⏳ Pendiente'}`);
+  lines.push('');
+
+  lines.push('👤 *CLIENTE*');
+  if (order.user?.name) lines.push(`Nombre: ${order.user.name}`);
+  if (order.user?.email) lines.push(`Email: ${order.user.email}`);
+  if (order.identificationNumber) lines.push(`Cédula: ${order.identificationNumber}`);
+  if (order.shippingAddress?.phone) lines.push(`Teléfono: ${order.shippingAddress.phone}`);
+  lines.push('');
+
+  lines.push('🛍️ *PRODUCTOS*');
+  for (const item of (order.items || [])) {
+    const subtotal = (item.price || 0) * (item.quantity || 1);
+    lines.push(`• ${item.name || '—'} x${item.quantity || 1} — ${formatCurrency(subtotal)}`);
+  }
+  lines.push(`💰 *TOTAL: ${formatCurrency(order.total)}*`);
+
+  if (order.shippingAddress) {
+    lines.push('');
+    lines.push('📦 *DIRECCIÓN DE ENVÍO*');
+    if (order.shippingAddress.street) lines.push(order.shippingAddress.street);
+    const cityState = [order.shippingAddress.city, order.shippingAddress.state].filter(Boolean).join(', ');
+    if (cityState) lines.push(cityState);
+    const countryZip = [order.shippingAddress.country, order.shippingAddress.zip].filter(Boolean).join(' ');
+    if (countryZip) lines.push(countryZip);
+  }
+
+  return lines.join('\n');
+}
+
+function shareOnWhatsApp(order: Order) {
+  const message = buildOrderMessage(order);
+  window.open(`https://wa.me/${BILLING_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
+}
+
+async function exportConfirmedOrders() {
+  const confirmed = orders.value;
+  if (confirmed.length === 0) {
+    ui.error('No hay órdenes para exportar');
+    return;
+  }
+  const filterLabel = filterStatus.value ? statusLabels[filterStatus.value] : 'Todas';
+
+  const TERRACOTTA  = 'A0704A';
+  const TERRACOTTA2 = 'C8956C';
+  const CREMA       = 'F5EDE4';
+  const WHITE       = 'FFFFFF';
+  const DARK        = '1A1A1A';
+  const MUTED       = '7A6A60';
+  const NCOLS       = 11;
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Sorbito de Verdad';
+  workbook.created = new Date();
+
+  const sheet = workbook.addWorksheet('Confirmadas', {
+    pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1 },
+    views: [{ state: 'frozen', ySplit: 4 }],
+  });
+
+  // ── Fila 1: Título ──────────────────────────────────────────────────────────
+  sheet.mergeCells(1, 1, 1, NCOLS);
+  const titleCell = sheet.getCell('A1');
+  titleCell.value = `☕  SORBITO DE VERDAD — ÓRDENES: ${filterLabel.toUpperCase()}`;
+  titleCell.font = { name: 'Calibri', size: 16, bold: true, color: { argb: 'FF' + WHITE } };
+  titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + TERRACOTTA } };
+  titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  sheet.getRow(1).height = 40;
+
+  // ── Fila 2: Subtítulo ───────────────────────────────────────────────────────
+  sheet.mergeCells(2, 1, 2, NCOLS);
+  const subCell = sheet.getCell('A2');
+  subCell.value = `Exportado: ${new Date().toLocaleDateString('es-VE', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}  ·  Total: ${confirmed.length} órdenes`;
+  subCell.font = { name: 'Calibri', size: 10, italic: true, color: { argb: 'FF' + MUTED } };
+  subCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF8F5' } };
+  subCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  sheet.getRow(2).height = 22;
+
+  // ── Fila 3: Espaciador ──────────────────────────────────────────────────────
+  sheet.getRow(3).height = 8;
+
+  // ── Fila 4: Encabezados ─────────────────────────────────────────────────────
+  const headers = ['#', 'Orden', 'Fecha', 'Cliente', 'Email', 'Cédula / ID', 'Teléfono', 'Productos', 'Total', 'Dirección de Envío', 'Ciudad / País'];
+  const headerRow = sheet.getRow(4);
+  headers.forEach((h, i) => {
+    const cell = headerRow.getCell(i + 1);
+    cell.value = h;
+    cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF' + WHITE } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + TERRACOTTA2 } };
+    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    cell.border = { bottom: { style: 'medium', color: { argb: 'FF' + TERRACOTTA } } };
+  });
+  headerRow.height = 28;
+
+  // ── Filas de datos ──────────────────────────────────────────────────────────
+  confirmed.forEach((order, idx) => {
+    const bgColor = idx % 2 === 0 ? 'FFFFFFFF' : 'FF' + CREMA;
+
+    const products = (order.items || [])
+      .map(item => `• ${item.name || '—'} x${item.quantity || 1}  ($${((item.price || 0) * (item.quantity || 1)).toFixed(2)})`)
+      .join('\n');
+
+    const cityState = [order.shippingAddress?.city, order.shippingAddress?.state].filter(Boolean).join(', ');
+    const location  = [cityState, [order.shippingAddress?.country, order.shippingAddress?.zip].filter(Boolean).join(' ')].filter(Boolean).join('\n');
+
+    const values = [
+      idx + 1,
+      order.orderNumber || order._id?.slice(-6).toUpperCase() || '—',
+      order.createdAt ? new Date(order.createdAt) : '—',
+      order.user?.name || '—',
+      order.user?.email || '—',
+      order.identificationNumber || '—',
+      order.shippingAddress?.phone || '—',
+      products,
+      order.total || 0,
+      order.shippingAddress?.street || '—',
+      location,
+    ];
+
+    const row = sheet.getRow(5 + idx);
+    values.forEach((val, i) => {
+      const cell = row.getCell(i + 1);
+      cell.value = val;
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+      cell.font = { name: 'Calibri', size: 10, color: { argb: 'FF' + DARK } };
+      cell.alignment = { vertical: 'middle', wrapText: true, horizontal: i === 0 ? 'center' : i === 8 ? 'right' : 'left' };
+      cell.border = { bottom: { style: 'hair', color: { argb: 'FFE8D5C4' } } };
+
+      if (i === 2 && val instanceof Date) cell.numFmt = 'dd/mmm/yyyy hh:mm';
+      if (i === 8) {
+        cell.numFmt = '"$"#,##0.00';
+        cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF' + TERRACOTTA } };
+      }
+    });
+    row.height = (products.match(/\n/g) || []).length > 0 ? 42 : 22;
+  });
+
+  // ── Fila de totales ─────────────────────────────────────────────────────────
+  const totalRowIdx = 5 + confirmed.length;
+  const grandTotal = confirmed.reduce((sum, o) => sum + (o.total || 0), 0);
+
+  sheet.mergeCells(totalRowIdx, 1, totalRowIdx, 8);
+  const lblCell = sheet.getCell(totalRowIdx, 1);
+  lblCell.value = `TOTAL GENERAL  (${confirmed.length} órdenes — ${filterLabel})`;
+  lblCell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF' + WHITE } };
+  lblCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + TERRACOTTA } };
+  lblCell.alignment = { horizontal: 'right', vertical: 'middle' };
+
+  const grandCell = sheet.getCell(totalRowIdx, 9);
+  grandCell.value = grandTotal;
+  grandCell.numFmt = '"$"#,##0.00';
+  grandCell.font = { name: 'Calibri', size: 12, bold: true, color: { argb: 'FF' + WHITE } };
+  grandCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + TERRACOTTA } };
+  grandCell.alignment = { horizontal: 'right', vertical: 'middle' };
+  sheet.getRow(totalRowIdx).height = 32;
+
+  // ── Anchos de columna ───────────────────────────────────────────────────────
+  [4, 24, 18, 24, 30, 14, 16, 38, 13, 38, 22].forEach((w, i) => {
+    sheet.getColumn(i + 1).width = w;
+  });
+
+  // ── Descargar ───────────────────────────────────────────────────────────────
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const slug = filterStatus.value || 'todas';
+  a.download = `ordenes-${slug}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+  ui.success(`${confirmed.length} órdenes exportadas a Excel ✓`);
+}
 </script>
 
 <template>
   <AdminLayout title="Órdenes">
-    <!-- Filters -->
+    <!-- Filters + Export -->
     <div class="om__toolbar">
-      <div class="om__filters">
-        <button
-          :class="['om__filter-btn', { 'om__filter-btn--active': filterStatus === '' }]"
-          @click="filterStatus = ''"
-        >
-          Todas ({{ orders.length }})
-        </button>
-        <button
-          v-for="s in allStatuses"
-          :key="s"
-          :class="['om__filter-btn', { 'om__filter-btn--active': filterStatus === s }]"
-          @click="filterStatus = s"
-        >
-          {{ statusLabels[s] }}
-          <span class="om__filter-count">{{ orders.filter(o => o.status === s).length }}</span>
+      <div class="om__toolbar-top">
+        <div class="om__filters">
+          <button
+            :class="['om__filter-btn', { 'om__filter-btn--active': filterStatus === '' }]"
+            @click="filterStatus = ''"
+          >
+            Todas
+            <span class="om__filter-count">{{ totalCount || orders.length }}</span>
+          </button>
+          <button
+            v-for="s in allStatuses"
+            :key="s"
+            :class="['om__filter-btn', { 'om__filter-btn--active': filterStatus === s }]"
+            @click="filterStatus = s"
+          >
+            {{ statusLabels[s] }}
+            <span class="om__filter-count">{{ statusCounts[s] ?? 0 }}</span>
+          </button>
+        </div>
+        <button class="om__export-btn" @click="exportConfirmedOrders" :title="`Exportar ${filterStatus ? statusLabels[filterStatus] : 'todas las'} órdenes`">
+          <i class="fa-solid fa-file-excel"></i>
+          {{ filterStatus ? `Exportar ${statusLabels[filterStatus]}` : 'Exportar todo' }}
+          <span class="om__filter-count">{{ orders.length }}</span>
         </button>
       </div>
+
+      <!-- Date range filter -->
+      <DateRangePicker @change="onDateChange" />
     </div>
 
     <!-- Table -->
     <div class="admin-card">
       <div v-if="loading" class="om__skeleton">
-        <div v-for="n in 6" :key="n" class="om__skeleton-row"></div>
+        <!-- Header skeleton -->
+        <div class="om__skeleton-header">
+          <div v-for="n in 8" :key="n" class="om__skeleton-th"></div>
+        </div>
+        <!-- Row skeletons -->
+        <div v-for="n in 6" :key="n" class="om__skeleton-row">
+          <div class="om__skeleton-cell om__skeleton-cell--sm"></div>
+          <div class="om__skeleton-cell om__skeleton-cell--lg"></div>
+          <div class="om__skeleton-cell om__skeleton-cell--sm"></div>
+          <div class="om__skeleton-cell om__skeleton-cell--md"></div>
+          <div class="om__skeleton-cell om__skeleton-cell--md"></div>
+          <div class="om__skeleton-cell om__skeleton-cell--sm"></div>
+          <div class="om__skeleton-cell om__skeleton-cell--md"></div>
+          <div class="om__skeleton-cell om__skeleton-cell--sm"></div>
+        </div>
       </div>
 
-      <div v-else-if="filtered.length === 0" class="om__empty">
+      <div v-else-if="orders.length === 0" class="om__empty">
         <i class="fa-solid fa-inbox"></i>
-        <p>No hay órdenes para mostrar</p>
+        <p>No hay órdenes {{ filterStatus ? `con estado "${statusLabels[filterStatus]}"` : 'para mostrar' }}</p>
       </div>
 
       <div v-else class="om__table-wrap">
@@ -215,7 +447,7 @@ function getItemCount(order: Order) {
             </tr>
           </thead>
           <tbody>
-            <template v-for="order in filtered" :key="order._id">
+            <template v-for="order in orders" :key="order._id">
               <!-- Main row -->
               <tr :class="['om__row', { 'om__row--expanded': expandedId === order._id }]">
                 <td style="padding-left: 1.5rem;">
@@ -244,6 +476,10 @@ function getItemCount(order: Order) {
                 <td class="om__date">{{ formatDate(order.createdAt) }}</td>
                 <td style="text-align: right; padding-right: 1.5rem;">
                   <div class="om__actions">
+                    <!-- WhatsApp button -->
+                    <button class="om__wa-btn" @click="shareOnWhatsApp(order)" title="Enviar a WhatsApp de facturación">
+                      <i class="fa-brands fa-whatsapp"></i>
+                    </button>
                     <!-- Status dropdown -->
                     <select
                       class="om__status-select"
@@ -364,11 +600,67 @@ function getItemCount(order: Order) {
     overflow-x: auto;
   }
 
+  &__toolbar-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+
   &__filters {
     display: flex;
     gap: 0.375rem;
     flex-wrap: nowrap;
     min-width: min-content;
+  }
+
+  &__export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 8px;
+    border: 1px solid #25D366;
+    background-color: rgba(37, 211, 102, 0.1);
+    color: #25D366;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+
+    .om__filter-count {
+      background-color: rgba(37, 211, 102, 0.2);
+    }
+
+    &:hover {
+      background-color: rgba(37, 211, 102, 0.2);
+    }
+  }
+
+  &__wa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid rgba(37, 211, 102, 0.4);
+    background-color: rgba(37, 211, 102, 0.08);
+    color: #25D366;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 1rem;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: rgba(37, 211, 102, 0.2);
+      border-color: #25D366;
+    }
   }
 
   &__filter-btn {
@@ -412,14 +704,56 @@ function getItemCount(order: Order) {
     flex-direction: column;
   }
 
-  &__skeleton-row {
-    height: 60px;
+  &__skeleton-header {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background-color: $admin-sidebar-active;
     border-bottom: 1px solid $admin-border;
+  }
+
+  &__skeleton-th {
+    height: 12px;
+    flex: 1;
+    border-radius: 4px;
+    background: linear-gradient(90deg, $admin-border 25%, color.adjust(#2A2A2A, $lightness: 8%) 50%, $admin-border 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+
+    &:first-child { max-width: 100px; }
+    &:last-child  { max-width: 80px; }
+  }
+
+  &__skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    border-bottom: 1px solid $admin-border;
+
+    &:last-child { border-bottom: none; }
+  }
+
+  &__skeleton-cell {
+    height: 14px;
+    border-radius: 6px;
     background: linear-gradient(90deg, $admin-border 25%, color.adjust(#2A2A2A, $lightness: 5%) 50%, $admin-border 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
 
-    &:last-child { border-bottom: none; }
+    &--sm  { flex: 0 0 80px; }
+    &--md  { flex: 0 0 140px; }
+    &--lg  { flex: 0 0 200px; }
+
+    // Stagger animation delays para efecto cascada
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: 0.08s; }
+    &:nth-child(3) { animation-delay: 0.16s; }
+    &:nth-child(4) { animation-delay: 0.24s; }
+    &:nth-child(5) { animation-delay: 0.32s; }
+    &:nth-child(6) { animation-delay: 0.4s; }
+    &:nth-child(7) { animation-delay: 0.48s; }
+    &:nth-child(8) { animation-delay: 0.56s; }
   }
 
   &__empty {
