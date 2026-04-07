@@ -29,6 +29,18 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    // exceljs (937 kB) is already lazy-loaded — only fetched on user action, not on initial page load
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core Vue ecosystem
+          'vendor-vue': ['vue', 'vue-router', 'pinia'],
+          // HTTP + utilities
+          'vendor-axios': ['axios'],
+        },
+      },
+    },
   },
   server: {
     allowedHosts: [

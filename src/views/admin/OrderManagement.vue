@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import ExcelJS from 'exceljs';
 import AdminLayout from '../../layout/AdminLayout.vue';
 import DateRangePicker from '../../components/DateRangePicker.vue';
 import { adminService } from '../../services/admin.service';
@@ -239,7 +238,9 @@ async function exportConfirmedOrders() {
     ui.error('No hay órdenes para exportar');
     return;
   }
-  const filterLabel = filterStatus.value ? statusLabels[filterStatus.value] : 'Todas';
+  const filterLabel = (filterStatus.value ? statusLabels[filterStatus.value] : undefined) ?? 'Todas';
+
+  const { default: ExcelJS } = await import('exceljs');
 
   const TERRACOTTA  = 'A0704A';
   const TERRACOTTA2 = 'C8956C';
