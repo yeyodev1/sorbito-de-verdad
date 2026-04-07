@@ -65,7 +65,7 @@ const otherPartners = [
 const bakanoStats = [
   { num: '+40', label: 'Negocios con experiencia' },
   { num: '+20%', label: 'Más facturación para sus clientes' },
-  { num: '#1', label: 'Agencia en Ecuador' },
+  { num: '#1', label: 'Agencia de Consultoría en Ecuador' },
 ];
 </script>
 
@@ -115,11 +115,11 @@ const bakanoStats = [
             </p>
 
             <p class="bakano-feature__desc">
-              La agencia de <strong>estrategia digital</strong> detrás de Sorbito de Verdad.
+              La agencia de <strong>consultoría #1 en Ecuador</strong> detrás de Sorbito de Verdad.
               Bakano diseñó toda la presencia online: desde esta tienda hasta la estrategia
               que hizo que llegaras aquí. Si estás leyendo esto, fue gracias a ellos.
-              Trabajan con más de 40 negocios en Ecuador combinando tecnología,
-              marketing data-driven y <strong>crecimiento real y medible</strong>.
+              Trabajan con más de 40 negocios en Ecuador combinando consultoría estratégica,
+              tecnología y <strong>crecimiento real y medible</strong>.
             </p>
 
             <!-- Stats -->
