@@ -479,7 +479,7 @@ function confirmMarkPending(order: Order) {
 function extractCloudinaryPublicId(url: string): string {
   // https://res.cloudinary.com/{cloud}/image/upload/v{version}/{publicId}.{ext}
   const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
-  return match ? match[1] : '';
+  return match?.[1] ?? '';
 }
 
 function confirmRemoveReceipt(order: Order) {
