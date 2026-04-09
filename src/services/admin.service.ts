@@ -52,6 +52,14 @@ export const adminService = {
     const { data } = await httpBase.patch(`/orders/${id}/status`, { status, paymentStatus, adminNotes });
     return data;
   },
+  async updateOrderPaymentStatus(id: string, paymentStatus: string) {
+    const { data } = await httpBase.patch(`/orders/${id}/status`, { paymentStatus });
+    return data;
+  },
+  async updateOrderReceipt(id: string, paymentReceiptUrl: string) {
+    const { data } = await httpBase.patch(`/orders/${id}/status`, { paymentReceiptUrl });
+    return data;
+  },
   async resendOrderEmail(id: string) {
     const { data } = await httpBase.post(`/orders/${id}/resend-email`);
     return data;
