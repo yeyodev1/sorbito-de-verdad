@@ -274,10 +274,11 @@ const hasFilter = computed(() => localFrom.value || localTo.value);
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5625rem 0.875rem;
+    height: 40px;
+    padding: 0 0.875rem;
     background: $admin-card;
     border: 1px solid $admin-border;
-    border-radius: 7px;
+    border-radius: 8px;
     color: $admin-text-muted;
     font-size: 0.875rem;
     font-family: 'Inter', sans-serif;
@@ -285,7 +286,7 @@ const hasFilter = computed(() => localFrom.value || localTo.value);
     cursor: pointer;
     width: 100%;
     text-align: left;
-    transition: border-color 0.15s, color 0.15s, box-shadow 0.15s;
+    transition: all 0.15s ease;
     white-space: nowrap;
 
     i { font-size: 0.875rem; flex-shrink: 0; }
@@ -305,7 +306,7 @@ const hasFilter = computed(() => localFrom.value || localTo.value);
 
     &:focus-visible {
       outline: none;
-      box-shadow: 0 0 0 2px rgba($admin-accent, 0.3);
+      box-shadow: 0 0 0 3px rgba($admin-accent, 0.15);
     }
   }
 

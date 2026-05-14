@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import AdminLayout from '../../layout/AdminLayout.vue';
 import DateRangePicker from '../../components/DateRangePicker.vue';
 import { adminService } from '../../services/admin.service';
 import { useUIStore } from '../../stores/ui';
 
 const ui = useUIStore();
+const route = useRoute();
 
 interface OrderItem {
   name?: string;
@@ -37,19 +39,32 @@ interface Order {
   identificationNumber?: string;
   notes?: string;
   createdAt?: string;
+  source?: string;
+  payphoneLinkUrl?: string;
+  payphoneLinkExpiresAt?: string;
+  payphoneTransactionId?: string;
+  clientTransactionId?: string;
+  whatsappPhone?: string;
+  remindersSent?: { r15min?: string; r1h?: string; r24h?: string };
 }
 
 // ⚠️ Cambiar al número real de WhatsApp de facturación (formato: código país + número, sin +)
 const BILLING_WHATSAPP = '593XXXXXXXXX';
 
+const DEFAULT_FILTER = 'confirmed,processing,shipped,delivered,cancelled';
+
 const orders = ref<Order[]>([]);
 const loading = ref(true);
-const filterStatus = ref('');
+const filterStatus = ref(DEFAULT_FILTER);
+const filterSource = ref(''); // '' | 'whatsapp_bot' | 'web'
 const dateFrom = ref('');  // UTC ISO string from DateRangePicker
 const dateTo   = ref('');  // UTC ISO string from DateRangePicker
 const searchQuery = ref('');
 const statusCounts = ref<Record<string, number>>({});
 const totalCount = ref(0);
+const totalFiltered = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(200);
 const expandedId = ref<string | null>(null);
 const updatingId = ref<string | null>(null);
 const draftNotes = ref<Record<string, string>>({});
@@ -338,11 +353,15 @@ const statusLabels: Record<string, string> = {
 };
 
 onMounted(async () => {
+  if (route.query.filter === 'pending') {
+    filterStatus.value = 'pending';
+  }
   await loadOrders();
 });
 
 // Cada vez que cambia el filtro o las fechas → nueva llamada al backend
-watch([filterStatus, dateFrom, dateTo], async () => {
+watch([filterStatus, filterSource, dateFrom, dateTo], async () => {
+  currentPage.value = 1;
   await loadOrders();
 });
 
@@ -357,15 +376,16 @@ async function loadOrders() {
   loading.value = true;
   expandedId.value = null;
   try {
-    const params: Record<string, unknown> = { sort: '-createdAt', limit: 200 };
+    const params: Record<string, unknown> = { sort: '-createdAt', limit: pageSize.value, page: currentPage.value };
     if (filterStatus.value)  params.status   = filterStatus.value;
+    if (filterSource.value)  params.source   = filterSource.value;
     if (dateFrom.value)      params.dateFrom  = dateFrom.value;
     if (dateTo.value)        params.dateTo    = dateTo.value;
     if (searchQuery.value)   params.search    = searchQuery.value;
 
     const res = await adminService.getOrders(params);
 
-    // El backend ahora devuelve { data: orders[], counts: {}, total: number }
+    // El backend devuelve { data: orders[], counts: {}, total: number, totalFiltered: number, page: number, pageSize: number }
     const raw = res?.data ?? res;
     orders.value = Array.isArray(raw) ? raw : (raw?.data ?? raw?.orders ?? []);
 
@@ -374,6 +394,9 @@ async function loadOrders() {
       statusCounts.value = res.counts;
       totalCount.value   = res.total ?? Object.values(res.counts as Record<string, number>).reduce((a, b) => a + b, 0);
     }
+    totalFiltered.value = res?.totalFiltered ?? orders.value.length;
+    currentPage.value = res?.page ?? 1;
+    pageSize.value = res?.pageSize ?? 200;
 
     for (const o of orders.value) {
       if (o.notes && !(o._id in draftNotes.value)) {
@@ -385,6 +408,34 @@ async function loadOrders() {
   } finally {
     loading.value = false;
   }
+}
+
+function goToPage(page: number) {
+  currentPage.value = page;
+  loadOrders();
+}
+
+function isDefaultFilterActive() {
+  return filterStatus.value === DEFAULT_FILTER;
+}
+
+function setFilter(status: string) {
+  filterStatus.value = status;
+  currentPage.value = 1;
+}
+
+function getExportLabel() {
+  if (!filterStatus.value) return 'Exportar todo';
+  const labels: Record<string, string> = {
+    pending: 'Pendientes',
+    confirmed: 'Confirmadas',
+    processing: 'En proceso',
+    shipped: 'Enviadas',
+    delivered: 'Entregadas',
+    cancelled: 'Canceladas',
+  };
+  if (filterStatus.value === DEFAULT_FILTER) return 'Exportar activas';
+  return `Exportar ${labels[filterStatus.value] || filterStatus.value}`;
 }
 
 function onDateChange(range: { from: string; to: string }) {
@@ -619,7 +670,7 @@ async function exportConfirmedOrders() {
     ui.error('No hay órdenes para exportar');
     return;
   }
-  const filterLabel = (filterStatus.value ? statusLabels[filterStatus.value] : undefined) ?? 'Todas';
+  const filterLabel = filterStatus.value === DEFAULT_FILTER ? 'Activas' : (filterStatus.value ? statusLabels[filterStatus.value] : undefined) ?? 'Todas';
 
   const { default: ExcelJS } = await import('exceljs');
 
@@ -747,7 +798,7 @@ async function exportConfirmedOrders() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const slug = filterStatus.value || 'todas';
+  const slug = filterStatus.value === DEFAULT_FILTER ? 'activas' : filterStatus.value || 'todas';
   a.download = `ordenes-${slug}-${new Date().toISOString().slice(0, 10)}.xlsx`;
   a.click();
   URL.revokeObjectURL(url);
@@ -762,30 +813,59 @@ async function exportConfirmedOrders() {
       <div class="om__toolbar-top">
         <div class="om__filters">
           <button
-            :class="['om__filter-btn', { 'om__filter-btn--active': filterStatus === '' }]"
-            @click="filterStatus = ''"
+            :class="['om__filter-btn', 'om__filter-btn--pending', { 'om__filter-btn--active': filterStatus === 'pending' }]"
+            @click="setFilter('pending')"
+            title="Ver solo órdenes pendientes de pago"
           >
-            Todas
-            <span class="om__filter-count">{{ totalCount || orders.length }}</span>
+            <i class="fa-solid fa-clock"></i>
+            Pendientes
+            <span class="om__filter-count om__filter-count--alert">{{ statusCounts.pending ?? 0 }}</span>
           </button>
+
+          <span class="om__filter-divider"></span>
+
           <button
-            v-for="s in allStatuses"
+            :class="['om__filter-btn', { 'om__filter-btn--active': isDefaultFilterActive() }]"
+            @click="setFilter(DEFAULT_FILTER)"
+            title="Mostrar todas excepto pendientes"
+          >
+            <i class="fa-solid fa-check-circle"></i>
+            Activas
+            <span class="om__filter-count">{{ totalFiltered || orders.length }}</span>
+          </button>
+
+          <span class="om__filter-divider"></span>
+
+          <button
+            v-for="s in ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled']"
             :key="s"
             :class="['om__filter-btn', { 'om__filter-btn--active': filterStatus === s }]"
-            @click="filterStatus = s"
+            @click="setFilter(s)"
           >
             {{ statusLabels[s] }}
             <span class="om__filter-count">{{ statusCounts[s] ?? 0 }}</span>
           </button>
+
+          <span class="om__filter-divider"></span>
+
+          <button
+            :class="['om__filter-btn', { 'om__filter-btn--active': filterStatus === '' }]"
+            @click="setFilter('')"
+            title="Mostrar todas las órdenes sin filtro"
+          >
+            <i class="fa-solid fa-list"></i>
+            Todas
+            <span class="om__filter-count">{{ totalCount || orders.length }}</span>
+          </button>
         </div>
-        <button class="om__export-btn" @click="exportConfirmedOrders" :title="`Exportar ${filterStatus ? statusLabels[filterStatus] : 'todas las'} órdenes`">
+        <button class="om__export-btn" @click="exportConfirmedOrders" :title="`Exportar ${getExportLabel()} órdenes`">
           <i class="fa-solid fa-file-excel"></i>
-          {{ filterStatus ? `Exportar ${statusLabels[filterStatus]}` : 'Exportar todo' }}
+          {{ getExportLabel() }}
           <span class="om__filter-count">{{ orders.length }}</span>
         </button>
       </div>
 
-      <!-- Date range + Search -->
+      <!-- Date range + Search + Source filter -->
       <div class="om__toolbar-bottom">
         <DateRangePicker @change="onDateChange" />
         <div class="om__search-wrap">
@@ -800,6 +880,15 @@ async function exportConfirmedOrders() {
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
+        <div class="om__source-wrap">
+          <i class="fa-solid fa-sliders-filter om__source-icon"></i>
+          <select v-model="filterSource" class="om__source-select" title="Filtrar por canal">
+            <option value="">Todos los canales</option>
+            <option value="whatsapp_bot">WhatsApp Bot</option>
+            <option value="web">Web</option>
+          </select>
+          <i class="fa-solid fa-chevron-down om__source-arrow"></i>
+        </div>
       </div>
     </div>
 
@@ -808,12 +897,13 @@ async function exportConfirmedOrders() {
       <div v-if="loading" class="om__skeleton">
         <!-- Header skeleton -->
         <div class="om__skeleton-header">
-          <div v-for="n in 8" :key="n" class="om__skeleton-th"></div>
+          <div v-for="n in 9" :key="n" class="om__skeleton-th"></div>
         </div>
         <!-- Row skeletons -->
         <div v-for="n in 6" :key="n" class="om__skeleton-row">
           <div class="om__skeleton-cell om__skeleton-cell--sm"></div>
           <div class="om__skeleton-cell om__skeleton-cell--lg"></div>
+          <div class="om__skeleton-cell om__skeleton-cell--sm"></div>
           <div class="om__skeleton-cell om__skeleton-cell--sm"></div>
           <div class="om__skeleton-cell om__skeleton-cell--md"></div>
           <div class="om__skeleton-cell om__skeleton-cell--md"></div>
@@ -825,15 +915,30 @@ async function exportConfirmedOrders() {
 
       <div v-else-if="orders.length === 0" class="om__empty">
         <i class="fa-solid fa-inbox"></i>
-        <p>No hay órdenes {{ filterStatus ? `con estado "${statusLabels[filterStatus]}"` : 'para mostrar' }}</p>
+        <p v-if="filterStatus === DEFAULT_FILTER">No hay órdenes activas. Todas están pendientes.</p>
+        <p v-else-if="filterStatus">No hay órdenes con estado "{{ statusLabels[filterStatus] || filterStatus }}"</p>
+        <p v-else>No hay órdenes para mostrar</p>
       </div>
 
       <div v-else class="om__table-wrap">
+        <!-- Pagination top -->
+        <div class="om__pagination">
+          <span class="om__pagination-info">{{ totalFiltered }} orden(es) · Pág. {{ currentPage }}/{{ Math.max(1, Math.ceil(totalFiltered / pageSize)) }}</span>
+          <div class="om__pagination-btns">
+            <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="om__pagination-btn">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button :disabled="currentPage >= Math.ceil(totalFiltered / pageSize)" @click="goToPage(currentPage + 1)" class="om__pagination-btn">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
         <table class="admin-table">
           <thead>
             <tr>
               <th style="padding-left: 1.5rem;">Orden</th>
               <th>Cliente</th>
+              <th>Canal</th>
               <th>Productos</th>
               <th>Total</th>
               <th>Estado</th>
@@ -854,6 +959,17 @@ async function exportConfirmedOrders() {
                     <span class="om__user-name">{{ order.user?.name || '—' }}</span>
                     <span class="om__user-email">{{ order.user?.email || '' }}</span>
                   </div>
+                </td>
+                <td>
+                  <span
+                    v-if="order.source === 'whatsapp_bot'"
+                    class="status-badge status-badge--success"
+                    title="Pedido creado vía bot de WhatsApp"
+                  >
+                    <i class="fa-brands fa-whatsapp"></i> Bot
+                  </span>
+                  <span v-else-if="order.source" class="status-badge status-badge--muted">{{ order.source }}</span>
+                  <span v-else class="status-badge status-badge--muted">Web</span>
                 </td>
                 <td>
                   <span class="om__items-count">{{ getItemCount(order) }} ítem(s)</span>
@@ -896,7 +1012,7 @@ async function exportConfirmedOrders() {
               <!-- Expanded details row -->
               <Transition name="expand">
                 <tr v-if="expandedId === order._id" class="om__details-row">
-                  <td colspan="8">
+                  <td colspan="9">
                     <div class="om__details">
                       <div class="om__details-section">
                         <h4 class="om__details-title">Productos</h4>
@@ -938,6 +1054,36 @@ async function exportConfirmedOrders() {
                           <i class="fa-brands fa-google"></i>
                           Ver en Google Maps
                         </a>
+                      </div>
+
+                      <!-- Payphone / Channel info (when applicable) -->
+                      <div
+                        v-if="order.source === 'whatsapp_bot' || order.payphoneLinkUrl || order.payphoneTransactionId || order.clientTransactionId"
+                        class="om__details-section om__details-section--full"
+                      >
+                        <h4 class="om__details-title">
+                          <i class="fa-brands fa-whatsapp"></i>
+                          Pago Payphone / Canal
+                        </h4>
+                        <div class="om__address">
+                          <p v-if="order.source"><span class="om__address-key">Canal:</span> {{ order.source === 'whatsapp_bot' ? 'WhatsApp Bot' : order.source }}</p>
+                          <p v-if="order.whatsappPhone"><span class="om__address-key">WhatsApp:</span> {{ order.whatsappPhone }}</p>
+                          <p v-if="order.clientTransactionId"><span class="om__address-key">Client TX ID:</span> {{ order.clientTransactionId }}</p>
+                          <p v-if="order.payphoneTransactionId"><span class="om__address-key">Payphone TX ID:</span> {{ order.payphoneTransactionId }}</p>
+                          <p v-if="order.payphoneLinkUrl">
+                            <span class="om__address-key">Link de pago:</span>
+                            <a :href="order.payphoneLinkUrl" target="_blank" rel="noopener">{{ order.payphoneLinkUrl }}</a>
+                            <span v-if="order.payphoneLinkExpiresAt" style="margin-left: 0.5rem; opacity: 0.7;">
+                              (expira {{ formatDate(order.payphoneLinkExpiresAt) }})
+                            </span>
+                          </p>
+                          <p v-if="order.remindersSent && (order.remindersSent.r15min || order.remindersSent.r1h || order.remindersSent.r24h)">
+                            <span class="om__address-key">Recordatorios:</span>
+                            <span v-if="order.remindersSent.r15min">15 min ✓ </span>
+                            <span v-if="order.remindersSent.r1h">1 h ✓ </span>
+                            <span v-if="order.remindersSent.r24h">24 h ✓</span>
+                          </p>
+                        </div>
                       </div>
 
                       <!-- Payment status + Receipt -->
@@ -1046,6 +1192,18 @@ async function exportConfirmedOrders() {
             </template>
           </tbody>
         </table>
+        <!-- Pagination bottom -->
+        <div class="om__pagination om__pagination--bottom">
+          <span class="om__pagination-info">{{ totalFiltered }} orden(es) · Pág. {{ currentPage }}/{{ Math.max(1, Math.ceil(totalFiltered / pageSize)) }}</span>
+          <div class="om__pagination-btns">
+            <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="om__pagination-btn">
+              <i class="fa-solid fa-chevron-left"></i> Anterior
+            </button>
+            <button :disabled="currentPage >= Math.ceil(totalFiltered / pageSize)" @click="goToPage(currentPage + 1)" class="om__pagination-btn">
+              Siguiente <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </AdminLayout>
@@ -1407,6 +1565,83 @@ async function exportConfirmedOrders() {
     padding: 0.1rem 0.375rem;
     font-size: 0.6875rem;
     font-weight: 700;
+
+    &--alert {
+      background-color: rgba(231, 76, 60, 0.25);
+    }
+  }
+
+  &__filter-btn--pending {
+    border-color: rgba(231, 76, 60, 0.4);
+    color: #e74c3c;
+    font-weight: 600;
+
+    &.om__filter-btn--active {
+      background-color: #e74c3c;
+      border-color: #e74c3c;
+      color: #fff;
+    }
+
+    &:hover:not(.om__filter-btn--active) {
+      border-color: #e74c3c;
+      background-color: rgba(231, 76, 60, 0.08);
+    }
+  }
+
+  &__filter-divider {
+    width: 1px;
+    background-color: $admin-border;
+    margin: 0 0.25rem;
+    align-self: stretch;
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid $admin-border;
+    gap: 1rem;
+
+    &--bottom {
+      border-top: 1px solid $admin-border;
+    }
+  }
+
+  &__pagination-info {
+    font-size: 0.8125rem;
+    color: $admin-text-muted;
+  }
+
+  &__pagination-btns {
+    display: flex;
+    gap: 0.375rem;
+  }
+
+  &__pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid $admin-border;
+    background-color: $admin-card;
+    color: $admin-text;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $admin-accent;
+      color: $admin-accent;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
   }
 
   &__skeleton {
@@ -2446,7 +2681,69 @@ async function exportConfirmedOrders() {
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    margin-top: 0.625rem;
+    margin-top: 0.75rem;
+  }
+
+  &__source-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 170px;
+  }
+
+  &__source-icon {
+    position: absolute;
+    left: 0.75rem;
+    color: $admin-text-muted;
+    font-size: 0.8125rem;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &__source-arrow {
+    position: absolute;
+    right: 0.75rem;
+    color: $admin-text-muted;
+    font-size: 0.7rem;
+    pointer-events: none;
+    z-index: 1;
+    transition: transform 0.2s ease;
+  }
+
+  &__source-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    height: 40px;
+    padding: 0 2rem 0 2.15rem;
+    border: 1px solid $admin-border;
+    border-radius: 8px;
+    background: $admin-card;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $admin-text-muted;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+
+    &:hover {
+      border-color: $admin-accent;
+      background-color: $admin-sidebar-active;
+    }
+
+    &:focus {
+      border-color: $admin-accent;
+      box-shadow: 0 0 0 3px rgba($admin-accent, 0.15);
+      color: $admin-text;
+    }
+
+    option {
+      color: $admin-text;
+      background-color: $admin-sidebar;
+      padding: 0.5rem;
+    }
   }
 
   &__search-wrap {
@@ -2460,29 +2757,40 @@ async function exportConfirmedOrders() {
 
   &__search-icon {
     position: absolute;
-    left: 0.75rem;
+    left: 0.8rem;
     color: $admin-text-muted;
     font-size: 0.8125rem;
     pointer-events: none;
+    z-index: 1;
   }
 
   &__search-input {
     width: 100%;
+    height: 40px;
     background: $admin-card;
     border: 1px solid $admin-border;
     border-radius: 8px;
     color: $admin-text;
     font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
-    padding: 0.5rem 2.25rem 0.5rem 2.25rem;
-    transition: border-color 0.15s;
+    padding: 0 2.25rem 0 2.35rem;
+    transition: all 0.15s ease;
     box-sizing: border-box;
 
-    &::placeholder { color: $admin-text-muted; opacity: 0.6; }
+    &::placeholder {
+      color: $admin-text-muted;
+      opacity: 0.6;
+      font-weight: 400;
+    }
+
+    &:hover {
+      border-color: $admin-accent;
+    }
 
     &:focus {
       outline: none;
       border-color: $admin-accent;
+      box-shadow: 0 0 0 3px rgba($admin-accent, 0.15);
     }
   }
 
@@ -2494,11 +2802,16 @@ async function exportConfirmedOrders() {
     color: $admin-text-muted;
     cursor: pointer;
     font-size: 0.8125rem;
-    padding: 0;
+    padding: 0.25rem;
     display: flex;
     align-items: center;
+    border-radius: 4px;
+    transition: all 0.15s ease;
 
-    &:hover { color: $admin-text; }
+    &:hover {
+      color: $admin-text;
+      background-color: rgba($admin-text-muted, 0.1);
+    }
   }
 
   // ── Payment status section ─────────────────────────────────────────────────

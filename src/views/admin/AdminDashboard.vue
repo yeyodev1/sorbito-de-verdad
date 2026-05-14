@@ -73,11 +73,13 @@ function getStatusColor(status?: string) {
 
 <template>
   <AdminLayout title="Dashboard">
-    <!-- Pending Orders Alert -->
+    <!-- Pending Orders Banner -->
     <div v-if="!loading && (stats.pendingOrders ?? 0) > 0" class="dashboard__alert">
-      <i class="fa-solid fa-triangle-exclamation"></i>
-      <span>Tienes <strong>{{ stats.pendingOrders }}</strong> pedido(s) pendiente(s) por atender</span>
-      <RouterLink to="/admin/ordenes" class="dashboard__alert-link">Ver órdenes</RouterLink>
+      <i class="fa-solid fa-clock"></i>
+      <span><strong>{{ stats.pendingOrders }}</strong> pedido(s) pendiente(s) de pago — requieren seguimiento</span>
+      <RouterLink to="/admin/ordenes?filter=pending" class="dashboard__alert-link">
+        Revisar <i class="fa-solid fa-arrow-right"></i>
+      </RouterLink>
     </div>
 
     <!-- Stats Grid -->
