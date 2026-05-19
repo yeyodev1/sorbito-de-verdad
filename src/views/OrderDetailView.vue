@@ -14,6 +14,7 @@ const error = ref('');
 
 const statusLabels: Record<string, string> = {
   pending:    'Pendiente',
+  review:     'En revisión',
   confirmed:  'Confirmado',
   processing: 'En proceso',
   shipped:    'Enviado',

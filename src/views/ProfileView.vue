@@ -37,6 +37,7 @@ const allAdminLinks = computed(() => [...adminLinks, ...(isOwner.value ? ownerLi
 
 const statusLabels: Record<string, string> = {
   pending:    'Pendiente',
+  review:     'En revisión',
   confirmed:  'Confirmado',
   processing: 'En proceso',
   shipped:    'Enviado',
@@ -46,6 +47,7 @@ const statusLabels: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   pending:    'warning',
+  review:     'info',
   confirmed:  'info',
   processing: 'info',
   shipped:    'accent',

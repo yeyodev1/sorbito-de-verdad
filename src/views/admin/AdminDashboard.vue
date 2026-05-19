@@ -59,6 +59,7 @@ function formatDate(dateStr?: string) {
 
 const statusColors: Record<string, string> = {
   pending: 'warning',
+  review: 'review',
   confirmed: 'info',
   processing: 'info',
   shipped: 'purple',
@@ -489,6 +490,11 @@ function getStatusColor(status?: string) {
   &--purple {
     background-color: rgba(167, 139, 250, 0.15);
     color: #a78bfa;
+  }
+
+  &--review {
+    background-color: rgba(251, 146, 60, 0.15);
+    color: #fb923c;
   }
 
   &--muted {

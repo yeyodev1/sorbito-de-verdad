@@ -51,7 +51,7 @@ interface Order {
 // ⚠️ Cambiar al número real de WhatsApp de facturación (formato: código país + número, sin +)
 const BILLING_WHATSAPP = '593XXXXXXXXX';
 
-const DEFAULT_FILTER = 'confirmed,processing,shipped,delivered,cancelled';
+const DEFAULT_FILTER = 'confirmed,processing,shipped,delivered,cancelled,review';
 
 const orders = ref<Order[]>([]);
 const loading = ref(true);
@@ -332,10 +332,11 @@ function closeConfirm() {
   confirmDialog.value.action = null;
 }
 
-const allStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+const allStatuses = ['pending', 'review', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 const statusColors: Record<string, string> = {
   pending: 'warning',
+  review: 'review',
   confirmed: 'info',
   processing: 'info',
   shipped: 'purple',
@@ -345,6 +346,7 @@ const statusColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   pending: 'Pendiente',
+  review: 'En revisión',
   confirmed: 'Confirmado',
   processing: 'En proceso',
   shipped: 'Enviado',
@@ -428,6 +430,7 @@ function getExportLabel() {
   if (!filterStatus.value) return 'Exportar todo';
   const labels: Record<string, string> = {
     pending: 'Pendientes',
+    review: 'En revisión',
     confirmed: 'Confirmadas',
     processing: 'En proceso',
     shipped: 'Enviadas',
@@ -820,6 +823,16 @@ async function exportConfirmedOrders() {
             <i class="fa-solid fa-clock"></i>
             Pendientes
             <span class="om__filter-count om__filter-count--alert">{{ statusCounts.pending ?? 0 }}</span>
+          </button>
+
+          <button
+            :class="['om__filter-btn', 'om__filter-btn--review', { 'om__filter-btn--active': filterStatus === 'review' }]"
+            @click="setFilter('review')"
+            title="Órdenes que requieren revisión"
+          >
+            <i class="fa-solid fa-eye"></i>
+            En revisión
+            <span class="om__filter-count om__filter-count--review">{{ statusCounts.review ?? 0 }}</span>
           </button>
 
           <span class="om__filter-divider"></span>
@@ -1569,6 +1582,10 @@ async function exportConfirmedOrders() {
     &--alert {
       background-color: rgba(231, 76, 60, 0.25);
     }
+
+    &--review {
+      background-color: rgba(251, 146, 60, 0.25);
+    }
   }
 
   &__filter-btn--pending {
@@ -1585,6 +1602,23 @@ async function exportConfirmedOrders() {
     &:hover:not(.om__filter-btn--active) {
       border-color: #e74c3c;
       background-color: rgba(231, 76, 60, 0.08);
+    }
+  }
+
+  &__filter-btn--review {
+    border-color: rgba(251, 146, 60, 0.4);
+    color: #fb923c;
+    font-weight: 600;
+
+    &.om__filter-btn--active {
+      background-color: #fb923c;
+      border-color: #fb923c;
+      color: #fff;
+    }
+
+    &:hover:not(.om__filter-btn--active) {
+      border-color: #fb923c;
+      background-color: rgba(251, 146, 60, 0.08);
     }
   }
 
@@ -2048,6 +2082,7 @@ async function exportConfirmedOrders() {
   &--success { background-color: rgba($admin-success, 0.15); color: $admin-success; }
   &--error { background-color: rgba($admin-error, 0.15); color: $admin-error; }
   &--purple { background-color: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+  &--review { background-color: rgba(251, 146, 60, 0.15); color: #fb923c; }
   &--muted { background-color: rgba($admin-text-muted, 0.15); color: $admin-text-muted; }
 }
 

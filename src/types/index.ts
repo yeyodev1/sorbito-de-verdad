@@ -59,7 +59,7 @@ export interface Order {
   subtotal: number;
   shipping: number;
   total: number;
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'review';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   identificationNumber?: string;
   payphoneTransactionId?: string;

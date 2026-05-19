@@ -21,6 +21,7 @@ const error = ref('');
 const searchMode = ref<'number' | 'email'>('number');
 
 const statusLabels: Record<string, string> = {
+  review:     'En revisión',
   confirmed:  'Confirmado',
   processing: 'En proceso',
   shipped:    'Enviado',
