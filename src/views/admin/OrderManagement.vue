@@ -26,6 +26,14 @@ interface ShippingAddress {
   mapsUrl?: string;
 }
 
+interface TransferVerification {
+  status: string;
+  summary: string;
+  detectedAmount: number;
+  detectedDestination: string;
+  analyzedAt: string;
+}
+
 interface Order {
   _id: string;
   orderNumber?: string;
@@ -35,6 +43,8 @@ interface Order {
   status?: string;
   paymentStatus?: string;
   paymentReceiptUrl?: string;
+  paymentMethod?: string;
+  transferVerification?: TransferVerification;
   shippingAddress?: ShippingAddress;
   identificationNumber?: string;
   notes?: string;
@@ -87,6 +97,51 @@ const confirmDialog = ref<{
   loading: false,
   action: null,
 });
+
+// ── Payment Confirmation Modal (for direct payment status change) ─
+const paymentModal = ref<{
+  show: boolean;
+  order: Order | null;
+  newStatus: string;
+  saving: boolean;
+}>({
+  show: false,
+  order: null,
+  newStatus: 'paid',
+  saving: false,
+});
+
+function openPaymentModal(order: Order, newStatus: string) {
+  paymentModal.value = { show: true, order, newStatus, saving: false };
+}
+
+function closePaymentModal() {
+  if (paymentModal.value.saving) return;
+  paymentModal.value.show = false;
+}
+
+async function confirmPaymentChange() {
+  const { order, newStatus } = paymentModal.value;
+  if (!order || paymentModal.value.saving) return;
+  paymentModal.value.saving = true;
+  try {
+    await adminService.updateOrderPaymentStatus(order._id, newStatus);
+    order.paymentStatus = newStatus;
+    if (newStatus === 'paid' && order.status === 'review') {
+      order.status = 'confirmed';
+    }
+    const isWhatsApp = order.source === 'whatsapp_bot';
+    updateCountsAfterChange(order);
+    closePaymentModal();
+    ui.success(isWhatsApp
+      ? 'Pago confirmado ✓ · Cliente notificado vía WhatsApp'
+      : `Pago → ${paymentStatusLabels[newStatus] || newStatus}`);
+  } catch {
+    ui.error('Error al actualizar el estado de pago');
+  } finally {
+    paymentModal.value.saving = false;
+  }
+}
 
 // ── Pay Confirmation Modal (for "confirmed" status when paymentStatus ≠ paid) ─
 const pmFileInput = ref<HTMLInputElement | null>(null);
@@ -354,6 +409,20 @@ const statusLabels: Record<string, string> = {
   cancelled: 'Cancelado',
 };
 
+const paymentStatusLabels: Record<string, string> = {
+  pending: 'Pendiente',
+  paid: 'Pagado',
+  failed: 'Fallido',
+  refunded: 'Reembolsado',
+};
+
+const paymentStatusColors: Record<string, string> = {
+  pending: 'warning',
+  paid: 'success',
+  failed: 'error',
+  refunded: 'info',
+};
+
 onMounted(async () => {
   if (route.query.filter === 'pending') {
     filterStatus.value = 'pending';
@@ -461,6 +530,12 @@ function openExpand(id: string) {
 
 
 
+function updateCountsAfterChange(order: Order) {
+  if (statusCounts.value[order.status || ''] != null) {
+    statusCounts.value = { ...statusCounts.value, [order.status || '']: Math.max(0, (statusCounts.value[order.status || ''] || 1) - 1) };
+  }
+}
+
 function updateStatus(order: Order, newStatus: string) {
   if (newStatus === order.status) return;
   // "Confirmed" with unpaid order → ask if client paid outside
@@ -493,15 +568,23 @@ function updateStatus(order: Order, newStatus: string) {
 }
 
 function confirmMarkPaid(order: Order) {
+  const isWhatsApp = order.source === 'whatsapp_bot';
   showConfirm({
-    title: 'Marcar como Pagada',
-    message: '¿Estás seguro de marcar esta orden como pagada?',
+    title: 'Confirmar pago',
+    message: isWhatsApp
+      ? `Se marcará como pagado y se NOTIFICARÁ al cliente vía WhatsApp. ¿Continuar?`
+      : '¿Estás seguro de marcar esta orden como pagada?',
     action: async () => {
       updatingPayment.value = order._id;
       try {
         await adminService.updateOrderPaymentStatus(order._id, 'paid');
         order.paymentStatus = 'paid';
-        ui.success('Orden marcada como pagada');
+        if (order.status === 'review') {
+          order.status = 'confirmed';
+        }
+        ui.success(isWhatsApp
+          ? 'Pago confirmado ✓ · Cliente notificado vía WhatsApp'
+          : 'Orden marcada como pagada');
       } catch {
         ui.error('Error al actualizar el estado de pago');
       } finally {
@@ -521,6 +604,32 @@ function confirmMarkPending(order: Order) {
         await adminService.updateOrderPaymentStatus(order._id, 'pending');
         order.paymentStatus = 'pending';
         ui.success('Estado de pago revertido a pendiente');
+      } catch {
+        ui.error('Error al actualizar el estado de pago');
+      } finally {
+        updatingPayment.value = null;
+      }
+    },
+  });
+}
+
+function updatePaymentStatus(order: Order, newPaymentStatus: string) {
+  if (newPaymentStatus === order.paymentStatus) return;
+
+  if (newPaymentStatus === 'paid' || newPaymentStatus === 'failed') {
+    openPaymentModal(order, newPaymentStatus);
+    return;
+  }
+
+  showConfirm({
+    title: 'Cambiar estado de pago',
+    message: `¿Estás seguro de marcar como "${paymentStatusLabels[newPaymentStatus] || newPaymentStatus}"?`,
+    action: async () => {
+      updatingPayment.value = order._id;
+      try {
+        await adminService.updateOrderPaymentStatus(order._id, newPaymentStatus);
+        order.paymentStatus = newPaymentStatus;
+        ui.success(`Pago → ${paymentStatusLabels[newPaymentStatus] || newPaymentStatus}`);
       } catch {
         ui.error('Error al actualizar el estado de pago');
       } finally {
@@ -985,18 +1094,44 @@ async function exportConfirmedOrders() {
                   <span v-else class="status-badge status-badge--muted">Web</span>
                 </td>
                 <td>
-                  <span class="om__items-count">{{ getItemCount(order) }} ítem(s)</span>
+                    <span class="om__items-count">{{ getItemCount(order) }} ítem(s)</span>
                 </td>
                 <td class="om__total">{{ formatCurrency(order.total) }}</td>
                 <td>
-                  <span :class="['status-badge', `status-badge--${statusColors[order.status || ''] || 'muted'}`]">
-                    {{ statusLabels[order.status || ''] || order.status || '—' }}
-                  </span>
+                  <div class="om__cell-control">
+                    <span :class="['status-badge', `status-badge--${statusColors[order.status || ''] || 'muted'}`]">
+                      {{ statusLabels[order.status || ''] || order.status || '—' }}
+                    </span>
+                    <select
+                      class="om__cell-select"
+                      :value="order.status"
+                      :disabled="updatingId === order._id"
+                      @change="(e) => { updateStatus(order, (e.target as HTMLSelectElement).value); (e.target as HTMLSelectElement).value = order.status || ''; }"
+                      title="Cambiar estado de la orden"
+                    >
+                      <option v-for="s in allStatuses" :key="s" :value="s">{{ statusLabels[s] }}</option>
+                    </select>
+                  </div>
                 </td>
                 <td>
-                  <span :class="['status-badge', order.paymentStatus === 'paid' ? 'status-badge--success' : 'status-badge--warning']">
-                    {{ order.paymentStatus || '—' }}
-                  </span>
+                  <div class="om__cell-control">
+                    <span :class="['status-badge', `status-badge--${paymentStatusColors[order.paymentStatus || ''] || 'warning'}`]">
+                      <i v-if="order.paymentStatus === 'paid'" class="fa-solid fa-check-circle" style="margin-right: 0.25rem;"></i>
+                      {{ paymentStatusLabels[order.paymentStatus || ''] || order.paymentStatus || '—' }}
+                    </span>
+                    <select
+                      class="om__cell-select om__cell-select--payment"
+                      :value="order.paymentStatus"
+                      :disabled="updatingPayment === order._id"
+                      @change="(e) => { updatePaymentStatus(order, (e.target as HTMLSelectElement).value); (e.target as HTMLSelectElement).value = order.paymentStatus || ''; }"
+                      title="Cambiar estado de pago"
+                    >
+                      <option value="pending">Pendiente</option>
+                      <option value="paid">Pagado</option>
+                      <option value="failed">Fallido</option>
+                      <option value="refunded">Reembolsado</option>
+                    </select>
+                  </div>
                 </td>
                 <td class="om__date">{{ formatDate(order.createdAt) }}</td>
                 <td style="text-align: right; padding-right: 1.5rem;">
@@ -1005,15 +1140,6 @@ async function exportConfirmedOrders() {
                     <button class="om__wa-btn" @click="shareOnWhatsApp(order)" title="Enviar a WhatsApp de facturación">
                       <i class="fa-brands fa-whatsapp"></i>
                     </button>
-                    <!-- Status dropdown -->
-                    <select
-                      class="om__status-select"
-                      :value="order.status"
-                      :disabled="updatingId === order._id"
-                      @change="(e) => { updateStatus(order, (e.target as HTMLSelectElement).value); (e.target as HTMLSelectElement).value = order.status || ''; }"
-                    >
-                      <option v-for="s in allStatuses" :key="s" :value="s">{{ statusLabels[s] }}</option>
-                    </select>
                     <!-- Expand button -->
                     <button class="om__expand-btn" @click="openExpand(order._id)" :title="expandedId === order._id ? 'Cerrar' : 'Ver detalles'">
                       <i :class="['fa-solid', expandedId === order._id ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
@@ -1096,6 +1222,36 @@ async function exportConfirmedOrders() {
                             <span v-if="order.remindersSent.r1h">1 h ✓ </span>
                             <span v-if="order.remindersSent.r24h">24 h ✓</span>
                           </p>
+                        </div>
+                      </div>
+
+                      <!-- Transfer Verification (receipt analysis) -->
+                      <div
+                        v-if="order.transferVerification"
+                        class="om__details-section om__details-section--full"
+                      >
+                        <h4 class="om__details-title">
+                          <i class="fa-solid fa-file-invoice"></i>
+                          Verificación de transferencia
+                          <span
+                            :class="['status-badge', order.transferVerification.status === 'match' ? 'status-badge--success' : 'status-badge--error']"
+                            style="margin-left: 0.5rem;"
+                          >
+                            {{ order.transferVerification.status === 'match' ? 'Coincide' : 'No coincide' }}
+                          </span>
+                        </h4>
+                        <p class="om__tv-summary">{{ order.transferVerification.summary }}</p>
+                        <div class="om__tv-details">
+                          <span class="om__address-key">Monto detectado:</span>
+                          <strong>${{ order.transferVerification.detectedAmount?.toFixed(2) }}</strong>
+                        </div>
+                        <div class="om__tv-details">
+                          <span class="om__address-key">Cuenta destino:</span>
+                          <strong>{{ order.transferVerification.detectedDestination }}</strong>
+                        </div>
+                        <div class="om__tv-details">
+                          <span class="om__address-key">Analizado:</span>
+                          {{ formatDate(order.transferVerification.analyzedAt) }}
                         </div>
                       </div>
 
@@ -1349,6 +1505,79 @@ async function exportConfirmedOrders() {
             </div>
 
           </Transition>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Payment Confirmation Modal (for direct payment change) -->
+  <Teleport to="body">
+    <Transition name="pm-overlay">
+      <div v-if="paymentModal.show" class="pm-overlay" @click.self="closePaymentModal">
+        <div class="pm-box pm-box--compact">
+          <!-- Header -->
+          <div class="pm-header">
+            <div class="pm-header-icon">
+              <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <div class="pm-header-text">
+              <h3 class="pm-title">Confirmar estado de pago</h3>
+              <p class="pm-subtitle">
+                <strong>{{ paymentModal.order?.orderNumber || '#' + paymentModal.order?._id?.slice(-6).toUpperCase() }}</strong>
+                &nbsp;·&nbsp;{{ formatCurrency(paymentModal.order?.total) }}
+                &nbsp;·&nbsp;{{ paymentModal.order?.user?.name || '—' }}
+              </p>
+            </div>
+            <button class="pm-close" @click="closePaymentModal" :disabled="paymentModal.saving">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="pm-body">
+            <div class="pm-change-summary">
+              <div class="pm-change-col">
+                <span class="pm-change-label">Actual</span>
+                <span :class="['status-badge', `status-badge--${paymentStatusColors[paymentModal.order?.paymentStatus || ''] || 'warning'}`]">
+                  {{ paymentStatusLabels[paymentModal.order?.paymentStatus || ''] || '—' }}
+                </span>
+              </div>
+              <div class="pm-change-arrow">
+                <i class="fa-solid fa-arrow-right"></i>
+              </div>
+              <div class="pm-change-col">
+                <span class="pm-change-label">Nuevo</span>
+                <span :class="['status-badge', `status-badge--${paymentStatusColors[paymentModal.newStatus] || 'warning'}`]">
+                  <template v-if="paymentModal.newStatus === 'paid'"><i class="fa-solid fa-check-circle" style="margin-right: 0.25rem;"></i></template>
+                  {{ paymentStatusLabels[paymentModal.newStatus] || paymentModal.newStatus }}
+                </span>
+              </div>
+            </div>
+
+            <div
+              v-if="paymentModal.order?.source === 'whatsapp_bot' && paymentModal.newStatus === 'paid'"
+              class="pm-notice"
+            >
+              <i class="fa-solid fa-bell"></i>
+              <span>Se <strong>notificará al cliente</strong> vía WhatsApp confirmando el pago</span>
+            </div>
+
+            <div v-if="paymentModal.order?.paymentReceiptUrl" class="pm-receipt-info">
+              <i class="fa-solid fa-receipt"></i>
+              <span>Tiene comprobante adjunto —</span>
+              <a :href="paymentModal.order.paymentReceiptUrl" target="_blank" rel="noopener">Ver comprobante</a>
+            </div>
+          </div>
+
+          <div class="pm-footer">
+            <button class="pm-btn-no" @click="closePaymentModal" :disabled="paymentModal.saving">
+              Cancelar
+            </button>
+            <button class="pm-btn-yes" @click="confirmPaymentChange" :disabled="paymentModal.saving">
+              <i v-if="paymentModal.saving" class="fa-solid fa-circle-notch fa-spin"></i>
+              <i v-else class="fa-solid fa-check-circle"></i>
+              {{ paymentModal.saving ? 'Guardando...' : 'Confirmar' }}
+            </button>
+          </div>
         </div>
       </div>
     </Transition>
@@ -1797,6 +2026,45 @@ async function exportConfirmedOrders() {
     color: $admin-text-muted;
     font-size: 0.8125rem;
     white-space: nowrap;
+  }
+
+  &__cell-control {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  &__cell-select {
+    padding: 0.2rem 0.4rem;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: $admin-text-muted;
+    font-size: 0.6875rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.15s ease;
+    max-width: 90px;
+
+    &:focus {
+      outline: none;
+      border-color: $admin-accent;
+      opacity: 1;
+    }
+
+    &:hover {
+      opacity: 1;
+      border-color: $admin-border;
+    }
+
+    option {
+      background-color: $admin-card;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+    }
   }
 
   &__actions {
@@ -2704,6 +2972,79 @@ async function exportConfirmedOrders() {
 .rm-overlay-enter-from,
 .rm-overlay-leave-to    { opacity: 0; }
 
+// ── Payment Modal (compact confirmation) ──────────────────────────────────────
+.pm-box--compact {
+  max-width: 400px;
+}
+
+.pm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pm-change-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba($admin-border, 0.3);
+  border-radius: 10px;
+}
+
+.pm-change-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pm-change-label {
+  font-size: 0.75rem;
+  color: $admin-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
+
+.pm-change-arrow {
+  font-size: 1.25rem;
+  color: $admin-accent;
+  opacity: 0.6;
+}
+
+.pm-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  color: $admin-warning;
+  background: rgba($admin-warning, 0.08);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border-left: 3px solid $admin-warning;
+  i { font-size: 1rem; }
+}
+
+.pm-receipt-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: $admin-text-muted;
+  a {
+    color: $admin-info;
+    text-decoration: underline;
+  }
+}
+
+.pm-footer {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -2957,6 +3298,27 @@ async function exportConfirmedOrders() {
     &--loading {
       opacity: 0.6;
       pointer-events: none;
+    }
+  }
+
+  &__tv-summary {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: $admin-text;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: rgba($admin-warning, 0.08);
+    border-left: 3px solid $admin-warning;
+    border-radius: 4px;
+  }
+
+  &__tv-details {
+    font-size: 0.8125rem;
+    margin-bottom: 0.3rem;
+    color: $admin-text-muted;
+
+    strong {
+      color: $admin-text;
     }
   }
 
