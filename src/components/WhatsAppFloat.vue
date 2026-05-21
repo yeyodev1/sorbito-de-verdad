@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const whatsappNumber = '593962861148';
-const waLink = `https://wa.me/${whatsappNumber}`;
+const message = '¡Hola! \u{1F44B} Quiero ver el cat\u00E1logo \u{1F6D2}';
+const waLink = `https://api.whatsapp.com/send/?phone=593962861148&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
 </script>
 
 <template>
@@ -13,7 +13,7 @@ const waLink = `https://wa.me/${whatsappNumber}`;
   >
     <span class="whatsapp-float__pulse"></span>
     <i class="fa-brands fa-whatsapp whatsapp-float__icon"></i>
-    <span class="whatsapp-float__tooltip">Chatea con nosotros</span>
+    <span class="whatsapp-float__tooltip">¡Hola! Quiero ver el catálogo 🛒</span>
   </a>
 </template>
 

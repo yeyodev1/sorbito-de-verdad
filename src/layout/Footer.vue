@@ -29,10 +29,8 @@ import { RouterLink } from 'vue-router';
               <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
             </svg>
           </a>
-          <a href="https://wa.me/584140000000" target="_blank" rel="noopener" class="footer__social-link" aria-label="WhatsApp">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
-            </svg>
+          <a href="https://api.whatsapp.com/send/?phone=593962861148&text=%C2%A1Hola!%20%F0%9F%91%8B%20Quiero%20ver%20el%20cat%C3%A1logo%20%F0%9F%9B%92&type=phone_number&app_absent=0" target="_blank" rel="noopener" class="footer__social-link" aria-label="WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i>
           </a>
         </div>
       </div>
