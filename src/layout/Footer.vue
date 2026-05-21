@@ -22,12 +22,8 @@ import { RouterLink } from 'vue-router';
           Arcilla, diseño y café en cada pieza.
         </p>
         <div class="footer__social">
-          <a href="https://instagram.com/sorbitodeverdad" target="_blank" rel="noopener" class="footer__social-link" aria-label="Instagram">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-              <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/>
-              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-            </svg>
+          <a href="https://www.instagram.com/anderssonboscan/" target="_blank" rel="noopener" class="footer__social-link" aria-label="Instagram">
+            <i class="fa-brands fa-instagram"></i>
           </a>
           <a href="https://api.whatsapp.com/send/?phone=593962861148&text=%C2%A1Hola!%20%F0%9F%91%8B%20Quiero%20ver%20el%20cat%C3%A1logo%20%F0%9F%9B%92&type=phone_number&app_absent=0" target="_blank" rel="noopener" class="footer__social-link" aria-label="WhatsApp">
             <i class="fa-brands fa-whatsapp"></i>
@@ -54,6 +50,7 @@ import { RouterLink } from 'vue-router';
           <RouterLink to="/nosotros" class="footer__link">Nuestra Historia</RouterLink>
           <RouterLink to="/nosotros#valores" class="footer__link">Valores</RouterLink>
           <RouterLink to="/aliados" class="footer__link">Aliados</RouterLink>
+          <a href="https://www.instagram.com/anderssonboscan/" target="_blank" rel="noopener" class="footer__link">Instagram del Fundador</a>
         </nav>
       </div>
 
