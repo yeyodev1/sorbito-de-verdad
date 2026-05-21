@@ -5,7 +5,6 @@ import CartDrawer from './components/CartDrawer.vue';
 import ToastStack from './components/ToastStack.vue';
 import ConfirmModal from './components/ConfirmModal.vue';
 import AppUpdateModal from './components/AppUpdateModal.vue';
-import WhatsAppFloat from './components/WhatsAppFloat.vue';
 import { useAuthStore } from './stores/auth';
 import { useCartStore } from './stores/cart';
 import { useUIStore } from './stores/ui';
@@ -35,7 +34,6 @@ onMounted(async () => {
     <ToastStack />
     <ConfirmModal />
     <AppUpdateModal :show="updateAvailable" @reload="reload" />
-    <WhatsAppFloat />
   </div>
 </template>
 
