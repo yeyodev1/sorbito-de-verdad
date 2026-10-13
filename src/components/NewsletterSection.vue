@@ -18,95 +18,61 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <section class="newsletter">
-    <!-- Cinematic background -->
-    <div class="newsletter__bg" aria-hidden="true">
-      <img :src="SPLASH_BG" alt="" class="newsletter__bg-img" loading="lazy" />
-      <div class="newsletter__bg-overlay"></div>
-    </div>
+  <section class="newsletter" aria-labelledby="newsletter-title">
+    <div class="container">
+      <div class="newsletter__card">
+        <div class="newsletter__content">
+          <span class="newsletter__eyebrow">Newsletter exclusivo</span>
 
-    <div class="container newsletter__inner">
-      <div class="newsletter__content">
-        <span class="newsletter__eyebrow">
-          <span class="newsletter__eyebrow-line"></span>
-          Newsletter exclusivo
-          <span class="newsletter__eyebrow-line"></span>
-        </span>
+          <h2 id="newsletter-title" class="newsletter__title">
+            Sé el primero en <em>descubrirlo</em>
+          </h2>
 
-        <h2 class="newsletter__title">
-          Sé el primero<br>en <em>descubrirlo</em>
-        </h2>
+          <p class="newsletter__subtitle">
+            Lanzamientos exclusivos, colecciones especiales y descuentos
+            para suscriptores. Solo lo que realmente vale la pena.
+          </p>
 
-        <p class="newsletter__subtitle">
-          Lanzamientos exclusivos, colecciones especiales y descuentos
-          para suscriptores. Solo lo que realmente vale la pena.
-        </p>
+          <Transition name="fade" mode="out-in">
+            <form v-if="!submitted" class="newsletter__form" @submit.prevent="handleSubmit">
+              <div class="newsletter__input-wrap">
+                <input
+                  v-model="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  class="newsletter__input"
+                  required
+                  autocomplete="email"
+                  aria-label="Tu correo electrónico"
+                />
+                <button type="submit" class="newsletter__btn" :disabled="loading">
+                  <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
+                  <span v-else>Suscribirme</span>
+                </button>
+              </div>
+              <p class="newsletter__disclaimer">
+                Sin spam. Solo lo que importa. Cancela cuando quieras.
+              </p>
+            </form>
 
-        <Transition name="fade" mode="out-in">
-          <form v-if="!submitted" class="newsletter__form" @submit.prevent="handleSubmit">
-            <div class="newsletter__input-wrap">
-              <i class="fa-regular fa-envelope newsletter__input-icon"></i>
-              <input
-                v-model="email"
-                type="email"
-                placeholder="tu@email.com"
-                class="newsletter__input"
-                required
-                aria-label="Tu correo electrónico"
-              />
-              <button type="submit" class="newsletter__btn" :disabled="loading">
-                <span v-if="loading">
-                  <i class="fa-solid fa-circle-notch fa-spin"></i>
-                </span>
-                <span v-else>Suscribirme</span>
-              </button>
+            <div v-else class="newsletter__success" role="status">
+              <i class="fa-solid fa-circle-check newsletter__success-icon"></i>
+              <div>
+                <p class="newsletter__success-title">¡Ya estás dentro!</p>
+                <p class="newsletter__success-text">Te escribiremos cuando tengamos algo especial para ti.</p>
+              </div>
             </div>
-            <p class="newsletter__disclaimer">
-              <i class="fa-solid fa-lock"></i>
-              Sin spam. Solo lo que importa. Cancela cuando quieras.
-            </p>
-          </form>
+          </Transition>
 
-          <div v-else class="newsletter__success">
-            <div class="newsletter__success-icon">
-              <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <div>
-              <p class="newsletter__success-title">¡Ya estás dentro!</p>
-              <p class="newsletter__success-text">Te escribiremos cuando tengamos algo especial para ti.</p>
-            </div>
-          </div>
-        </Transition>
-      </div>
-
-      <!-- Right: feature pills -->
-      <div class="newsletter__perks">
-        <div class="newsletter__perk">
-          <div class="newsletter__perk-icon">
-            <i class="fa-solid fa-bolt"></i>
-          </div>
-          <div>
-            <p class="newsletter__perk-title">Acceso anticipado</p>
-            <p class="newsletter__perk-text">Conoce las nuevas colecciones antes que nadie</p>
-          </div>
+          <ul class="newsletter__perks">
+            <li><i class="fa-solid fa-bolt"></i> Acceso anticipado</li>
+            <li><i class="fa-solid fa-tag"></i> Descuentos exclusivos</li>
+            <li><i class="fa-solid fa-star"></i> Ediciones limitadas</li>
+          </ul>
         </div>
-        <div class="newsletter__perk">
-          <div class="newsletter__perk-icon">
-            <i class="fa-solid fa-tag"></i>
-          </div>
-          <div>
-            <p class="newsletter__perk-title">Descuentos exclusivos</p>
-            <p class="newsletter__perk-text">Ofertas especiales solo para suscriptores</p>
-          </div>
-        </div>
-        <div class="newsletter__perk">
-          <div class="newsletter__perk-icon">
-            <i class="fa-solid fa-star"></i>
-          </div>
-          <div>
-            <p class="newsletter__perk-title">Ediciones limitadas</p>
-            <p class="newsletter__perk-text">Piezas únicas que no se repiten</p>
-          </div>
+
+        <div class="newsletter__visual" aria-hidden="true">
+          <img :src="SPLASH_BG" alt="" class="newsletter__img" loading="lazy" />
         </div>
       </div>
     </div>
@@ -114,276 +80,177 @@ async function handleSubmit() {
 </template>
 
 <style lang="scss" scoped>
-@use "sass:color";
-
 .newsletter {
-  position: relative;
-  padding: 7rem 0;
-  overflow: hidden;
+  padding: 1rem 0 4rem;
+  background-color: var(--color-bg);
 
-  @media (max-width: 768px) {
-    padding: 4.5rem 0;
+  @media (min-width: 768px) {
+    padding: 2rem 0 6rem;
   }
 
-  // ── Background ──────────────────────────────────────────
-
-  &__bg {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-  }
-
-  &__bg-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-    opacity: 0.45;
-  }
-
-  &__bg-overlay {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(135deg, rgba(#070707, 0.97) 0%, rgba(#0d0905, 0.88) 100%);
-  }
-
-  // ── Layout ──────────────────────────────────────────────
-
-  &__inner {
-    position: relative;
-    z-index: 1;
+  &__card {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5rem;
-    align-items: center;
+    grid-template-columns: 1fr;
+    overflow: hidden;
+    border-radius: $radius-xl;
+    background-color: var(--color-bg-inverse);
+    color: var(--color-on-inverse);
 
-    @media (max-width: 900px) {
-      grid-template-columns: 1fr;
-      gap: 3rem;
+    @media (min-width: 900px) {
+      grid-template-columns: 1.2fr 1fr;
     }
   }
 
   &__content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-  }
+    gap: 1.25rem;
+    padding: 2.25rem 1.25rem;
 
-  // ── Eyebrow ─────────────────────────────────────────────
+    @media (min-width: 768px) {
+      padding: 4rem;
+    }
+  }
 
   &__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: $color-accent;
-    width: fit-content;
+    color: var(--color-accent);
   }
-
-  &__eyebrow-line {
-    display: inline-block;
-    width: 28px;
-    height: 1px;
-    background: $color-accent;
-  }
-
-  // ── Title ───────────────────────────────────────────────
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 700;
-    color: #FFFFFF;
-    line-height: 1.1;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    font-weight: 500;
+    color: var(--color-on-inverse);
 
     em {
       font-style: italic;
-      color: $color-accent;
+      font-weight: 400;
+      color: var(--color-accent);
     }
   }
 
   &__subtitle {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.58);
-    line-height: 1.75;
-    max-width: 400px;
+    max-width: 46ch;
+    color: color-mix(in srgb, var(--color-on-inverse) 70%, transparent);
   }
-
-  // ── Form ────────────────────────────────────────────────
 
   &__form {
     display: flex;
     flex-direction: column;
-    gap: 0.875rem;
-    max-width: 480px;
+    gap: 0.625rem;
   }
 
   &__input-wrap {
-    position: relative;
     display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: $radius-md;
-    overflow: hidden;
-    backdrop-filter: blur(8px);
-    transition: border-color 0.2s ease;
+    flex-direction: column;
+    gap: 0.5rem;
 
-    &:focus-within {
-      border-color: $color-accent;
+    @media (min-width: 480px) {
+      flex-direction: row;
+      padding: 0.3rem;
+      border-radius: $radius-full;
+      background-color: color-mix(in srgb, var(--color-on-inverse) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-on-inverse) 18%, transparent);
     }
-  }
-
-  &__input-icon {
-    flex-shrink: 0;
-    padding: 0 1rem;
-    color: rgba(255, 255, 255, 0.35);
-    font-size: 0.9375rem;
   }
 
   &__input {
     flex: 1;
-    padding: 1rem 0;
-    background: transparent;
-    border: none;
-    font-size: 0.9375rem;
-    color: #FFFFFF;
-    font-family: var(--font-body);
     min-width: 0;
+    min-height: 48px;
+    padding: 0 1.1rem;
+    font-size: 1rem;
+    color: var(--color-on-inverse);
+    background: color-mix(in srgb, var(--color-on-inverse) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-on-inverse) 18%, transparent);
+    border-radius: $radius-full;
+    outline: none;
 
-    &::placeholder { color: rgba(255, 255, 255, 0.3); }
-    &:focus { outline: none; }
+    &::placeholder { color: color-mix(in srgb, var(--color-on-inverse) 45%, transparent); }
+
+    &:focus-visible { border-color: var(--color-accent); }
+
+    @media (min-width: 480px) {
+      background: transparent;
+      border: none;
+    }
   }
 
   &__btn {
-    flex-shrink: 0;
-    padding: 1rem 1.5rem;
-    background-color: $color-accent;
-    color: #FFFFFF;
-    border: none;
-    font-size: 0.875rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: var(--font-body);
-    white-space: nowrap;
+    min-height: 48px;
+    padding: 0 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
+    border-radius: $radius-full;
+    transition: background-color 0.2s ease;
 
-    &:hover:not(:disabled) {
-      background-color: color.adjust(#C8956C, $lightness: 8%);
-    }
-
-    &:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
+    &:hover:not(:disabled) { background-color: var(--color-accent-hover); }
+    &:disabled { opacity: 0.7; }
   }
 
   &__disclaimer {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.8125rem;
-    color: rgba(255, 255, 255, 0.35);
-
-    i { font-size: 0.7rem; }
+    font-size: 0.8rem;
+    color: color-mix(in srgb, var(--color-on-inverse) 50%, transparent);
   }
-
-  // ── Success ─────────────────────────────────────────────
 
   &__success {
     display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    background: rgba($color-accent, 0.1);
-    border: 1px solid rgba($color-accent, 0.3);
-    border-radius: $radius-md;
-    padding: 1.5rem;
-    max-width: 480px;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 1rem 1.25rem;
+    border-radius: $radius-lg;
+    background-color: color-mix(in srgb, var(--color-on-inverse) 8%, transparent);
   }
 
   &__success-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: rgba($color-accent, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 1.25rem;
-    color: $color-accent;
+    font-size: 1.5rem;
+    color: var(--color-accent);
   }
 
   &__success-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #FFFFFF;
-    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: var(--color-on-inverse);
   }
 
   &__success-text {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+    color: color-mix(in srgb, var(--color-on-inverse) 65%, transparent);
   }
-
-  // ── Perks (right column) ────────────────────────────────
 
   &__perks {
     display: flex;
-    flex-direction: column;
-    gap: 1.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    padding-top: 0.5rem;
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--color-on-inverse) 75%, transparent);
 
-    @media (max-width: 900px) {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+    li {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
     }
 
-    @media (max-width: 640px) {
-      grid-template-columns: 1fr;
+    i { color: var(--color-accent); }
+  }
+
+  &__visual {
+    min-height: 220px;
+
+    @media (min-width: 900px) {
+      min-height: 100%;
     }
   }
 
-  &__perk {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  &__perk-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: $radius-md;
-    background: rgba($color-accent, 0.12);
-    border: 1px solid rgba($color-accent, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    color: $color-accent;
-    flex-shrink: 0;
-  }
-
-  &__perk-title {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: #FFFFFF;
-    margin-bottom: 0.25rem;
-  }
-
-  &__perk-text {
-    font-size: 0.8125rem;
-    color: rgba(255, 255, 255, 0.45);
-    line-height: 1.5;
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
-
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

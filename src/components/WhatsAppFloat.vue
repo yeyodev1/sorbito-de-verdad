@@ -13,7 +13,7 @@ const waLink = `https://api.whatsapp.com/send/?phone=593962861148&text=${encodeU
   >
     <span class="whatsapp-float__pulse"></span>
     <i class="fa-brands fa-whatsapp whatsapp-float__icon"></i>
-    <span class="whatsapp-float__tooltip">¡Hola! Quiero ver el catálogo 🛒</span>
+    <span class="whatsapp-float__tooltip">Escríbenos por WhatsApp</span>
   </a>
 </template>
 
@@ -102,8 +102,8 @@ const waLink = `https://api.whatsapp.com/send/?phone=593962861148&text=${encodeU
     right: calc(100% + 12px);
     top: 50%;
     transform: translateY(-50%) translateX(8px) scale(0.95);
-    background: #1a1a1a;
-    color: #fff;
+    background: var(--color-bg-inverse);
+    color: var(--color-on-inverse);
     font-size: 13px;
     font-weight: 500;
     white-space: nowrap;
@@ -124,7 +124,7 @@ const waLink = `https://api.whatsapp.com/send/?phone=593962861148&text=${encodeU
       top: 50%;
       transform: translateY(-50%);
       border: 5px solid transparent;
-      border-left-color: #1a1a1a;
+      border-left-color: var(--color-bg-inverse);
     }
 
     @media (min-width: 768px) {

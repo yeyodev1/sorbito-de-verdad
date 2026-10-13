@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute, RouterLink } from 'vue-router';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
 import ProductCard from '../components/ProductCard.vue';
 import { useProductsStore } from '../stores/products';
@@ -9,12 +9,13 @@ import { useUIStore } from '../stores/ui';
 import type { ProductSize } from '../types';
 
 const route = useRoute();
+const router = useRouter();
 const productsStore = useProductsStore();
 const cartStore = useCartStore();
 const uiStore = useUIStore();
 
 const product = computed(() => productsStore.currentProduct);
-const loading = computed(() => productsStore.loading);
+const loading = computed(() => productsStore.loading && !productsStore.currentProduct);
 const relatedProducts = computed(() =>
   productsStore.products.filter(p => p._id !== product.value?._id).slice(0, 4)
 );
@@ -23,7 +24,13 @@ const quantity = ref(1);
 const activeImage = ref('');
 const selectedSize = ref<ProductSize | undefined>(undefined);
 
-const hasSizes = computed(() => product.value?.sizes && product.value.sizes.length > 1);
+const gallery = computed(() => {
+  if (!product.value) return [];
+  const imgs = [product.value.mainImage, ...(product.value.images || [])].filter(Boolean);
+  return Array.from(new Set(imgs));
+});
+
+const hasSizes = computed(() => !!product.value?.sizes && product.value.sizes.length > 1);
 
 const displayPrice = computed(() =>
   selectedSize.value?.price ?? product.value?.price ?? 0
@@ -43,15 +50,21 @@ const discount = computed(() => {
   return null;
 });
 
+const isOutOfStock = computed(() => !!product.value && product.value.stock === 0 && !product.value.allowBackorder);
+const isPreorder = computed(() => !!product.value && product.value.stock === 0 && product.value.allowBackorder);
+const maxQty = computed(() => {
+  if (!product.value) return 1;
+  return product.value.stock > 0 ? product.value.stock : 99;
+});
+
 async function loadProduct(slug: string) {
   await productsStore.fetchProductBySlug(slug);
   if (productsStore.currentProduct) {
     activeImage.value = productsStore.currentProduct.mainImage;
-    // Initialize size selection to first size
     selectedSize.value = productsStore.currentProduct.sizes?.length
       ? productsStore.currentProduct.sizes[0]
       : undefined;
-    await productsStore.fetchProducts(1);
+    productsStore.fetchProducts(1);
   }
 }
 
@@ -67,25 +80,20 @@ onMounted(() => {
   loadProduct(route.params.slug as string);
 });
 
-function selectImage(img: string) {
-  activeImage.value = img;
-}
-
 function selectSize(size: ProductSize) {
   selectedSize.value = size;
 }
 
 function addToCart() {
-  if (!product.value) return;
+  if (!product.value || isOutOfStock.value) return;
   cartStore.addToCart(product.value, quantity.value, selectedSize.value);
-  uiStore.success(
-    `${product.value.name}${selectedSize.value ? ` (${selectedSize.value.name})` : ''} agregado al carrito`,
-    4500,
-    {
-      image: activeImage.value || product.value.mainImage || product.value.images?.[0],
-      action: { label: 'Ver carrito', to: '/carrito' },
-    }
-  );
+  uiStore.openCart();
+}
+
+function buyNow() {
+  if (!product.value || isOutOfStock.value) return;
+  cartStore.addToCart(product.value, quantity.value, selectedSize.value);
+  router.push('/checkout');
 }
 
 function formatPrice(val: number) {
@@ -95,345 +103,331 @@ function formatPrice(val: number) {
 
 <template>
   <MainLayout>
-    <div class="product-detail">
+    <div class="pd">
       <div class="container">
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb" aria-label="Breadcrumb">
-          <RouterLink to="/" class="breadcrumb__link">Inicio</RouterLink>
-          <span class="breadcrumb__sep" aria-hidden="true">/</span>
-          <RouterLink to="/tienda" class="breadcrumb__link">Tienda</RouterLink>
-          <span class="breadcrumb__sep" aria-hidden="true">/</span>
-          <span class="breadcrumb__current">{{ product?.name || 'Producto' }}</span>
+        <nav class="pd__crumbs" aria-label="Breadcrumb">
+          <RouterLink to="/">Inicio</RouterLink>
+          <span aria-hidden="true">/</span>
+          <RouterLink to="/tienda">Tienda</RouterLink>
+          <span aria-hidden="true">/</span>
+          <span class="pd__crumbs-current">{{ product?.name || 'Producto' }}</span>
         </nav>
 
         <!-- Loading -->
-        <div v-if="loading" class="product-detail__skeleton">
-          <div class="pd-skeleton__gallery">
-            <div class="pd-skeleton__main skeleton"></div>
-            <div class="pd-skeleton__thumbs">
-              <div v-for="i in 4" :key="i" class="pd-skeleton__thumb skeleton"></div>
-            </div>
-          </div>
-          <div class="pd-skeleton__info">
-            <div class="pd-skeleton__line skeleton" style="width:40%; height: 14px"></div>
-            <div class="pd-skeleton__line skeleton" style="width:80%; height: 36px"></div>
-            <div class="pd-skeleton__line skeleton" style="width:30%; height: 28px"></div>
-            <div class="pd-skeleton__line skeleton" style="height: 80px"></div>
+        <div v-if="loading" class="pd__layout">
+          <div class="skeleton pd__sk-media"></div>
+          <div class="pd__sk-info">
+            <div class="skeleton" style="width: 30%; height: 14px"></div>
+            <div class="skeleton" style="width: 85%; height: 40px"></div>
+            <div class="skeleton" style="width: 25%; height: 28px"></div>
+            <div class="skeleton" style="height: 90px"></div>
+            <div class="skeleton" style="height: 54px; border-radius: 999px"></div>
           </div>
         </div>
 
-        <!-- Product Content -->
-        <div v-else-if="product" class="product-detail__inner">
-          <!-- Gallery -->
-          <div class="product-gallery">
-            <div class="product-gallery__main">
-              <img
-                :src="activeImage || product.mainImage"
-                :alt="product.name"
-                class="product-gallery__main-img"
-              />
-              <div v-if="discount" class="product-gallery__discount-badge">-{{ discount }}%</div>
+        <div v-else-if="product" class="pd__layout">
+          <!-- Galería -->
+          <div class="pd-gallery">
+            <div class="pd-gallery__main">
+              <img :src="activeImage || product.mainImage" :alt="product.name" />
+              <span v-if="discount" class="pd-gallery__discount">-{{ discount }}%</span>
             </div>
-            <div v-if="product.images?.length > 0" class="product-gallery__thumbs">
+            <div v-if="gallery.length > 1" class="pd-gallery__thumbs">
               <button
-                :class="['product-gallery__thumb', { 'product-gallery__thumb--active': activeImage === product.mainImage }]"
-                @click="selectImage(product.mainImage)"
+                v-for="(img, idx) in gallery"
+                :key="img"
+                type="button"
+                :class="['pd-gallery__thumb', { 'pd-gallery__thumb--active': activeImage === img }]"
+                :aria-label="`Ver imagen ${idx + 1}`"
+                @click="activeImage = img"
               >
-                <img :src="product.mainImage" :alt="product.name" loading="lazy" />
-              </button>
-              <button
-                v-for="(img, idx) in product.images"
-                :key="idx"
-                :class="['product-gallery__thumb', { 'product-gallery__thumb--active': activeImage === img }]"
-                @click="selectImage(img)"
-              >
-                <img :src="img" :alt="`${product.name} imagen ${idx + 2}`" loading="lazy" />
+                <img :src="img" :alt="`${product.name} imagen ${idx + 1}`" loading="lazy" />
               </button>
             </div>
           </div>
 
-          <!-- Product Info -->
-          <div class="product-info">
-            <div class="product-info__badges">
-              <span :class="['product-info__badge', `product-info__badge--${product.collection}`]">{{ collectionLabel }}</span>
-              <span v-if="product.isFeatured" class="product-info__badge product-info__badge--featured">Destacado</span>
+          <!-- Info -->
+          <div class="pd-info">
+            <div class="pd-info__badges">
+              <span class="eyebrow">Colección {{ collectionLabel }}</span>
+              <span v-if="product.isFeatured" class="pd-info__chip">Destacado</span>
             </div>
 
-            <h1 class="product-info__name">{{ product.name }}</h1>
-            <p class="product-info__sku">SKU: {{ product.sku }}</p>
+            <h1 class="pd-info__name">{{ product.name }}</h1>
 
-            <div class="product-info__pricing">
-              <span class="product-info__price">{{ formatPrice(displayPrice) }}</span>
-              <span v-if="product.compareAtPrice && !selectedSize" class="product-info__compare">{{ formatPrice(product.compareAtPrice) }}</span>
+            <div class="pd-info__pricing">
+              <span class="pd-info__price">{{ formatPrice(displayPrice) }}</span>
+              <span v-if="product.compareAtPrice && product.compareAtPrice > displayPrice" class="pd-info__compare">
+                {{ formatPrice(product.compareAtPrice) }}
+              </span>
             </div>
 
-            <p class="product-info__short-desc">{{ product.shortDescription }}</p>
+            <p v-if="product.shortDescription" class="pd-info__short">{{ product.shortDescription }}</p>
 
-            <!-- Stock indicator -->
-            <div class="product-info__stock">
-              <span v-if="product.stock > 5" class="product-info__stock--in">En stock ({{ product.stock }} disponibles)</span>
-              <span v-else-if="product.stock > 0" class="product-info__stock--low">¡Solo {{ product.stock }} en stock!</span>
-              <span v-else class="product-info__stock--out">Sin stock</span>
-            </div>
+            <p :class="['pd-info__stock', {
+              'pd-info__stock--low': product.stock > 0 && product.stock <= 5,
+              'pd-info__stock--out': isOutOfStock,
+            }]">
+              <span class="pd-info__dot"></span>
+              <template v-if="isPreorder">Pre-venta: lo fabricamos para ti</template>
+              <template v-else-if="product.stock > 5">En stock, listo para enviar</template>
+              <template v-else-if="product.stock > 0">¡Solo quedan {{ product.stock }}!</template>
+              <template v-else>Agotado</template>
+            </p>
 
-            <!-- Size selector -->
-            <div v-if="hasSizes" class="product-info__sizes-wrap">
-              <p class="product-info__sizes-label">
-                <i class="fa-solid fa-ruler-horizontal"></i>
-                Elige tu tamaño
-                <span class="product-info__sizes-required">*obligatorio</span>
-              </p>
-              <div class="product-info__sizes">
+            <!-- Tamaño -->
+            <div v-if="hasSizes" class="pd-info__block">
+              <p class="pd-info__label">Tamaño</p>
+              <div class="pd-info__sizes" role="radiogroup" aria-label="Tamaño">
                 <button
                   v-for="size in product.sizes"
                   :key="size.name"
-                  :class="['product-info__size-chip', { 'product-info__size-chip--active': selectedSize?.name === size.name }]"
+                  type="button"
+                  role="radio"
+                  :aria-checked="selectedSize?.name === size.name"
+                  :class="['pd-info__size', { 'pd-info__size--active': selectedSize?.name === size.name }]"
                   @click="selectSize(size)"
-                  :aria-label="`Seleccionar tamaño ${size.name}`"
                 >
-                  <span class="product-info__size-name">{{ size.name }}</span>
-                  <span class="product-info__size-price">{{ formatPrice(size.price) }}</span>
+                  <span>{{ size.name }}</span>
+                  <small>{{ formatPrice(size.price) }}</small>
                 </button>
               </div>
             </div>
 
-            <!-- Quantity + Add to Cart -->
-            <div class="product-info__purchase">
-              <div class="product-info__qty-wrap">
-                <label class="product-info__qty-label">Cantidad</label>
-                <div class="product-info__qty-controls">
-                  <button class="product-info__qty-btn" @click="quantity = Math.max(1, quantity - 1)" aria-label="Reducir">−</button>
-                  <span class="product-info__qty-value">{{ quantity }}</span>
-                  <button class="product-info__qty-btn" @click="quantity = Math.min(product.stock, quantity + 1)" aria-label="Aumentar">+</button>
-                </div>
+            <!-- Compra -->
+            <div v-if="!isOutOfStock" class="pd-info__buy">
+              <div class="pd-info__qty" aria-label="Cantidad">
+                <button type="button" @click="quantity = Math.max(1, quantity - 1)" :disabled="quantity <= 1" aria-label="Reducir">−</button>
+                <span>{{ quantity }}</span>
+                <button type="button" @click="quantity = Math.min(maxQty, quantity + 1)" :disabled="quantity >= maxQty" aria-label="Aumentar">+</button>
               </div>
-              <button
-                class="product-info__add-btn"
-                :disabled="product.stock === 0 || (hasSizes && !selectedSize)"
-                @click="addToCart"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-                  <line x1="3" y1="6" x2="21" y2="6"/>
-                  <path d="M16 10a4 4 0 01-8 0"/>
-                </svg>
-                <span v-if="product.stock === 0">Sin stock</span>
-                <span v-else-if="hasSizes && !selectedSize">Selecciona un tamaño</span>
-                <span v-else>Agregar al carrito</span>
+              <button type="button" class="btn-outline btn-lg pd-info__add" @click="addToCart">
+                Agregar al carrito
+              </button>
+              <button type="button" class="btn-primary btn-lg pd-info__now" @click="buyNow">
+                <i class="fa-solid fa-bolt"></i>
+                Comprar ahora · {{ formatPrice(displayPrice * quantity) }}
               </button>
             </div>
-
-            <!-- Tags -->
-            <div v-if="product.tags?.length" class="product-info__tags">
-              <span class="product-info__tags-label">Etiquetas:</span>
-              <span v-for="tag in product.tags" :key="tag" class="product-info__tag">{{ tag }}</span>
+            <div v-else class="pd-info__oos">
+              Este producto está agotado por ahora.
+              <RouterLink to="/tienda">Ver otras tazas</RouterLink>
             </div>
 
-            <!-- Description -->
-            <div class="product-info__description">
-              <h3 class="product-info__description-title">Descripción</h3>
-              <p class="product-info__description-text">{{ product.description }}</p>
-            </div>
+            <ul class="pd-info__perks">
+              <li><i class="fa-solid fa-truck-fast"></i> Envío a todo Ecuador y al exterior</li>
+              <li><i class="fa-solid fa-hand-holding-heart"></i> Cerámica hecha a mano</li>
+              <li><i class="fa-solid fa-shield-halved"></i> Pago seguro con tarjeta</li>
+            </ul>
+
+            <details class="pd-info__details" open>
+              <summary>Descripción</summary>
+              <p>{{ product.description }}</p>
+            </details>
+            <details v-if="product.tags?.length || product.sku" class="pd-info__details">
+              <summary>Detalles</summary>
+              <div class="pd-info__tags">
+                <span v-for="tag in product.tags" :key="tag">{{ tag }}</span>
+              </div>
+              <p v-if="product.sku" class="pd-info__sku">SKU: {{ product.sku }}</p>
+            </details>
           </div>
         </div>
 
-        <!-- Not Found -->
-        <div v-else class="product-detail__not-found">
-          <div class="product-detail__not-found-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <!-- No encontrado -->
+        <div v-else class="pd__missing">
+          <div class="pd__missing-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
           <h2>Producto no encontrado</h2>
           <p>El producto que buscas no existe o no está disponible.</p>
-          <RouterLink to="/tienda" class="product-detail__not-found-btn">Volver a la tienda</RouterLink>
+          <RouterLink to="/tienda" class="btn-primary">Volver a la tienda</RouterLink>
         </div>
       </div>
 
-      <!-- Related Products -->
-      <div v-if="!loading && product && relatedProducts.length > 0" class="product-detail__related">
+      <!-- Relacionados -->
+      <section v-if="!loading && product && relatedProducts.length > 0" class="pd__related">
         <div class="container">
-          <h2 class="product-detail__related-title">También te puede gustar</h2>
-          <div class="product-detail__related-grid">
-            <ProductCard
-              v-for="p in relatedProducts"
-              :key="p._id"
-              :product="p"
-            />
+          <h2 class="pd__related-title">También te puede gustar</h2>
+          <div class="pd__related-grid">
+            <ProductCard v-for="p in relatedProducts" :key="p._id" :product="p" />
           </div>
         </div>
+      </section>
+
+      <!-- Barra de compra fija en móvil -->
+      <div v-if="product && !loading && !isOutOfStock" class="pd-sticky">
+        <div class="pd-sticky__info">
+          <span class="pd-sticky__name">{{ product.name }}</span>
+          <strong>{{ formatPrice(displayPrice * quantity) }}</strong>
+        </div>
+        <button type="button" class="pd-sticky__add" @click="addToCart" aria-label="Agregar al carrito">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+        <button type="button" class="btn-primary pd-sticky__buy" @click="buyNow">Comprar ahora</button>
       </div>
     </div>
   </MainLayout>
 </template>
 
 <style lang="scss" scoped>
-@use "sass:color";
+.pd {
+  padding: 1rem 0 6rem;
 
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-.product-detail {
-  padding-bottom: 5rem;
-
-  .container {
-    padding-top: 2rem;
+  @media (min-width: 960px) {
+    padding: 2rem 0 5rem;
   }
 
-  &__inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    margin-top: 2rem;
+  &__crumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+    overflow: hidden;
 
-    @media (max-width: 900px) {
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
+    a:hover { color: var(--color-accent); }
+  }
+
+  &__crumbs-current {
+    color: var(--color-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+
+    @media (min-width: 960px) {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 3.5rem;
+      align-items: start;
     }
   }
 
-  &__skeleton {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    margin-top: 2rem;
+  &__sk-media {
+    aspect-ratio: 1;
+    border-radius: $radius-xl;
+  }
 
-    @media (max-width: 900px) {
-      grid-template-columns: 1fr;
-    }
+  &__sk-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__missing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 5rem 1rem;
+    text-align: center;
+  }
+
+  &__missing-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    background-color: var(--color-accent-light);
+    border-radius: 50%;
   }
 
   &__related {
-    background-color: var(--color-bg-subtle);
-    padding: 4rem 0;
     margin-top: 4rem;
+    padding: 3.5rem 0;
+    background-color: var(--color-bg-subtle);
   }
 
   &__related-title {
-    font-family: var(--font-heading);
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
   }
 
   &__related-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
 
-    @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-    @media (max-width: 480px) { grid-template-columns: 1fr; }
-  }
+    @media (min-width: 768px) {
+      gap: 1.25rem;
+    }
 
-  &__not-found {
-    text-align: center;
-    padding: 5rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  &__not-found-icon {
-    font-size: 3rem;
-    opacity: 0.4;
-  }
-
-  &__not-found-btn {
-    margin-top: 0.5rem;
-    padding: 0.75rem 1.75rem;
-    background-color: $color-accent;
-    color: white;
-    border-radius: $radius-md;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-
-    &:hover { background-color: color.adjust($color-accent, $lightness: -8%); }
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 }
 
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-
-  &__link {
-    font-size: 0.875rem;
-    color: var(--color-muted);
-    text-decoration: none;
-    transition: color 0.2s ease;
-
-    &:hover { color: $color-accent; }
-  }
-
-  &__sep {
-    color: var(--color-border);
-    font-size: 0.875rem;
-  }
-
-  &__current {
-    font-size: 0.875rem;
-    color: var(--color-primary);
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
-  }
-}
-
-.product-gallery {
+.pd-gallery {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.75rem;
+
+  @media (min-width: 960px) {
+    position: sticky;
+    top: 96px;
+  }
 
   &__main {
     position: relative;
-    aspect-ratio: 1 / 1;
-    border-radius: $radius-lg;
+    aspect-ratio: 1;
     overflow: hidden;
     background-color: var(--color-bg-subtle);
-    border: 1px solid var(--color-border);
+    border-radius: $radius-xl;
+    margin: 0 -1rem;
+
+    @media (min-width: 640px) {
+      margin: 0;
+    }
+
+    @media (max-width: 639px) {
+      border-radius: 0;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
-  &__main-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
-
-    &:hover { transform: scale(1.04); }
-  }
-
-  &__discount-badge {
+  &__discount {
     position: absolute;
     top: 1rem;
     left: 1rem;
-    background-color: var(--color-error);
-    color: white;
+    padding: 0.375rem 0.75rem;
     font-size: 0.8125rem;
     font-weight: 700;
-    padding: 0.3rem 0.625rem;
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
     border-radius: $radius-full;
   }
 
   &__thumbs {
     display: flex;
     gap: 0.5rem;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
   }
 
   &__thumb {
+    flex-shrink: 0;
     width: 72px;
     height: 72px;
-    border-radius: $radius-sm;
     overflow: hidden;
-    border: 2px solid var(--color-border);
-    cursor: pointer;
-    transition: border-color 0.2s ease;
-    background: none;
-    padding: 0;
+    border: 2px solid transparent;
+    border-radius: $radius-md;
+    opacity: 0.65;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
 
     img {
       width: 100%;
@@ -441,49 +435,39 @@ function formatPrice(val: number) {
       object-fit: cover;
     }
 
-    &--active { border-color: $color-accent; }
-    &:hover:not(&--active) { border-color: var(--color-accent-light); }
+    &:hover { opacity: 1; }
+
+    &--active {
+      opacity: 1;
+      border-color: var(--color-accent);
+    }
   }
 }
 
-.product-info {
+.pd-info {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 
   &__badges {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
   }
 
-  &__badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.8125rem;
+  &__chip {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
     font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    background-color: var(--color-accent-light);
     border-radius: $radius-full;
-    letter-spacing: 0.02em;
-
-    &--boscan { background: var(--color-primary); color: white; }
-    &--moni { background: var(--color-rose); color: white; }
-    &--rustica { background: $color-accent; color: white; }
-    &--set { background: var(--color-muted); color: white; }
-    &--featured { background: var(--color-accent-light); color: $color-accent; }
   }
 
   &__name {
-    font-family: var(--font-heading);
-    font-size: clamp(1.5rem, 3vw, 2.25rem);
-    font-weight: 700;
-    color: var(--color-primary);
-    line-height: 1.2;
-  }
-
-  &__sku {
-    font-size: 0.8125rem;
-    color: var(--color-muted);
-    font-family: monospace;
+    font-size: clamp(1.875rem, 4.5vw, 3rem);
   }
 
   &__pricing {
@@ -493,10 +477,9 @@ function formatPrice(val: number) {
   }
 
   &__price {
-    font-family: var(--font-heading);
-    font-size: 1.875rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    color: var(--color-primary);
+    font-variant-numeric: tabular-nums;
   }
 
   &__compare {
@@ -505,277 +488,237 @@ function formatPrice(val: number) {
     text-decoration: line-through;
   }
 
-  &__short-desc {
+  &__short {
     font-size: 1rem;
-    color: var(--color-muted);
-    line-height: 1.7;
   }
 
   &__stock {
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    color: var(--color-success);
 
-    &--in { color: var(--color-success); }
     &--low { color: var(--color-warning); }
     &--out { color: var(--color-error); }
   }
 
-  // ── Size selector ──────────────────────────────
-  &__sizes-wrap {
+  &__dot {
+    width: 8px;
+    height: 8px;
+    background-color: currentColor;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 20%, transparent);
+  }
+
+  &__block {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1.25rem;
-    background-color: var(--color-bg-subtle);
-    border: 2px solid var(--color-border);
-    border-radius: $radius-md;
-  }
-
-  &__sizes-label {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    display: flex;
-    align-items: center;
     gap: 0.5rem;
-    margin: 0;
-
-    i { color: $color-accent; }
   }
 
-  &__sizes-required {
-    margin-left: auto;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-error, #e53e3e);
-    text-transform: none;
-    letter-spacing: 0;
+  &__label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-primary);
   }
 
   &__sizes {
     display: flex;
-    gap: 0.75rem;
     flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
-  &__size-chip {
+  &__size {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.2rem;
-    padding: 0.75rem 1.25rem;
-    border: 2px solid var(--color-border);
+    align-items: flex-start;
+    min-width: 108px;
+    padding: 0.625rem 1rem;
+    text-align: left;
+    border: 1.5px solid var(--color-border);
     border-radius: $radius-md;
-    background: white;
-    cursor: pointer;
-    font-family: var(--font-body);
     transition: all 0.2s ease;
-    min-width: 80px;
 
-    &:hover {
-      border-color: $color-accent;
-      background-color: rgba($color-accent, 0.05);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba($color-accent, 0.15);
-    }
+    span { font-weight: 600; }
+    small { font-size: 0.8125rem; color: var(--color-muted); }
+
+    &:hover { border-color: var(--color-border-strong); }
 
     &--active {
-      border-color: $color-accent;
-      background-color: $color-accent;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba($color-accent, 0.35);
-
-      .product-info__size-name { color: white; }
-      .product-info__size-price { color: rgba(white, 0.85); }
+      border-color: var(--color-primary);
+      background-color: var(--color-bg-subtle);
     }
   }
 
-  &__size-name {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    line-height: 1;
-    transition: color 0.2s ease;
+  &__buy {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.625rem;
+    margin-top: 0.25rem;
   }
 
-  &__size-price {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-muted);
-    line-height: 1;
-    transition: color 0.2s ease;
+  &__qty {
+    display: inline-flex;
+    align-items: center;
+    height: 54px;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: $radius-full;
+
+    button {
+      width: 46px;
+      height: 100%;
+      font-size: 1.25rem;
+      border-radius: 50%;
+
+      &:disabled { opacity: 0.35; cursor: not-allowed; }
+    }
+
+    span {
+      min-width: 28px;
+      text-align: center;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
   }
 
-  &__purchase {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-    flex-wrap: wrap;
+  &__now {
+    grid-column: 1 / -1;
   }
 
-  &__qty-wrap {
+  &__oos {
+    padding: 1rem;
+    font-size: 0.9375rem;
+    background-color: var(--color-bg-subtle);
+    border-radius: $radius-md;
+
+    a {
+      margin-left: 0.25rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      text-decoration: underline;
+    }
+  }
+
+  &__perks {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  &__qty-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-primary);
-  }
-
-  &__qty-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-sm;
-    padding: 0.25rem;
-  }
-
-  &__qty-btn {
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: none;
-    font-size: 1.125rem;
-    color: var(--color-primary);
-    cursor: pointer;
-    border-radius: $radius-sm;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease;
-
-    &:hover { background-color: var(--color-bg-subtle); }
-  }
-
-  &__qty-value {
-    font-size: 1rem;
-    font-weight: 600;
-    min-width: 28px;
-    text-align: center;
-  }
-
-  &__add-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     gap: 0.625rem;
-    padding: 0.875rem 2rem;
-    background-color: $color-accent;
-    color: white;
-    border: none;
-    border-radius: $radius-md;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    font-family: var(--font-body);
+    padding: 1rem 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.875rem;
+    color: var(--color-muted);
 
-    &:hover:not(:disabled) {
-      background-color: color.adjust($color-accent, $lightness: -8%);
-      transform: translateY(-2px);
-      box-shadow: $shadow-md;
+    i {
+      width: 20px;
+      margin-right: 0.5rem;
+      color: var(--color-accent);
+    }
+  }
+
+  &__details {
+    border-bottom: 1px solid var(--color-border);
+
+    summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 52px;
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+
+      &::-webkit-details-marker { display: none; }
+
+      &::after {
+        content: '+';
+        font-size: 1.25rem;
+        font-weight: 400;
+        color: var(--color-muted);
+      }
     }
 
-    &:disabled {
-      background-color: var(--color-border);
-      color: var(--color-muted);
-      cursor: not-allowed;
+    &[open] summary::after { content: '−'; }
+
+    > p {
+      padding-bottom: 1rem;
+      white-space: pre-line;
     }
   }
 
   &__tags {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
     flex-wrap: wrap;
-  }
+    gap: 0.375rem;
+    padding-bottom: 0.75rem;
 
-  &__tags-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-muted);
-  }
-
-  &__tag {
-    font-size: 0.8125rem;
-    color: var(--color-muted);
-    background-color: var(--color-bg-subtle);
-    padding: 0.25rem 0.625rem;
-    border-radius: $radius-full;
-    border: 1px solid var(--color-border);
-  }
-
-  &__description {
-    border-top: 1px solid var(--color-border);
-    padding-top: 1.25rem;
-
-    &-title {
-      font-family: var(--font-heading);
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: var(--color-primary);
-      margin-bottom: 0.75rem;
-    }
-
-    &-text {
-      font-size: 0.9375rem;
+    span {
+      padding: 0.25rem 0.625rem;
+      font-size: 0.75rem;
       color: var(--color-muted);
-      line-height: 1.8;
-      white-space: pre-line;
+      background-color: var(--color-bg-subtle);
+      border-radius: $radius-full;
     }
+  }
+
+  &__sku {
+    padding-bottom: 1rem;
+    font-size: 0.75rem;
   }
 }
 
-.pd-skeleton {
-  &__gallery {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-  }
+.pd-sticky {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1rem calc(0.625rem + env(safe-area-inset-bottom));
+  background-color: color-mix(in srgb, var(--color-bg-card) 94%, transparent);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.18);
 
-  &__main {
-    aspect-ratio: 1;
-    border-radius: $radius-lg;
-    background-color: var(--color-border);
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
-  }
-
-  &__thumbs {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  &__thumb {
-    width: 72px;
-    height: 72px;
-    border-radius: $radius-sm;
-    background-color: var(--color-border);
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  @media (min-width: 960px) {
+    display: none;
   }
 
   &__info {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding-top: 0.5rem;
+    line-height: 1.25;
+
+    strong { font-size: 1.0625rem; font-variant-numeric: tabular-nums; }
   }
 
-  &__line {
-    border-radius: $radius-sm;
-    background-color: var(--color-border);
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  &__name {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-}
 
-.skeleton {
-  background-color: var(--color-border);
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  &__add {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: 50%;
+  }
+
+  &__buy {
+    flex-shrink: 0;
+  }
 }
 </style>

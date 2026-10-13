@@ -33,12 +33,12 @@ async function handleSubmit() {
     if (mode.value === 'login') {
       await authStore.login(form.value.email, form.value.password);
       const firstName = authStore.user?.name?.split(' ')[0] ?? '';
-      uiStore.success(`¡Bienvenido/a${firstName ? `, ${firstName}` : ''}! 👋`);
+      uiStore.success(`¡Bienvenido/a${firstName ? `, ${firstName}` : ''}!`);
       router.push(redirectPath.value);
     } else {
       await authStore.register(form.value.name, form.value.email, form.value.password);
       const firstName = form.value.name.trim().split(' ')[0];
-      uiStore.success(`¡Bienvenido/a a Sorbito, ${firstName}! 🎉`);
+      uiStore.success(`¡Bienvenido/a a Sorbito, ${firstName}!`);
       router.push(redirectPath.value);
     }
   } catch (err: unknown) {
@@ -91,39 +91,61 @@ const cardSubtitle = computed(() => {
 
 <template>
   <MainLayout>
-    <div class="login-page">
+    <section class="login-page">
       <div class="login-page__wrap">
         <div class="login-card">
 
-          <!-- Logo -->
-          <RouterLink to="/" class="login-logo">
-            <div class="login-logo__icon-wrap">
-              <i class="fa-solid fa-mug-hot login-logo__icon"></i>
-            </div>
-            <div class="login-logo__text">
+          <!-- Brand -->
+          <RouterLink to="/" class="login-logo" aria-label="Sorbito de Verdad — inicio">
+            <span class="login-logo__mark" aria-hidden="true">
+              <i class="fa-solid fa-mug-hot"></i>
+            </span>
+            <span class="login-logo__text">
               <span class="login-logo__name">Sorbito de Verdad</span>
-              <span class="login-logo__tagline">Tazas Artesanales · Ecuador</span>
-            </div>
+              <span class="login-logo__tagline">Tazas artesanales · Ecuador</span>
+            </span>
           </RouterLink>
 
+          <!-- Mode switch -->
+          <div v-if="mode !== 'forgot'" class="login-tabs" role="tablist" aria-label="Acceso">
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="mode === 'login'"
+              :class="['login-tabs__tab', { 'login-tabs__tab--active': mode === 'login' }]"
+              @click="mode !== 'login' && setMode('login')"
+            >
+              Iniciar sesión
+            </button>
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="mode === 'register'"
+              :class="['login-tabs__tab', { 'login-tabs__tab--active': mode === 'register' }]"
+              @click="mode !== 'register' && setMode('register')"
+            >
+              Crear cuenta
+            </button>
+          </div>
+
           <!-- Header -->
-          <div class="login-card__header">
+          <header class="login-card__header">
             <h1 class="login-card__title">{{ cardTitle }}</h1>
             <p class="login-card__subtitle">{{ cardSubtitle }}</p>
-          </div>
+          </header>
 
           <!-- Error -->
           <div v-if="errorMessage" class="login-card__error-block" role="alert">
             <div class="login-card__error">
-              <i class="fa-solid fa-circle-xmark"></i>
-              {{ errorMessage }}
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ errorMessage }}</span>
             </div>
             <div v-if="mode === 'login'" class="login-card__error-hints">
-              <button class="login-card__hint-btn" @click="setMode('forgot')">
+              <button type="button" class="login-card__hint-btn" @click="setMode('forgot')">
                 <i class="fa-solid fa-key"></i>
                 ¿Olvidaste tu contraseña?
               </button>
-              <button class="login-card__hint-btn" @click="setMode('register')">
+              <button type="button" class="login-card__hint-btn" @click="setMode('register')">
                 <i class="fa-solid fa-user-plus"></i>
                 Crear una cuenta nueva
               </button>
@@ -132,170 +154,162 @@ const cardSubtitle = computed(() => {
 
           <!-- Forgot password — success state -->
           <div v-if="mode === 'forgot' && forgotSent" class="login-card__success">
-            <div class="login-card__success-icon">
-              <i class="fa-solid fa-envelope-circle-check"></i>
+            <div class="login-card__success-icon" aria-hidden="true">
+              <i class="fa-solid fa-envelope-open-text"></i>
             </div>
-            <button class="login-card__toggle-btn" @click="setMode('login')">
-              ← Volver al inicio de sesión
+            <button type="button" class="btn-outline btn-block" @click="setMode('login')">
+              <i class="fa-solid fa-arrow-left"></i>
+              Volver al inicio de sesión
             </button>
           </div>
 
           <!-- Forgot password form -->
           <form v-else-if="mode === 'forgot'" class="login-form" @submit.prevent="handleForgot" novalidate>
-            <div class="form-field">
-              <label class="form-field__label" for="forgot-email">Correo electrónico</label>
+            <div class="field">
+              <label class="field__label" for="forgot-email">Correo electrónico</label>
               <input
                 id="forgot-email"
                 v-model="forgotEmail"
                 type="email"
-                class="form-field__input"
+                class="field__input"
                 placeholder="tu@email.com"
                 required
                 autocomplete="email"
               />
             </div>
 
-            <button type="submit" class="login-form__submit" :disabled="loading || !forgotEmail">
+            <button type="submit" class="btn-primary btn-lg btn-block" :disabled="loading || !forgotEmail">
               <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
               <i v-else class="fa-solid fa-paper-plane"></i>
               <span>{{ loading ? 'Enviando...' : 'Enviar enlace de recuperación' }}</span>
             </button>
 
             <button type="button" class="login-form__back" @click="setMode('login')">
-              ← Volver al inicio de sesión
+              <i class="fa-solid fa-arrow-left"></i>
+              Volver al inicio de sesión
             </button>
           </form>
 
           <!-- Login / Register form -->
           <form v-else class="login-form" @submit.prevent="handleSubmit" novalidate>
-            <div v-if="mode === 'register'" class="form-field">
-              <label class="form-field__label" for="login-name">Nombre completo</label>
+            <div v-if="mode === 'register'" class="field">
+              <label class="field__label" for="login-name">Nombre completo</label>
               <input
                 id="login-name"
                 v-model="form.name"
                 type="text"
-                class="form-field__input"
+                class="field__input"
                 placeholder="Juan Pérez"
                 required
                 autocomplete="name"
               />
             </div>
 
-            <div class="form-field">
-              <label class="form-field__label" for="login-email">Correo electrónico</label>
+            <div class="field">
+              <label class="field__label" for="login-email">Correo electrónico</label>
               <input
                 id="login-email"
                 v-model="form.email"
                 type="email"
-                class="form-field__input"
+                class="field__input"
                 placeholder="tu@email.com"
                 required
                 autocomplete="email"
               />
             </div>
 
-            <div class="form-field">
-              <div class="form-field__label-row">
-                <label class="form-field__label" for="login-password">Contraseña</label>
+            <div class="field">
+              <div class="login-form__label-row">
+                <label class="field__label" for="login-password">Contraseña</label>
                 <button
                   v-if="mode === 'login'"
                   type="button"
-                  class="form-field__forgot-link"
+                  class="login-form__forgot-link"
                   @click="setMode('forgot')"
                 >
-                  ¿Olvidaste tu contraseña?
+                  ¿La olvidaste?
                 </button>
               </div>
               <input
                 id="login-password"
                 v-model="form.password"
                 type="password"
-                class="form-field__input"
+                class="field__input"
                 placeholder="••••••••"
                 required
                 minlength="6"
                 :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
               />
+              <p v-if="mode === 'register'" class="login-form__hint">Mínimo 6 caracteres.</p>
             </div>
 
-            <button type="submit" class="login-form__submit" :disabled="loading">
+            <button type="submit" class="btn-primary btn-lg btn-block login-form__submit" :disabled="loading">
               <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
               <span v-if="loading">{{ mode === 'login' ? 'Ingresando...' : 'Creando cuenta...' }}</span>
-              <span v-else>{{ mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta' }}</span>
+              <span v-else>{{ mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta' }}</span>
             </button>
           </form>
 
-          <!-- Footer links -->
+          <!-- Footer -->
           <div v-if="mode !== 'forgot'" class="login-card__footer">
-            <p class="login-card__toggle">
-              {{ mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?' }}
-              <button class="login-card__toggle-btn" @click="setMode(mode === 'login' ? 'register' : 'login')">
-                {{ mode === 'login' ? 'Regístrate gratis' : 'Iniciar Sesión' }}
-              </button>
+            <p class="login-card__guest-note">
+              No necesitas cuenta para comprar: la creamos por ti al pagar.
             </p>
             <RouterLink to="/tienda" class="login-card__skip">
-              Continuar sin cuenta →
+              Continuar sin cuenta
+              <i class="fa-solid fa-arrow-right"></i>
             </RouterLink>
           </div>
 
         </div>
       </div>
-    </div>
+    </section>
   </MainLayout>
 </template>
 
 <style lang="scss" scoped>
-
 .login-page {
   min-height: calc(100vh - 70px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1.5rem;
-  background-color: var(--color-bg-subtle);
+  padding: 2.5rem 1rem 4rem;
+  background:
+    radial-gradient(circle at 15% 10%, color-mix(in srgb, var(--color-accent-light) 70%, transparent), transparent 45%),
+    var(--color-bg);
 
   &__wrap {
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
   }
 }
 
 .login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 1.25rem;
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: $radius-xl;
-  padding: 2.5rem;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
+  box-shadow: var(--shadow-lg);
 
-  @media (max-width: 480px) {
-    padding: 2rem 1.5rem;
-    border-radius: $radius-lg;
+  @media (min-width: 480px) {
+    padding: 2.5rem 2.25rem;
   }
 
   &__header {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
+    gap: 0.375rem;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: 1.625rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 0;
-    line-height: 1.2;
+    font-size: clamp(1.625rem, 5vw, 2rem);
   }
 
   &__subtitle {
     font-size: 0.9375rem;
-    color: var(--color-muted);
-    line-height: 1.6;
-    margin: 0;
   }
 
   &__error-block {
@@ -306,48 +320,42 @@ const cardSubtitle = computed(() => {
 
   &__error {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1rem;
-    background-color: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    border-radius: $radius-sm;
-    font-size: 0.9rem;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--color-error);
+    background-color: var(--color-error-light);
+    border-radius: $radius-md;
 
-    i { flex-shrink: 0; }
+    i { margin-top: 3px; }
   }
 
   &__error-hints {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
   }
 
   &__hint-btn {
-    flex: 1;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.375rem;
-    padding: 0.625rem 0.75rem;
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-sm;
+    gap: 0.4rem;
+    min-height: 40px;
+    padding: 0.5rem 0.875rem;
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--color-muted);
-    cursor: pointer;
-    font-family: var(--font-body);
-    transition: all 0.2s ease;
-    text-align: center;
-    line-height: 1.3;
+    color: var(--color-primary);
+    border: 1px solid var(--color-border);
+    border-radius: $radius-full;
+    transition: border-color 0.2s ease, color 0.2s ease;
 
-    i { font-size: 0.75rem; flex-shrink: 0; }
+    i { color: var(--color-accent); }
 
     &:hover {
-      border-color: $color-accent;
-      color: $color-accent;
-      background-color: rgba($color-accent, 0.06);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
     }
   }
 
@@ -356,214 +364,153 @@ const cardSubtitle = computed(() => {
     flex-direction: column;
     align-items: center;
     gap: 1.25rem;
-    padding: 1.5rem 0;
-    text-align: center;
   }
 
   &__success-icon {
-    width: 72px;
-    height: 72px;
+    width: 76px;
+    height: 76px;
+    display: grid;
+    place-items: center;
+    font-size: 1.75rem;
+    color: var(--color-success);
+    background-color: var(--color-success-light);
     border-radius: 50%;
-    background-color: rgba($color-accent, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: $color-accent;
   }
 
   &__footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+    text-align: center;
   }
 
-  &__toggle {
-    font-size: 0.9375rem;
-    color: var(--color-muted);
-    margin: 0;
-  }
-
-  &__toggle-btn {
-    background: none;
-    border: none;
-    color: $color-accent;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: inherit;
-    font-family: var(--font-body);
-    padding: 0 0.25rem;
-    transition: opacity 0.2s ease;
-
-    &:hover { opacity: 0.75; }
+  &__guest-note {
+    font-size: 0.8125rem;
   }
 
   &__skip {
-    font-size: 0.875rem;
-    color: var(--color-muted);
-    text-decoration: none;
-    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    padding: 0 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-accent);
 
-    &:hover { color: $color-accent; }
+    i {
+      font-size: 0.75rem;
+      transition: transform 0.2s ease;
+    }
+
+    &:hover i { transform: translateX(3px); }
   }
 }
 
 .login-logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.875rem;
-  text-decoration: none;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--color-border);
+  gap: 0.75rem;
+  align-self: flex-start;
 
-  &__icon-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    background-color: $color-accent;
-    border-radius: $radius-md;
-    flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba($color-accent, 0.35);
-  }
-
-  &__icon {
-    font-size: 1.375rem;
-    color: white;
-    line-height: 1;
+  &__mark {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    font-size: 1.125rem;
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
+    border-radius: 50%;
   }
 
   &__text {
     display: flex;
     flex-direction: column;
-    line-height: 1;
-    gap: 3px;
+    line-height: 1.2;
   }
 
   &__name {
     font-family: var(--font-heading);
-    font-size: 1.1875rem;
-    font-weight: 700;
+    font-size: 1.125rem;
+    font-weight: 600;
     color: var(--color-primary);
-    letter-spacing: -0.01em;
   }
 
   &__tagline {
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     color: var(--color-muted);
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+  }
+}
+
+.login-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  background-color: var(--color-bg-subtle);
+  border-radius: $radius-full;
+
+  &__tab {
+    min-height: 42px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    border-radius: $radius-full;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover { color: var(--color-primary); }
+
+    &--active {
+      color: var(--color-primary);
+      background-color: var(--color-bg-card);
+      box-shadow: var(--shadow-sm);
+    }
   }
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.125rem;
-
-  &__submit {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.9rem;
-    background-color: $color-accent;
-    color: white;
-    border: none;
-    border-radius: $radius-md;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 0.25rem;
-    transition: all 0.25s ease;
-    font-family: var(--font-body);
-    letter-spacing: 0.01em;
-
-    &:hover:not(:disabled) {
-      filter: brightness(1.08);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba($color-accent, 0.4);
-    }
-
-    &:disabled { opacity: 0.6; cursor: not-allowed; }
-  }
-
-  &__back {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 0.75rem;
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-md;
-    font-size: 0.9375rem;
-    color: var(--color-muted);
-    cursor: pointer;
-    font-family: var(--font-body);
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-  }
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
+  gap: 1rem;
 
   &__label-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-
-  &__label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-primary);
+    gap: 0.5rem;
   }
 
   &__forgot-link {
-    background: none;
-    border: none;
     font-size: 0.8125rem;
-    color: $color-accent;
-    cursor: pointer;
-    font-family: var(--font-body);
-    padding: 0;
-    transition: opacity 0.2s ease;
+    font-weight: 500;
+    color: var(--color-accent);
 
-    &:hover { opacity: 0.75; }
+    &:hover { text-decoration: underline; }
   }
 
-  &__input {
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-sm;
-    font-size: 0.9375rem;
-    color: var(--color-primary);
-    font-family: var(--font-body);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    background-color: var(--color-bg);
-    width: 100%;
-    box-sizing: border-box;
+  &__hint {
+    font-size: 0.75rem;
+  }
 
-    &:focus {
-      outline: none;
-      border-color: $color-accent;
-      box-shadow: 0 0 0 3px rgba($color-accent, 0.12);
-    }
+  &__submit {
+    margin-top: 0.5rem;
+  }
 
-    &::placeholder { color: var(--color-muted); opacity: 0.7; }
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-muted);
+
+    &:hover { color: var(--color-primary); }
   }
 }
 </style>

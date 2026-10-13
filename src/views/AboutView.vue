@@ -11,25 +11,21 @@ const RUSTICA_IMG   = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,
 const values = [
   {
     icon: 'fa-solid fa-hands',
-    color: '#C8956C',
     title: 'Artesanía Real',
     text: 'Cada taza es hecha a mano. No hay dos iguales. Eso no es un defecto, es la firma del artesano.',
   },
   {
     icon: 'fa-solid fa-leaf',
-    color: '#22C55E',
     title: 'Materiales con Alma',
     text: 'Arcillas y materiales cuidadosamente seleccionados, pensando en la durabilidad y en el planeta.',
   },
   {
     icon: 'fa-solid fa-heart',
-    color: '#D4879A',
     title: 'Hecho con Amor',
     text: 'Cada pedido lleva nuestro cuidado personal. Empacamos como si se lo entregáramos a un amigo.',
   },
   {
     icon: 'fa-solid fa-flag',
-    color: '#F59E0B',
     title: 'Orgullo Ecuatoriano',
     text: '100% hecho en Ecuador. Cada taza, cada empaque, cada diseño — talento ecuatoriano de principio a fin.',
   },
@@ -42,52 +38,48 @@ const values = [
 
       <!-- ── Hero ──────────────────────────────────────── -->
       <section class="about-hero">
-        <img :src="HERO_IMG" alt="Sorbito de Verdad" class="about-hero__bg" />
+        <img :src="HERO_IMG" alt="Sorbito de Verdad" class="about-hero__bg" fetchpriority="high" />
         <div class="about-hero__overlay"></div>
         <div class="container about-hero__content">
-          <span class="about-hero__eyebrow">
-            <i class="fa-solid fa-mug-hot"></i> Nuestra Historia
-          </span>
+          <span class="about-hero__eyebrow">Nuestra historia</span>
           <h1 class="about-hero__title">
-            Dos personas, una pasión,<br>
+            Dos personas, una pasión,
             <em>mil historias en barro</em>
           </h1>
           <p class="about-hero__subtitle">
             Todo comenzó en una cocina pequeña con mucho café, mucho amor
             y la certeza de que cada taza puede contar una historia única.
           </p>
-          <div class="about-hero__stats">
+          <dl class="about-hero__stats">
             <div class="about-hero__stat">
-              <span class="about-hero__stat-num">100%</span>
-              <span class="about-hero__stat-label">Hecho a mano</span>
+              <dt class="about-hero__stat-label">Hecho a mano</dt>
+              <dd class="about-hero__stat-num">100%</dd>
             </div>
-            <div class="about-hero__stat-divider"></div>
             <div class="about-hero__stat">
-              <span class="about-hero__stat-num">3</span>
-              <span class="about-hero__stat-label">Colecciones únicas</span>
+              <dt class="about-hero__stat-label">Colecciones únicas</dt>
+              <dd class="about-hero__stat-num">3</dd>
             </div>
-            <div class="about-hero__stat-divider"></div>
             <div class="about-hero__stat">
-              <span class="about-hero__stat-num">∞</span>
-              <span class="about-hero__stat-label">Sorbos con alma</span>
+              <dt class="about-hero__stat-label">Sorbos con alma</dt>
+              <dd class="about-hero__stat-num">∞</dd>
             </div>
-          </div>
+          </dl>
         </div>
       </section>
 
       <!-- ── Story ─────────────────────────────────────── -->
       <section class="about-story">
         <div class="container about-story__inner">
-          <div class="about-story__image-col">
+          <figure class="about-story__image-col">
             <img :src="STORY_IMG" alt="Tazas con vapor" class="about-story__img" loading="lazy" />
-            <div class="about-story__img-badge">
-              <i class="fa-solid fa-award"></i>
+            <figcaption class="about-story__img-badge">
+              <i class="fa-solid fa-award" aria-hidden="true"></i>
               Artesanía certificada
-            </div>
-          </div>
+            </figcaption>
+          </figure>
           <div class="about-story__text-col">
-            <span class="about-section-eyebrow">¿Cómo comenzó todo?</span>
-            <h2 class="about-story__title">Una taza que<br>se convirtió en marca</h2>
+            <span class="eyebrow">¿Cómo comenzó todo?</span>
+            <h2 class="about-story__title">Una taza que se convirtió en marca</h2>
             <div class="about-story__paragraphs">
               <p>
                 Boscan siempre fue el del café. Ese hombre que se levantaba antes que el sol, que conocía cada nota de cada grano, que tenía opinión sobre la temperatura del agua. Un día decidió que su taza debía ser tan especial como el ritual que la acompañaba.
@@ -100,9 +92,8 @@ const values = [
               </p>
             </div>
             <blockquote class="about-story__quote">
-              <i class="fa-solid fa-quote-left about-story__quote-icon"></i>
-              "Cada pieza que sale de nuestras manos lleva una intención: que quien la sostenga sienta que fue hecha para ella."
-              <cite>— Boscan &amp; La Moni</cite>
+              <p>"Cada pieza que sale de nuestras manos lleva una intención: que quien la sostenga sienta que fue hecha para ella."</p>
+              <cite>Boscan &amp; La Moni</cite>
             </blockquote>
           </div>
         </div>
@@ -111,12 +102,12 @@ const values = [
       <!-- ── Collections showcase ───────────────────────── -->
       <section class="about-collections">
         <div class="container">
-          <div class="about-collections__header">
-            <span class="about-section-eyebrow">Nuestras colecciones</span>
-            <h2 class="about-collections__title">Cada taza, una personalidad</h2>
+          <div class="about-section-head">
+            <span class="eyebrow">Nuestras colecciones</span>
+            <h2 class="about-section-head__title">Cada taza, una personalidad</h2>
           </div>
           <div class="about-collections__grid">
-            <div class="collection-card">
+            <RouterLink to="/tienda?collection=boscan" class="collection-card">
               <div class="collection-card__img-wrap">
                 <img :src="BOSCAN_IMG" alt="Colección Boscan" class="collection-card__img" loading="lazy" />
               </div>
@@ -125,8 +116,8 @@ const values = [
                 <h3 class="collection-card__name">Boscan</h3>
                 <p class="collection-card__desc">Las gafas y la barba icónica. Para el que se toma el café en serio.</p>
               </div>
-            </div>
-            <div class="collection-card collection-card--rose">
+            </RouterLink>
+            <RouterLink to="/tienda?collection=moni" class="collection-card">
               <div class="collection-card__img-wrap">
                 <img :src="MONI_IMG" alt="Colección La Moni" class="collection-card__img" loading="lazy" />
               </div>
@@ -135,8 +126,8 @@ const values = [
                 <h3 class="collection-card__name">La Moni</h3>
                 <p class="collection-card__desc">Pestañas y labios rojos. Para la mujer que convierte cada sorbo en arte.</p>
               </div>
-            </div>
-            <div class="collection-card collection-card--rustica">
+            </RouterLink>
+            <RouterLink to="/tienda?collection=rustica" class="collection-card">
               <div class="collection-card__img-wrap">
                 <img :src="RUSTICA_IMG" alt="Artesanal Rústica" class="collection-card__img" loading="lazy" />
               </div>
@@ -145,7 +136,7 @@ const values = [
                 <h3 class="collection-card__name">Artesanal Rústica</h3>
                 <p class="collection-card__desc">Cerámica crema con relieve. La esencia de la tierra convertida en objeto.</p>
               </div>
-            </div>
+            </RouterLink>
           </div>
         </div>
       </section>
@@ -153,19 +144,16 @@ const values = [
       <!-- ── Values ─────────────────────────────────────── -->
       <section id="valores" class="about-values">
         <div class="container">
-          <div class="about-values__header">
-            <span class="about-section-eyebrow">Lo que nos define</span>
-            <h2 class="about-values__title">Nuestros Valores</h2>
-            <p class="about-values__subtitle">Los principios detrás de cada pieza que creamos.</p>
+          <div class="about-section-head">
+            <span class="eyebrow">Lo que nos define</span>
+            <h2 class="about-section-head__title">Nuestros valores</h2>
+            <p class="about-section-head__subtitle">Los principios detrás de cada pieza que creamos.</p>
           </div>
           <div class="about-values__grid">
-            <div
-              v-for="v in values"
-              :key="v.title"
-              class="value-card"
-            >
-              <div class="value-card__icon-wrap" :style="{ backgroundColor: v.color + '18', color: v.color }">
-                <i :class="v.icon"></i>
+            <div v-for="(v, i) in values" :key="v.title" class="value-card">
+              <span class="value-card__num">0{{ i + 1 }}</span>
+              <div class="value-card__icon-wrap">
+                <i :class="v.icon" aria-hidden="true"></i>
               </div>
               <h3 class="value-card__title">{{ v.title }}</h3>
               <p class="value-card__text">{{ v.text }}</p>
@@ -176,20 +164,22 @@ const values = [
 
       <!-- ── CTA ────────────────────────────────────────── -->
       <section class="about-cta">
-        <div class="about-cta__bg-img-wrap" aria-hidden="true">
-          <img :src="HERO_IMG" alt="" class="about-cta__bg-img" />
-          <div class="about-cta__bg-overlay"></div>
-        </div>
-        <div class="container about-cta__content">
-          <span class="about-cta__eyebrow">
-            <i class="fa-solid fa-shopping-bag"></i> Tienda
-          </span>
-          <h2 class="about-cta__title">¿Lista/o para encontrar tu taza?</h2>
-          <p class="about-cta__text">Explora nuestras colecciones y lleva a casa una pieza que cuente tu historia.</p>
-          <RouterLink to="/tienda" class="about-cta__btn">
-            Ver Colecciones
-            <i class="fa-solid fa-arrow-right"></i>
-          </RouterLink>
+        <div class="container">
+          <div class="about-cta__card">
+            <div class="about-cta__bg-img-wrap" aria-hidden="true">
+              <img :src="HERO_IMG" alt="" class="about-cta__bg-img" loading="lazy" />
+              <div class="about-cta__bg-overlay"></div>
+            </div>
+            <div class="about-cta__content">
+              <span class="about-cta__eyebrow">Tienda</span>
+              <h2 class="about-cta__title">¿Lista/o para encontrar tu taza?</h2>
+              <p class="about-cta__text">Explora nuestras colecciones y lleva a casa una pieza que cuente tu historia.</p>
+              <RouterLink to="/tienda" class="btn-primary btn-lg about-cta__btn">
+                Ver colecciones
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+              </RouterLink>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -198,28 +188,39 @@ const values = [
 </template>
 
 <style lang="scss" scoped>
-@use "sass:color";
-
-// ── Shared eyebrow ────────────────────────────────────────
-.about-section-eyebrow {
-  display: inline-block;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: $color-accent;
-  margin-bottom: 0.75rem;
+.about {
+  background-color: var(--color-bg);
 }
 
-// ── Hero ──────────────────────────────────────────────────
+// ── Shared section head ─────────────────────────
+.about-section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-bottom: 2.5rem;
+
+  @media (min-width: 768px) {
+    margin-bottom: 3.5rem;
+  }
+
+  &__title {
+    font-weight: 500;
+  }
+
+  &__subtitle {
+    max-width: 48ch;
+  }
+}
+
+// ── Hero ────────────────────────────────────────
 .about-hero {
   position: relative;
-  min-height: 620px;
+  min-height: min(88vh, 760px);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   overflow: hidden;
-
-  @media (max-width: 768px) { min-height: 500px; }
+  isolation: isolate;
+  color: #F7F2EA;
 
   &__bg {
     position: absolute;
@@ -227,480 +228,382 @@ const values = [
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 25%;
+    z-index: -2;
   }
 
   &__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      110deg,
-      rgba(#070707, 0.96) 0%,
-      rgba(#070707, 0.82) 50%,
-      rgba(#070707, 0.45) 80%,
-      transparent 100%
-    );
+    z-index: -1;
+    background:
+      linear-gradient(to top, rgba(20, 14, 10, 0.88) 0%, rgba(20, 14, 10, 0.45) 55%, rgba(20, 14, 10, 0.25) 100%);
   }
 
   &__content {
-    position: relative;
-    z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    max-width: 680px;
-    padding-top: 5rem;
-    padding-bottom: 5rem;
+    gap: 1.25rem;
+    padding-top: 6rem;
+    padding-bottom: 3rem;
+
+    @media (min-width: 768px) {
+      padding-bottom: 4.5rem;
+    }
   }
 
   &__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: 0.75rem;
+    font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: $color-accent;
+    color: #F1DCCB;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: clamp(2.25rem, 5vw, 3.75rem);
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.12;
-    margin: 0;
+    max-width: 16ch;
+    font-size: clamp(2.25rem, 6.5vw, 4.5rem);
+    font-weight: 500;
+    color: #F7F2EA;
 
-    em { font-style: italic; color: $color-accent; }
+    em {
+      display: block;
+      font-style: italic;
+      color: #F1DCCB;
+    }
   }
 
   &__subtitle {
+    max-width: 52ch;
     font-size: 1.0625rem;
-    color: rgba(#fff, 0.72);
-    line-height: 1.75;
-    margin: 0;
-    max-width: 520px;
+    color: rgba(247, 242, 234, 0.82);
   }
 
   &__stats {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    margin-top: 0.5rem;
-
-    @media (max-width: 480px) { gap: 1.25rem; }
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    max-width: 520px;
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(247, 242, 234, 0.22);
   }
 
   &__stat {
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
+    flex-direction: column-reverse;
+    gap: 0.125rem;
   }
 
   &__stat-num {
     font-family: var(--font-heading);
-    font-size: 2rem;
-    font-weight: 700;
-    color: $color-accent;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 500;
     line-height: 1;
+    color: #F7F2EA;
   }
 
   &__stat-label {
     font-size: 0.75rem;
-    color: rgba(#fff, 0.55);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 500;
-  }
-
-  &__stat-divider {
-    width: 1px;
-    height: 40px;
-    background-color: rgba(#fff, 0.15);
+    color: rgba(247, 242, 234, 0.7);
   }
 }
 
-// ── Story ─────────────────────────────────────────────────
+// ── Story ───────────────────────────────────────
 .about-story {
-  padding: 6rem 0;
-  background-color: var(--color-bg);
+  padding: 4.5rem 0;
 
-  @media (max-width: 768px) { padding: 4rem 0; }
+  @media (min-width: 768px) {
+    padding: 7rem 0;
+  }
 
   &__inner {
     display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: 5rem;
+    gap: 2.5rem;
     align-items: center;
 
-    @media (max-width: 960px) {
-      grid-template-columns: 1fr;
-      gap: 3rem;
+    @media (min-width: 900px) {
+      grid-template-columns: 5fr 6fr;
+      gap: 5rem;
     }
   }
 
   &__image-col {
     position: relative;
-
-    @media (max-width: 960px) { max-width: 520px; margin: 0 auto; width: 100%; }
   }
 
   &__img {
     width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
     border-radius: $radius-xl;
-    display: block;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-lg);
   }
 
   &__img-badge {
     position: absolute;
-    bottom: -1.25rem;
-    right: -1.25rem;
-    background-color: $color-accent;
-    color: white;
-    padding: 0.75rem 1.25rem;
-    border-radius: $radius-md;
-    font-size: 0.875rem;
-    font-weight: 600;
-    display: flex;
+    left: 1rem;
+    bottom: 1rem;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 8px 24px rgba($color-accent, 0.4);
+    padding: 0.625rem 1rem;
+    border-radius: $radius-full;
+    background-color: var(--color-bg-card);
+    color: var(--color-primary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
 
-    @media (max-width: 960px) { display: none; }
+    i { color: var(--color-accent); }
   }
 
   &__text-col {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 1rem;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
-    font-weight: 700;
-    color: var(--color-primary);
-    line-height: 1.2;
-    margin: 0 0 1.5rem;
+    font-weight: 500;
+    max-width: 16ch;
   }
 
   &__paragraphs {
     display: flex;
     flex-direction: column;
-    gap: 1.125rem;
-    margin-bottom: 2rem;
+    gap: 1rem;
 
-    p {
-      font-size: 1rem;
-      color: var(--color-muted);
-      line-height: 1.8;
-      margin: 0;
-
-      strong { color: var(--color-primary); font-weight: 600; }
-    }
+    strong { color: var(--color-primary); font-weight: 600; }
   }
 
   &__quote {
-    position: relative;
-    background-color: var(--color-bg-subtle);
-    border-left: 4px solid $color-accent;
-    border-radius: 0 $radius-md $radius-md 0;
-    padding: 1.5rem 1.5rem 1.5rem 2rem;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    font-family: var(--font-heading);
-    font-size: 1rem;
-    font-style: italic;
-    color: var(--color-primary);
-    line-height: 1.65;
+    margin-top: 1rem;
+    padding: 1.5rem 0 0 1.25rem;
+    border-left: 2px solid var(--color-accent);
+
+    p {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-style: italic;
+      line-height: 1.5;
+      color: var(--color-primary);
+    }
 
     cite {
-      font-size: 0.875rem;
-      font-weight: 700;
+      display: block;
+      margin-top: 0.75rem;
       font-style: normal;
-      color: $color-accent;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--color-accent);
     }
-  }
-
-  &__quote-icon {
-    position: absolute;
-    top: -0.75rem;
-    left: 1.25rem;
-    font-size: 1.5rem;
-    color: $color-accent;
-    opacity: 0.4;
   }
 }
 
-// ── Collections ───────────────────────────────────────────
+// ── Collections ─────────────────────────────────
 .about-collections {
-  padding: 6rem 0;
+  padding: 4.5rem 0;
   background-color: var(--color-bg-subtle);
 
-  @media (max-width: 768px) { padding: 4rem 0; }
-
-  &__header {
-    text-align: center;
-    margin-bottom: 3rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  &__title {
-    font-family: var(--font-heading);
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 0;
+  @media (min-width: 768px) {
+    padding: 7rem 0;
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    gap: 1.25rem;
 
-    @media (max-width: 900px) { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+    @media (min-width: 700px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
   }
 }
 
 .collection-card {
-  background-color: var(--color-bg-card);
-  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
   border-radius: $radius-xl;
   overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  transition: transform $transition-smooth, box-shadow $transition-smooth;
 
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.14);
-
-    .collection-card__img { transform: scale(1.04); }
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
   }
 
   &__img-wrap {
     aspect-ratio: 4 / 3;
     overflow: hidden;
+    background-color: var(--color-bg-subtle);
   }
 
   &__img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
+    .collection-card:hover & { transform: scale(1.04); }
   }
 
   &__body {
-    padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 0.375rem;
+    padding: 1.25rem 1.375rem 1.5rem;
   }
 
   &__label {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: $color-accent;
+    color: var(--color-accent);
   }
 
-  &--rose &__label { color: var(--color-rose); }
-  &--rustica &__label { color: #A0826D; }
-
   &__name {
-    font-family: var(--font-heading);
-    font-size: 1.375rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
   }
 
   &__desc {
-    font-size: 0.9rem;
-    color: var(--color-muted);
-    line-height: 1.6;
-    margin: 0;
+    font-size: 0.9375rem;
   }
 }
 
-// ── Values ────────────────────────────────────────────────
+// ── Values ──────────────────────────────────────
 .about-values {
-  padding: 6rem 0;
-  background-color: var(--color-bg);
+  padding: 4.5rem 0;
 
-  @media (max-width: 768px) { padding: 4rem 0; }
-
-  &__header {
-    text-align: center;
-    margin-bottom: 3.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  &__title {
-    font-family: var(--font-heading);
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 0;
-  }
-
-  &__subtitle {
-    font-size: 1rem;
-    color: var(--color-muted);
-    margin: 0;
+  @media (min-width: 768px) {
+    padding: 7rem 0;
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
 
-    @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-    @media (max-width: 480px) { grid-template-columns: 1fr; }
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
   }
 }
 
 .value-card {
-  background-color: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: $radius-lg;
-  padding: 2rem 1.5rem;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  gap: 0.75rem;
+  padding: 1.75rem 1.5rem;
+  border-radius: $radius-lg;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+  &__num {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-family: var(--font-heading);
+    font-size: 0.875rem;
+    color: var(--color-muted);
   }
 
   &__icon-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: $radius-md;
-    font-size: 1.375rem;
-    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--color-accent-light);
+    color: var(--color-accent);
+    font-size: 1.125rem;
+    margin-bottom: 0.25rem;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
   }
 
   &__text {
     font-size: 0.9375rem;
-    color: var(--color-muted);
-    line-height: 1.65;
-    margin: 0;
   }
 }
 
-// ── CTA ───────────────────────────────────────────────────
+// ── CTA ─────────────────────────────────────────
 .about-cta {
-  position: relative;
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
+  padding: 0 0 5rem;
+
+  @media (min-width: 768px) {
+    padding-bottom: 7rem;
+  }
+
+  &__card {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: $radius-xl;
+    padding: 3.5rem 1.5rem;
+
+    @media (min-width: 768px) {
+      padding: 5.5rem 4rem;
+    }
+  }
 
   &__bg-img-wrap {
     position: absolute;
     inset: 0;
+    z-index: -1;
   }
 
   &__bg-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 60%;
   }
 
   &__bg-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      135deg,
-      rgba($color-accent, 0.92) 0%,
-      rgba(color.adjust($color-accent, $lightness: -15%), 0.88) 100%
-    );
+    background-color: rgba(20, 14, 10, 0.72);
   }
 
   &__content {
-    position: relative;
-    z-index: 1;
-    text-align: center;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 5rem 0;
+    align-items: flex-start;
+    gap: 1rem;
+    max-width: 560px;
   }
 
   &__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: 0.75rem;
+    font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(white, 0.75);
+    color: #F1DCCB;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: clamp(1.75rem, 4vw, 3rem);
-    color: white;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
+    font-weight: 500;
+    color: #F7F2EA;
   }
 
   &__text {
-    font-size: 1.0625rem;
-    color: rgba(white, 0.82);
-    margin: 0;
-    max-width: 480px;
-    line-height: 1.65;
+    color: rgba(247, 242, 234, 0.8);
   }
 
   &__btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.625rem;
-    padding: 0.9rem 2.25rem;
-    background-color: white;
-    color: $color-accent;
-    border-radius: $radius-md;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 700;
-    transition: all 0.25s ease;
     margin-top: 0.5rem;
-
-    i { font-size: 0.875rem; transition: transform 0.22s ease; }
-
-    &:hover {
-      background-color: #fff;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      i { transform: translateX(4px); }
-    }
   }
 }
 </style>

@@ -269,120 +269,132 @@ onMounted(() => { loadOrders(); });
         <template v-else>
 
           <!-- Profile header -->
-          <div class="profile-page__header">
-            <div class="profile-avatar">
+          <header class="profile-page__header">
+            <div class="profile-avatar" aria-hidden="true">
               {{ user?.name?.charAt(0)?.toUpperCase() || '?' }}
             </div>
             <div class="profile-page__header-info">
-              <div class="profile-page__header-top">
-                <h1 class="profile-page__name">{{ user?.name }}</h1>
-                <span class="profile-page__role-badge">
-                  <i class="fa-solid fa-user"></i>
-                  Cliente
-                </span>
-              </div>
+              <span class="eyebrow">Mi cuenta</span>
+              <h1 class="profile-page__name">{{ user?.name }}</h1>
               <p class="profile-page__email">{{ user?.email }}</p>
             </div>
-            <button class="profile-page__logout" @click="handleLogout">
+            <button class="btn-outline btn-sm profile-page__logout" @click="handleLogout">
               <i class="fa-solid fa-right-from-bracket"></i>
               <span>Cerrar sesión</span>
             </button>
-          </div>
+          </header>
 
-          <!-- Change password collapsible -->
-          <div class="profile-section">
-            <div class="profile-section__header" @click="changingPassword = !changingPassword">
-              <div class="profile-section__header-left">
-                <div class="profile-section__icon"><i class="fa-solid fa-lock"></i></div>
-                <div>
-                  <h2 class="profile-section__title">Cambiar Contraseña</h2>
-                  <p class="profile-section__sub">Actualiza tu contraseña de acceso</p>
+          <div class="profile-page__layout">
+            <!-- Orders section -->
+            <section class="profile-orders" aria-labelledby="profile-orders-title">
+              <div class="profile-orders__head">
+                <h2 id="profile-orders-title" class="profile-orders__title">Mis pedidos</h2>
+                <span v-if="!loadingOrders && orders.length" class="profile-orders__count">{{ orders.length }}</span>
+              </div>
+
+              <div v-if="loadingOrders" class="profile-orders__loading">
+                <div v-for="i in 3" :key="i" class="order-skeleton">
+                  <div class="skeleton" style="height:18px; width:40%; margin-bottom:10px;"></div>
+                  <div class="skeleton" style="height:14px; width:65%;"></div>
                 </div>
               </div>
-              <i :class="['fa-solid profile-section__chevron', changingPassword ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
-            </div>
-            <Transition name="slide-fade">
-              <div v-if="changingPassword" class="profile-section__body">
-                <div v-if="pwdError" class="pwd-alert pwd-alert--error">
-                  <i class="fa-solid fa-circle-xmark"></i> {{ pwdError }}
-                </div>
-                <div v-if="pwdSuccess" class="pwd-alert pwd-alert--success">
-                  <i class="fa-solid fa-circle-check"></i> {{ pwdSuccess }}
-                </div>
-                <form class="pwd-form" @submit.prevent="handleChangePassword" novalidate>
-                  <div class="pwd-field">
-                    <label class="pwd-label">Contraseña actual</label>
-                    <input v-model="pwdForm.current" type="password" class="pwd-input" placeholder="••••••••" autocomplete="current-password" required />
-                  </div>
-                  <div class="pwd-field">
-                    <label class="pwd-label">Nueva contraseña</label>
-                    <input v-model="pwdForm.new" type="password" class="pwd-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6" />
-                  </div>
-                  <div class="pwd-field">
-                    <label class="pwd-label">Confirmar nueva contraseña</label>
-                    <input v-model="pwdForm.confirm" type="password" class="pwd-input" placeholder="Repite la nueva contraseña" autocomplete="new-password" required />
-                    <span v-if="pwdForm.confirm && pwdForm.new !== pwdForm.confirm" class="pwd-mismatch">
-                      <i class="fa-solid fa-triangle-exclamation"></i> Las contraseñas no coinciden
-                    </span>
-                  </div>
-                  <div class="pwd-form__actions">
-                    <button type="button" class="pwd-btn pwd-btn--cancel" @click="changingPassword = false">Cancelar</button>
-                    <button type="submit" class="pwd-btn pwd-btn--save" :disabled="savingPwd">
-                      <i v-if="savingPwd" class="fa-solid fa-circle-notch fa-spin"></i>
-                      <i v-else class="fa-solid fa-floppy-disk"></i>
-                      {{ savingPwd ? 'Guardando...' : 'Actualizar contraseña' }}
-                    </button>
-                  </div>
-                </form>
+
+              <div v-else-if="orders.length === 0" class="profile-orders__empty">
+                <span class="profile-orders__empty-icon" aria-hidden="true">
+                  <i class="fa-solid fa-mug-hot"></i>
+                </span>
+                <h3>Aún no tienes pedidos</h3>
+                <p>Cuando realices tu primer pedido, aparecerá aquí.</p>
+                <RouterLink to="/tienda" class="btn-primary">Explorar tienda</RouterLink>
               </div>
-            </Transition>
-          </div>
 
-          <!-- Orders section -->
-          <div class="profile-orders">
-            <h2 class="profile-orders__title">
-              <i class="fa-solid fa-box-open"></i>
-              Mis Pedidos
-            </h2>
-
-            <div v-if="loadingOrders" class="profile-orders__loading">
-              <div v-for="i in 3" :key="i" class="order-skeleton">
-                <div class="skeleton" style="height:20px; width:40%; border-radius:6px; margin-bottom:8px;"></div>
-                <div class="skeleton" style="height:16px; width:60%; border-radius:6px;"></div>
-              </div>
-            </div>
-
-            <div v-else-if="orders.length === 0" class="profile-orders__empty">
-              <i class="fa-solid fa-bag-shopping profile-orders__empty-icon"></i>
-              <h3>Aún no tienes pedidos</h3>
-              <p>Cuando realices tu primer pedido, aparecerá aquí.</p>
-              <RouterLink to="/tienda" class="profile-orders__shop-btn">Explorar Tienda</RouterLink>
-            </div>
-
-            <div v-else class="profile-orders__list">
-              <div v-for="order in orders" :key="order._id" class="order-card">
-                <div class="order-card__header">
-                  <div>
-                    <span class="order-card__number">#{{ order.orderNumber }}</span>
-                    <span class="order-card__date">{{ formatDate(order.createdAt) }}</span>
-                  </div>
-                  <span :class="['order-card__status', `order-card__status--${statusColors[order.status] || 'info'}`]">
-                    {{ statusLabels[order.status] || order.status }}
-                  </span>
-                </div>
-                <div class="order-card__items">
-                  <span v-for="item in order.items" :key="item.product" class="order-card__item">
-                    {{ item.name }} × {{ item.quantity }}
-                  </span>
-                </div>
-                <div class="order-card__footer">
-                  <span class="order-card__total">Total: <strong>{{ formatPrice(order.total) }}</strong></span>
-                  <RouterLink :to="`/mis-pedidos/${order._id}`" class="order-card__detail-btn">
-                    Ver detalle <i class="fa-solid fa-arrow-right"></i>
+              <ul v-else class="profile-orders__list">
+                <li v-for="order in orders" :key="order._id">
+                  <RouterLink :to="`/mis-pedidos/${order._id}`" class="order-card">
+                    <div class="order-card__header">
+                      <div class="order-card__id">
+                        <span class="order-card__number">#{{ order.orderNumber }}</span>
+                        <span class="order-card__date">{{ formatDate(order.createdAt) }}</span>
+                      </div>
+                      <span :class="['order-card__status', `order-card__status--${statusColors[order.status] || 'info'}`]">
+                        {{ statusLabels[order.status] || order.status }}
+                      </span>
+                    </div>
+                    <p class="order-card__items">
+                      <span v-for="(item, idx) in order.items" :key="item.product">{{ item.name }} × {{ item.quantity }}<template v-if="idx < order.items.length - 1"> · </template></span>
+                    </p>
+                    <div class="order-card__footer">
+                      <span class="order-card__total">{{ formatPrice(order.total) }}</span>
+                      <span class="order-card__detail-btn">
+                        Ver detalle <i class="fa-solid fa-arrow-right"></i>
+                      </span>
+                    </div>
                   </RouterLink>
-                </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Account / security -->
+            <aside class="profile-side">
+              <div class="profile-section">
+                <button
+                  type="button"
+                  class="profile-section__header"
+                  :aria-expanded="changingPassword"
+                  @click="changingPassword = !changingPassword"
+                >
+                  <span class="profile-section__icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
+                  <span class="profile-section__header-text">
+                    <span class="profile-section__title">Cambiar contraseña</span>
+                    <span class="profile-section__sub">Actualiza tu contraseña de acceso</span>
+                  </span>
+                  <i :class="['fa-solid fa-chevron-down profile-section__chevron', { 'profile-section__chevron--open': changingPassword }]"></i>
+                </button>
+                <Transition name="slide-fade">
+                  <div v-if="changingPassword" class="profile-section__body">
+                    <div v-if="pwdError" class="pwd-alert pwd-alert--error" role="alert">
+                      <i class="fa-solid fa-circle-exclamation"></i> {{ pwdError }}
+                    </div>
+                    <div v-if="pwdSuccess" class="pwd-alert pwd-alert--success" role="status">
+                      <i class="fa-solid fa-circle-check"></i> {{ pwdSuccess }}
+                    </div>
+                    <form class="pwd-form" @submit.prevent="handleChangePassword" novalidate>
+                      <div class="field">
+                        <label class="field__label" for="pwd-current">Contraseña actual</label>
+                        <input id="pwd-current" v-model="pwdForm.current" type="password" class="field__input" placeholder="••••••••" autocomplete="current-password" required />
+                      </div>
+                      <div class="field">
+                        <label class="field__label" for="pwd-new">Nueva contraseña</label>
+                        <input id="pwd-new" v-model="pwdForm.new" type="password" class="field__input" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6" />
+                      </div>
+                      <div class="field">
+                        <label class="field__label" for="pwd-confirm">Confirmar nueva contraseña</label>
+                        <input id="pwd-confirm" v-model="pwdForm.confirm" type="password" class="field__input" placeholder="Repite la nueva contraseña" autocomplete="new-password" required />
+                        <span v-if="pwdForm.confirm && pwdForm.new !== pwdForm.confirm" class="pwd-mismatch">
+                          <i class="fa-solid fa-triangle-exclamation"></i> Las contraseñas no coinciden
+                        </span>
+                      </div>
+                      <div class="pwd-form__actions">
+                        <button type="button" class="btn-ghost btn-sm" @click="changingPassword = false">Cancelar</button>
+                        <button type="submit" class="btn-primary btn-sm" :disabled="savingPwd">
+                          <i v-if="savingPwd" class="fa-solid fa-circle-notch fa-spin"></i>
+                          {{ savingPwd ? 'Guardando...' : 'Actualizar' }}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </Transition>
               </div>
-            </div>
+
+              <div class="profile-help">
+                <p class="profile-help__title">¿Buscas un pedido?</p>
+                <p class="profile-help__text">Rastréalo con tu número de pedido o tu correo.</p>
+                <RouterLink to="/rastrear" class="btn-outline btn-sm btn-block">
+                  <i class="fa-solid fa-truck-fast"></i>
+                  Rastrear pedido
+                </RouterLink>
+              </div>
+            </aside>
           </div>
 
         </template>
@@ -402,6 +414,7 @@ onMounted(() => { loadOrders(); });
 
 .skeleton {
   background-color: var(--color-border);
+  border-radius: $radius-sm;
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
@@ -945,164 +958,143 @@ onMounted(() => { loadOrders(); });
 // CUSTOMER PROFILE STYLES (uses MainLayout)
 // ══════════════════════════════════════════════════════════
 .profile-page {
-  padding: 3rem 0 5rem;
-  background-color: var(--color-bg);
-  min-height: calc(100vh - 70px);
+  padding: 2rem 0 5rem;
+  min-height: 60vh;
+
+  @media (min-width: 768px) {
+    padding-top: 3rem;
+  }
 
   &__header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 1.25rem;
-    margin-bottom: 2.5rem;
+    gap: 1rem 1.25rem;
+    margin-bottom: 2rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid var(--color-border);
-
-    @media (max-width: 600px) { flex-wrap: wrap; }
   }
 
-  &__header-info { flex: 1; min-width: 0; }
-
-  &__header-top {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+  &__header-info {
+    flex: 1;
+    min-width: 0;
   }
 
   &__name {
-    font-family: var(--font-heading);
-    font-size: clamp(1.375rem, 3vw, 2rem);
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 0;
+    margin-top: 0.125rem;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    word-break: break-word;
   }
 
   &__email {
     font-size: 0.9375rem;
-    color: var(--color-muted);
-    margin: 0.25rem 0 0;
-  }
-
-  &__role-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.3rem 0.75rem;
-    border-radius: $radius-full;
-    background-color: rgba($color-accent, 0.1);
-    color: $color-accent;
-    border: 1px solid rgba($color-accent, 0.25);
-
-    i { font-size: 0.7rem; }
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__logout {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.125rem;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-sm;
-    font-size: 0.875rem;
-    color: var(--color-muted);
-    cursor: pointer;
-    background: none;
-    font-family: var(--font-body);
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
+    @media (max-width: 559px) {
+      width: 100%;
+    }
+  }
 
-    &:hover { border-color: var(--color-error); color: var(--color-error); }
+  &__layout {
+    display: grid;
+    gap: 2rem;
+    align-items: start;
 
-    @media (max-width: 600px) {
-      span { display: none; }
-      padding: 0.6rem;
+    @media (min-width: 960px) {
+      grid-template-columns: 1fr 340px;
+      gap: 2.5rem;
     }
   }
 }
 
 .profile-avatar {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background-color: $color-accent;
-  color: white;
-  font-family: var(--font-heading);
-  font-size: 1.75rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba($color-accent, 0.35);
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-heading);
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background-color: var(--color-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px var(--color-accent-light);
+}
+
+.profile-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (min-width: 960px) {
+    position: sticky;
+    top: 96px;
+  }
 }
 
 // Collapsible section (customer)
 .profile-section {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: $radius-xl;
-  margin-bottom: 1.5rem;
+  border-radius: $radius-lg;
   overflow: hidden;
 
   &__header {
+    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 1.375rem 1.75rem;
-    cursor: pointer;
+    gap: 0.875rem;
+    min-height: 64px;
+    padding: 1rem 1.25rem;
+    text-align: left;
     transition: background-color 0.2s ease;
-    user-select: none;
 
     &:hover { background-color: var(--color-bg-subtle); }
   }
 
-  &__header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  &__icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    color: var(--color-accent);
+    background-color: var(--color-accent-light);
+    border-radius: 50%;
   }
 
-  &__icon {
-    width: 42px;
-    height: 42px;
-    border-radius: $radius-sm;
-    background-color: rgba($color-accent, 0.1);
-    color: $color-accent;
+  &__header-text {
+    flex: 1;
+    min-width: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
+    flex-direction: column;
   }
 
   &__title {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 0.9375rem;
+    font-weight: 600;
     color: var(--color-primary);
-    margin: 0 0 0.125rem;
-    font-family: var(--font-heading);
   }
 
   &__sub {
     font-size: 0.8125rem;
     color: var(--color-muted);
-    margin: 0;
   }
 
   &__chevron {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--color-muted);
-    transition: transform 0.2s ease;
+    transition: transform 0.25s ease;
+
+    &--open { transform: rotate(180deg); }
   }
 
   &__body {
-    padding: 1.5rem 1.75rem;
-    border-top: 1px solid var(--color-border);
+    padding: 0.25rem 1.25rem 1.25rem;
   }
 }
 
@@ -1110,254 +1102,241 @@ onMounted(() => { loadOrders(); });
 .pwd-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  max-width: 420px;
+  gap: 0.875rem;
 
   &__actions {
     display: flex;
-    gap: 0.75rem;
+    justify-content: flex-end;
+    gap: 0.5rem;
     margin-top: 0.25rem;
-
-    @media (max-width: 480px) { flex-direction: column; }
   }
 }
 
 .pwd-alert {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-radius: $radius-sm;
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.875rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: $radius-md;
+
+  i { margin-top: 2px; }
 
   &--error {
-    background-color: rgba(var(--color-error), 0.08);
-    border: 1px solid rgba(var(--color-error), 0.25);
     color: var(--color-error);
+    background-color: var(--color-error-light);
   }
 
   &--success {
-    background-color: rgba(var(--color-success), 0.08);
-    border: 1px solid rgba(var(--color-success), 0.25);
     color: var(--color-success);
+    background-color: var(--color-success-light);
   }
-}
-
-.pwd-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.pwd-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-primary);
 }
 
 .pwd-mismatch {
-  font-size: 0.8125rem;
-  color: var(--color-error);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.pwd-input {
-  padding: 0.7rem 0.875rem;
-  border: 1px solid var(--color-border);
-  border-radius: $radius-sm;
-  font-size: 0.9375rem;
-  color: var(--color-primary);
-  background-color: var(--color-bg);
-  font-family: var(--font-body);
-  width: 100%;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: $color-accent;
-    box-shadow: 0 0 0 3px rgba($color-accent, 0.1);
-  }
-
-  &::placeholder { color: var(--color-muted); opacity: 0.7; }
-}
-
-.pwd-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border-radius: $radius-sm;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: all 0.2s ease;
-  border: none;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-error);
+}
 
-  &--save {
-    background-color: $color-accent;
-    color: white;
+.profile-help {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1.25rem;
+  background-color: var(--color-bg-subtle);
+  border-radius: $radius-lg;
 
-    &:hover:not(:disabled) { filter: brightness(1.08); }
-    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &__title {
+    font-family: var(--font-heading);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-primary);
   }
 
-  &--cancel {
-    background-color: transparent;
-    border: 1px solid var(--color-border);
-    color: var(--color-muted);
-
-    &:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  &__text {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
   }
 }
 
 // Orders
 .profile-orders {
-  &__title {
+  min-width: 0;
+
+  &__head {
     display: flex;
     align-items: center;
     gap: 0.625rem;
-    font-family: var(--font-heading);
-    font-size: 1.375rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin-bottom: 1.5rem;
-
-    i { color: $color-accent; font-size: 1.125rem; }
+    margin-bottom: 1.25rem;
   }
 
-  &__loading { display: flex; flex-direction: column; gap: 1rem; }
+  &__title {
+    font-size: 1.5rem;
+  }
+
+  &__count {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    display: grid;
+    place-items: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    background-color: var(--color-bg-subtle);
+    border-radius: $radius-full;
+  }
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
   &__empty {
-    text-align: center;
-    padding: 4rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.875rem;
+    gap: 0.5rem;
+    padding: 3.5rem 1.5rem;
+    text-align: center;
     background-color: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: $radius-xl;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: $radius-lg;
 
-    h3 { font-family: var(--font-heading); font-size: 1.25rem; color: var(--color-primary); margin: 0; }
-    p  { font-size: 0.9375rem; color: var(--color-muted); margin: 0; }
+    h3 { font-size: 1.25rem; }
+
+    p {
+      margin-bottom: 0.75rem;
+      font-size: 0.9375rem;
+    }
   }
 
   &__empty-icon {
-    font-size: 3rem;
-    color: var(--color-border);
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
     margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    background-color: var(--color-accent-light);
+    border-radius: 50%;
   }
 
-  &__shop-btn {
-    margin-top: 0.5rem;
-    padding: 0.75rem 1.75rem;
-    background-color: $color-accent;
-    color: white;
-    border-radius: $radius-md;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9375rem;
-    transition: filter 0.2s ease, transform 0.2s ease;
-
-    &:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
-
-  &__list { display: flex; flex-direction: column; gap: 1rem; }
 }
 
-.order-card {
+.order-skeleton {
+  padding: 1.25rem;
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: $radius-lg;
-  padding: 1.5rem;
+}
+
+.order-card {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
-  transition: box-shadow 0.3s ease;
+  gap: 0.75rem;
+  padding: 1.125rem 1.25rem;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-lg;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
-  &:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  &:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+
+    .order-card__detail-btn i { transform: translateX(3px); }
+  }
 
   &__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
+  }
+
+  &__id {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
   }
 
   &__number {
-    display: block;
-    font-size: 1rem;
-    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9375rem;
+    font-weight: 600;
     color: var(--color-primary);
-    font-family: var(--font-heading);
   }
 
-  &__date { font-size: 0.8125rem; color: var(--color-muted); }
+  &__date {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
 
   &__status {
-    font-size: 0.8125rem;
-    font-weight: 600;
+    flex-shrink: 0;
     padding: 0.3rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
     border-radius: $radius-full;
 
-    &--success { background: rgba(var(--color-success), 0.12); color: var(--color-success); }
-    &--error   { background: rgba(var(--color-error), 0.12);   color: var(--color-error); }
-    &--warning { background: rgba(var(--color-warning), 0.12); color: var(--color-warning); }
-    &--info    { background: rgba(#3B82F6, 0.12);        color: #3B82F6; }
-    &--accent  { background: rgba($color-accent, 0.12);  color: $color-accent; }
+    &--warning { color: var(--color-warning); background-color: var(--color-warning-light); }
+    &--info    { color: var(--color-primary); background-color: var(--color-bg-subtle); }
+    &--accent  { color: var(--color-accent);  background-color: var(--color-accent-light); }
+    &--success { color: var(--color-success); background-color: var(--color-success-light); }
+    &--error   { color: var(--color-error);   background-color: var(--color-error-light); }
   }
 
   &__items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  &__item {
     font-size: 0.875rem;
-    color: var(--color-muted);
-    background-color: var(--color-bg-subtle);
-    padding: 0.25rem 0.625rem;
-    border-radius: $radius-sm;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   &__footer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    justify-content: space-between;
+    gap: 1rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--color-border);
   }
 
   &__total {
-    font-size: 0.9375rem;
-    color: var(--color-muted);
-
-    strong { color: var(--color-primary); font-weight: 700; }
+    font-family: var(--font-heading);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-primary);
   }
-
-  &__address { font-size: 0.8125rem; color: var(--color-muted); }
 
   &__detail-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.4rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: $color-accent;
-    text-decoration: none;
-    transition: opacity 0.2s;
+    color: var(--color-accent);
 
-    &:hover { opacity: 0.75; }
+    i {
+      font-size: 0.75rem;
+      transition: transform 0.2s ease;
+    }
   }
 }
 

@@ -54,7 +54,7 @@ export const useUIStore = defineStore('ui', {
     isMenuOpen: false,
     notification: { message: '', type: 'info', show: false },
     toasts: [],
-    theme: (localStorage.getItem('sdv-theme') as Theme) ?? 'dark',
+    theme: (localStorage.getItem('sdv-theme') as Theme) ?? 'light',
     _toastCounter: 0,
     confirm: { open: false, options: null },
   }),

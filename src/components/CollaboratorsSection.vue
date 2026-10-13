@@ -74,186 +74,142 @@ const collaborators = [
 </script>
 
 <template>
-  <section class="collab">
+  <section class="collab" aria-labelledby="collab-title">
+    <div class="container">
 
-    <!-- ── Header ────────────────────────────────────────── -->
-    <div class="collab__header">
-      <div class="container collab__header-content">
-        <span class="collab__eyebrow">
-          <i class="fa-solid fa-handshake-simple"></i>
-          Un producto, muchos talentos
-        </span>
-        <h2 class="collab__title">
+      <!-- Header -->
+      <div class="collab__header">
+        <span class="eyebrow">Un producto, muchos talentos</span>
+        <h2 id="collab-title" class="collab__title">
           Las manos que hacen<br>
           <em>posible cada sorbo</em>
         </h2>
         <p class="collab__subtitle">
           Cada taza es el resultado de talento ecuatoriano puro: el diseño, la cerámica, el empaque
           y la tecnología — todo hecho en Ecuador, con orgullo y dedicación.
-          <strong style="color: #C8956C; display: block; margin-top: 0.75rem;">100% manos ecuatorianas.</strong>
+          <strong>100% manos ecuatorianas.</strong>
         </p>
       </div>
-    </div>
 
-    <!-- ── Cards ────────────────────────────────────────── -->
-    <div class="collab__grid-section">
-      <div class="container">
-
-        <!-- Bakano — featured wide card FIRST -->
+      <!-- Cards -->
+      <div class="collab__grid">
         <a
-          href="https://bakano.ec/"
+          v-for="c in collaborators.filter(x => x.id !== 'bakano')"
+          :key="c.id"
+          :href="c.url"
           target="_blank"
           rel="noopener noreferrer"
-          class="collab__card collab__card--featured"
+          class="collab__card"
         >
-          <div class="collab__card-bg" :style="{ backgroundImage: `url(${BAKANO_TEAM_IMG})` }"></div>
-          <div class="collab__card-overlay collab__card-overlay--featured"></div>
-          <div class="collab__card-featured-badge">
-            <i class="fa-solid fa-star"></i> Aliado Digital Oficial
+          <div
+            class="collab__card-bg"
+            :style="c.bgImage
+              ? { backgroundImage: `url(${c.bgImage})` }
+              : { backgroundColor: c.bgColor ?? '#0D1117' }"
+          ></div>
+          <div class="collab__card-overlay"></div>
+
+          <div v-if="c.logo" class="collab__card-logo-wrap">
+            <img :src="c.logo" :alt="c.name + ' logo'" class="collab__card-logo" :style="{ filter: c.logoFilter || 'none' }" loading="lazy" />
           </div>
-          <div class="collab__card-content collab__card-content--featured">
-            <img :src="BAKANO_LOGO" alt="Bakano" class="collab__card-featured-logo" />
-            <p class="collab__card-tagline" style="color: #C8956C; font-size: 1.05rem;">"Nosotros hacemos procesos de marketing y ventas. Conectamos a tus clientes potenciales con tu canal de transacción para que tu negocio crezca."</p>
-            <p class="collab__card-desc" style="max-width: 560px;">Agencia de consultoría #1 en Ecuador. Detrás de la estrategia digital y el desarrollo web de Sorbito de Verdad.</p>
-            <div class="collab__card-cta" style="border-color: rgba(200,149,108,0.5); color: #C8956C; margin-top: 0.5rem;">
-              <span>bakano.ec</span>
+
+          <div class="collab__card-content">
+            <span class="collab__card-role">{{ c.eyebrow }}</span>
+            <h3 class="collab__card-name">{{ c.name }}</h3>
+            <p class="collab__card-tagline">“{{ c.tagline }}”</p>
+            <p class="collab__card-desc">{{ c.description }}</p>
+            <span class="collab__card-cta">
+              {{ c.cta }}
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </div>
+            </span>
           </div>
         </a>
-
-        <!-- Other 3 collaborators -->
-        <div class="collab__grid">
-          <a
-            v-for="c in collaborators.filter(x => x.id !== 'bakano')"
-            :key="c.id"
-            :href="c.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="collab__card"
-          >
-            <div
-              class="collab__card-bg"
-              :style="c.bgImage
-                ? { backgroundImage: `url(${c.bgImage})` }
-                : { backgroundColor: c.bgColor ?? '#0D1117' }"
-            ></div>
-            <div class="collab__card-overlay"></div>
-
-            <div v-if="c.logo" class="collab__card-logo-wrap">
-              <img :src="c.logo" :alt="c.name + ' logo'" class="collab__card-logo" :style="{ filter: c.logoFilter || 'none' }" />
-            </div>
-            <div v-else class="collab__card-eyebrow-top">
-              <span class="collab__card-badge" :style="{ color: c.accentColor, borderColor: c.accentColor + '55' }">
-                <i class="fa-brands fa-instagram"></i>
-                {{ c.eyebrow }}
-              </span>
-            </div>
-
-            <div class="collab__card-content">
-              <div class="collab__card-meta">
-                <span class="collab__card-country"><i class="fa-solid fa-location-dot"></i> {{ c.country }}</span>
-                <span class="collab__card-role">{{ c.eyebrow }}</span>
-              </div>
-              <h3 class="collab__card-name">{{ c.name }}</h3>
-              <p class="collab__card-tagline" :style="{ color: c.accentColor }">"{{ c.tagline }}"</p>
-              <p class="collab__card-desc">{{ c.description }}</p>
-              <div class="collab__card-cta" :style="{ borderColor: c.accentColor + '66', color: c.accentColor }">
-                <span>{{ c.cta }}</span>
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-              </div>
-            </div>
-          </a>
-        </div>
-
-        <!-- Ver todos link -->
-        <div class="collab__footer">
-          <RouterLink to="/aliados" class="collab__see-all">
-            Conocer a todos nuestros aliados
-            <i class="fa-solid fa-arrow-right"></i>
-          </RouterLink>
-        </div>
-
       </div>
-    </div>
 
+      <!-- Bakano — featured wide card -->
+      <a
+        href="https://bakano.ec/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="collab__card collab__card--featured"
+      >
+        <div class="collab__card-bg" :style="{ backgroundImage: `url(${BAKANO_TEAM_IMG})` }"></div>
+        <div class="collab__card-overlay collab__card-overlay--featured"></div>
+        <div class="collab__card-content collab__card-content--featured">
+          <span class="collab__card-role">Aliado digital oficial</span>
+          <img :src="BAKANO_LOGO" alt="Bakano" class="collab__card-featured-logo" loading="lazy" />
+          <p class="collab__card-tagline">“Nosotros hacemos procesos de marketing y ventas. Conectamos a tus clientes potenciales con tu canal de transacción para que tu negocio crezca.”</p>
+          <p class="collab__card-desc">Agencia de consultoría #1 en Ecuador. Detrás de la estrategia digital y el desarrollo web de Sorbito de Verdad.</p>
+          <span class="collab__card-cta">
+            bakano.ec
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </span>
+        </div>
+      </a>
+
+      <div class="collab__footer">
+        <RouterLink to="/aliados" class="btn-outline">
+          Conocer a todos nuestros aliados
+          <i class="fa-solid fa-arrow-right"></i>
+        </RouterLink>
+      </div>
+
+    </div>
   </section>
 </template>
 
 <style lang="scss" scoped>
+// Cards sit on photos with a dark scrim, so their text colors are fixed light tones
+$on-photo: #FFFFFF;
+$on-photo-soft: rgba(255, 255, 255, 0.72);
+$on-photo-accent: #F1C7A8;
 
 .collab {
-  // ── Header ───────────────────────────────────────────
+  padding: 3.5rem 0 4rem;
+  background-color: var(--color-bg);
+
+  @media (min-width: 768px) {
+    padding: 6rem 0;
+  }
 
   &__header {
-    background-color: #1A1A1A;
-    display: flex;
-    align-items: center;
-  }
-
-  &__header-content {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-    max-width: 660px;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-
-    @media (max-width: 768px) {
-      padding-top: 3.5rem;
-      padding-bottom: 3.5rem;
-    }
-  }
-
-  &__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: $color-accent;
-
-    i { font-size: 0.875rem; }
+    gap: 1rem;
+    max-width: 640px;
+    margin-bottom: 2.5rem;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: clamp(2rem, 4.5vw, 3.25rem);
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.15;
-    margin: 0;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    font-weight: 500;
 
     em {
       font-style: italic;
-      color: $color-accent;
+      font-weight: 400;
+      color: var(--color-accent);
     }
   }
 
   &__subtitle {
-    font-size: 1.0625rem;
-    color: rgba(#fff, 0.7);
-    line-height: 1.75;
-    margin: 0;
-  }
+    font-size: 1rem;
 
-  // ── Grid section ─────────────────────────────────────
-
-  &__grid-section {
-    padding: 4rem 0 5rem;
-    background-color: var(--color-bg);
+    strong {
+      display: block;
+      margin-top: 0.75rem;
+      color: var(--color-primary);
+      font-weight: 600;
+    }
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-    margin-top: 1.25rem;
+    grid-template-columns: 1fr;
+    gap: 1rem;
 
-    @media (max-width: 900px) {
-      grid-template-columns: 1fr;
+    @media (min-width: 900px) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
     }
   }
 
@@ -263,58 +219,37 @@ const collaborators = [
     margin-top: 2.5rem;
   }
 
-  &__see-all {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: $color-accent;
-    text-decoration: none;
-    border: 1.5px solid $color-accent;
-    border-radius: $radius-full;
-    padding: 0.6rem 1.5rem;
-    transition: all 0.22s ease;
-    letter-spacing: 0.02em;
-
-    i { font-size: 0.75rem; transition: transform 0.22s ease; }
-
-    &:hover {
-      background-color: $color-accent;
-      color: white;
-      i { transform: translateX(3px); }
-    }
-  }
-
-  // ── Card ─────────────────────────────────────────────
-
+  // ── Card ─────────────────────────
   &__card {
     position: relative;
     display: flex;
     flex-direction: column;
-    border-radius: $radius-lg;
+    min-height: 400px;
     overflow: hidden;
-    text-decoration: none;
-    color: inherit;
-    min-height: 460px;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    border-radius: $radius-lg;
+    color: $on-photo;
+    background-color: #1A120D;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
 
-    @media (max-width: 560px) {
-      min-height: 380px;
+    @media (min-width: 900px) {
+      min-height: 460px;
     }
 
     &:hover {
-      transform: translateY(-10px) scale(1.01);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
 
-      .collab__card-bg {
-        transform: scale(1.06);
-      }
+      .collab__card-bg { transform: scale(1.04); }
+      .collab__card-cta i { transform: translate(2px, -2px); }
+    }
 
-      .collab__card-cta {
-        background-color: rgba(#fff, 0.08);
-        gap: 0.625rem;
+    &--featured {
+      min-height: 360px;
+      margin-top: 1rem;
+      border-radius: $radius-xl;
+
+      @media (min-width: 900px) {
+        margin-top: 1.25rem;
       }
     }
   }
@@ -324,81 +259,22 @@ const collaborators = [
     inset: 0;
     background-size: cover;
     background-position: center;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   &__card-overlay {
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: linear-gradient(
-      180deg,
-      rgba(0,0,0,0.15) 0%,
-      rgba(0,0,0,0.65) 50%,
-      rgba(0,0,0,0.93) 100%
-    );
+    background: linear-gradient(180deg, rgba(20, 12, 8, 0.1) 0%, rgba(20, 12, 8, 0.6) 45%, rgba(20, 12, 8, 0.94) 100%);
 
     &--featured {
-      background: linear-gradient(
-        90deg,
-        rgba(#0b0815, 0.95) 0%,
-        rgba(#0b0815, 0.80) 45%,
-        rgba(#0b0815, 0.45) 75%,
-        transparent 100%
-      );
+      background: linear-gradient(180deg, rgba(20, 12, 8, 0.35) 0%, rgba(20, 12, 8, 0.94) 100%);
 
-      @media (max-width: 768px) {
-        background: linear-gradient(180deg, rgba(#0b0815, 0.4) 0%, rgba(#0b0815, 0.95) 100%);
+      @media (min-width: 768px) {
+        background: linear-gradient(90deg, rgba(20, 12, 8, 0.95) 0%, rgba(20, 12, 8, 0.8) 45%, rgba(20, 12, 8, 0.2) 100%);
       }
     }
-  }
-
-  &__card--featured {
-    min-height: 340px;
-    border-radius: $radius-xl;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
-
-    &:hover {
-      transform: translateY(-6px) scale(1.005);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-    }
-  }
-
-  &__card-featured-badge {
-    position: absolute;
-    top: 1.5rem;
-    left: 1.5rem;
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: $color-accent;
-    background-color: rgba($color-accent, 0.12);
-    border: 1px solid rgba($color-accent, 0.35);
-    padding: 0.3rem 0.75rem;
-    border-radius: $radius-full;
-    backdrop-filter: blur(8px);
-
-    i { font-size: 0.6rem; }
-  }
-
-  &__card-content--featured {
-    padding: 2rem 2.5rem;
-
-    @media (max-width: 768px) { padding: 1.5rem; }
-  }
-
-  &__card-featured-logo {
-    max-width: 160px;
-    max-height: 52px;
-    object-fit: contain;
-    filter: none;
-    margin-bottom: 0.5rem;
-    display: block;
   }
 
   &__card-logo-wrap {
@@ -410,127 +286,89 @@ const collaborators = [
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 50%;
     padding: 2rem 1.5rem;
-    flex: 1;
-    height: 55%;
   }
 
   &__card-logo {
     max-width: 160px;
     max-height: 90px;
     object-fit: contain;
-    opacity: 0.95;
-    drop-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  }
-
-  &__card-eyebrow-top {
-    position: absolute;
-    top: 1.25rem;
-    left: 1.25rem;
-    right: 1.25rem;
-    z-index: 2;
-  }
-
-  &__card-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0.3rem 0.625rem;
-    border: 1px solid;
-    border-radius: $radius-full;
-    backdrop-filter: blur(8px);
-    background-color: rgba(0, 0, 0, 0.3);
-
-    i { font-size: 0.75rem; }
   }
 
   &__card-content {
     position: relative;
     z-index: 2;
-    margin-top: auto;
-    padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-  }
+    margin-top: auto;
+    padding: 1.5rem;
 
-  &__card-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.25rem;
-  }
+    &--featured {
+      max-width: 620px;
 
-  &__card-country {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: rgba(#fff, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-
-    i { font-size: 0.6rem; }
+      @media (min-width: 768px) {
+        margin: auto 0;
+        padding: 2.5rem;
+      }
+    }
   }
 
   &__card-role {
     font-size: 0.7rem;
-    color: rgba(#fff, 0.45);
+    font-weight: 600;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 500;
+    color: $on-photo-accent;
   }
 
   &__card-name {
-    font-family: var(--font-heading);
-    font-size: 1.4375rem;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.2;
-    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: $on-photo;
+  }
+
+  &__card-featured-logo {
+    display: block;
+    max-width: 150px;
+    max-height: 48px;
+    margin: 0.25rem 0;
+    object-fit: contain;
   }
 
   &__card-tagline {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-family: var(--font-heading);
+    font-size: 1rem;
     font-style: italic;
     line-height: 1.4;
-    margin: 0;
+    color: $on-photo;
   }
 
   &__card-desc {
-    font-size: 0.8125rem;
-    color: rgba(#fff, 0.65);
-    line-height: 1.65;
-    margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: $on-photo-soft;
   }
 
   &__card-cta {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border: 1px solid;
-    border-radius: $radius-full;
-    padding: 0.4rem 0.875rem;
+    gap: 0.45rem;
     margin-top: 0.5rem;
-    align-self: flex-start;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(8px);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $on-photo;
 
-    i { font-size: 0.65rem; }
+    i {
+      font-size: 0.7rem;
+      color: $on-photo-accent;
+      transition: transform 0.2s ease;
+    }
   }
 }
 </style>

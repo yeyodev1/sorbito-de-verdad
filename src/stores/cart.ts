@@ -2,6 +2,9 @@ import { defineStore } from 'pinia';
 import type { CartItem, Product, ProductSize } from '../types';
 
 const STORAGE_KEY = 'sorbito-cart';
+// Copia del carrito mientras el cliente paga en PayPhone, por si el pago se rechaza
+const PENDING_KEY = 'sorbito-cart-pending';
+const PENDING_TTL_MS = 2 * 60 * 60 * 1000;
 
 interface CartState {
   items: CartItem[];
@@ -65,6 +68,34 @@ export const useCartStore = defineStore('cart', {
     clearCart() {
       this.items = [];
       this.saveToStorage();
+    },
+
+    /** Vacía el carrito guardando una copia para recuperarlo si el pago falla. */
+    stashForPayment() {
+      try {
+        localStorage.setItem(PENDING_KEY, JSON.stringify({ items: this.items, at: Date.now() }));
+      } catch {}
+      this.clearCart();
+    },
+
+    /** Recupera el carrito guardado antes de ir a pagar. Devuelve true si se restauró. */
+    restorePending(): boolean {
+      try {
+        const raw = localStorage.getItem(PENDING_KEY);
+        if (!raw) return false;
+        localStorage.removeItem(PENDING_KEY);
+        const { items, at } = JSON.parse(raw) as { items: CartItem[]; at: number };
+        if (!Array.isArray(items) || !items.length || Date.now() - at > PENDING_TTL_MS) return false;
+        this.items = items;
+        this.saveToStorage();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+
+    clearPending() {
+      try { localStorage.removeItem(PENDING_KEY); } catch {}
     },
 
     saveToStorage() {

@@ -31,48 +31,45 @@ const emit = defineEmits<{ (e: 'reload'): void }>();
 </template>
 
 <style lang="scss" scoped>
-@use "sass:color";
-
 .update-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  background: rgba(20, 12, 8, 0.55);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .update-modal {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
-  max-width: 420px;
-  width: 100%;
-  padding: 2.5rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.25rem;
+  width: 100%;
+  max-width: 420px;
+  padding: 2.25rem 1.5rem 1.5rem;
   text-align: center;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-xl;
+  box-shadow: var(--shadow-lg);
 
   &__icon-wrap {
-    width: 72px;
-    height: 72px;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    background: rgba($color-accent, 0.12);
-    border: 2px solid rgba($color-accent, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: var(--color-accent-light);
   }
 
   &__icon {
-    font-size: 2rem;
-    color: $color-accent;
+    font-size: 1.6rem;
+    color: var(--color-accent);
   }
 
   &__body {
@@ -82,19 +79,15 @@ const emit = defineEmits<{ (e: 'reload'): void }>();
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-primary);
     margin: 0;
-    line-height: 1.2;
+    font-size: 1.5rem;
+    font-weight: 600;
   }
 
   &__text {
-    font-size: 0.9375rem;
-    color: var(--color-muted);
-    line-height: 1.65;
     margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.65;
   }
 
   &__btn {
@@ -102,24 +95,19 @@ const emit = defineEmits<{ (e: 'reload'): void }>();
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.875rem 2.5rem;
-    background: $color-accent;
-    color: white;
-    border: none;
-    border-radius: $radius-md;
-    font-size: 1rem;
-    font-weight: 700;
-    font-family: var(--font-body);
-    cursor: pointer;
-    transition: all 0.2s ease;
     width: 100%;
+    min-height: 50px;
     margin-top: 0.25rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-on-accent);
+    background: var(--color-accent);
+    border-radius: $radius-full;
+    transition: background-color 0.2s ease, transform 0.15s ease;
 
-    &:hover {
-      background: color.adjust($color-accent, $lightness: -8%);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba($color-accent, 0.35);
-    }
+    &:hover { background: var(--color-accent-hover); }
+    &:active { transform: scale(0.97); }
   }
 }
 

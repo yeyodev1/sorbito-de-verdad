@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useUIStore } from '../stores/ui';
@@ -11,6 +11,7 @@ const router = useRouter();
 const isOpen = computed(() => uiStore.isCartOpen);
 const items = computed(() => cartStore.items);
 const subtotal = computed(() => cartStore.subtotal);
+const totalItems = computed(() => cartStore.totalItems);
 const isEmpty = computed(() => cartStore.isEmpty);
 
 function goToCheckout() {
@@ -23,6 +24,20 @@ function goToShop() {
   router.push('/tienda');
 }
 
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && isOpen.value) uiStore.closeCart();
+}
+
+watch(isOpen, (open) => {
+  document.body.style.overflow = open ? 'hidden' : '';
+});
+
+onMounted(() => window.addEventListener('keydown', onKeydown));
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown);
+  document.body.style.overflow = '';
+});
+
 function formatPrice(val: number) {
   return `$${val.toFixed(2)}`;
 }
@@ -31,147 +46,148 @@ function formatPrice(val: number) {
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="isOpen" class="cart-overlay" @click="uiStore.closeCart()" />
+      <div v-if="isOpen" class="cd-overlay" @click="uiStore.closeCart()" />
     </Transition>
 
     <Transition name="slide-right">
-      <aside v-if="isOpen" class="cart-drawer" aria-label="Carrito de compras">
-        <!-- Header -->
-        <div class="cart-drawer__header">
-          <h2 class="cart-drawer__title">Mi Carrito</h2>
-          <button class="cart-drawer__close" @click="uiStore.closeCart()" aria-label="Cerrar carrito">
+      <aside v-if="isOpen" class="cd" role="dialog" aria-modal="true" aria-label="Carrito de compras">
+        <header class="cd__header">
+          <h2 class="cd__title">
+            Tu carrito
+            <span v-if="!isEmpty" class="cd__count">{{ totalItems }}</span>
+          </h2>
+          <button class="cd__close" @click="uiStore.closeCart()" aria-label="Cerrar carrito">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
+        </header>
+
+        <div v-if="isEmpty" class="cd__empty">
+          <div class="cd__empty-icon"><i class="fa-solid fa-mug-hot"></i></div>
+          <h3 class="cd__empty-title">Tu carrito está vacío</h3>
+          <p class="cd__empty-text">Descubre nuestras tazas artesanales y elige la que más te inspire.</p>
+          <button class="btn-primary" @click="goToShop">Ver tienda</button>
         </div>
 
-        <!-- Empty state -->
-        <div v-if="isEmpty" class="cart-drawer__empty">
-          <div class="cart-drawer__empty-icon"><i class="fa-solid fa-cart-shopping"></i></div>
-          <h3 class="cart-drawer__empty-title">Tu carrito está vacío</h3>
-          <p class="cart-drawer__empty-text">Descubre nuestras tazas artesanales y elige la que más te inspire.</p>
-          <button class="btn-primary" @click="goToShop">Ver Tienda</button>
-        </div>
-
-        <!-- Items -->
-        <div v-else class="cart-drawer__body">
-          <ul class="cart-drawer__list">
-            <li v-for="item in items" :key="`${item.product._id}-${item.selectedSize?.name}`" class="cart-item">
-              <div class="cart-item__image-wrap">
-                <img
-                  :src="item.product.mainImage || '/placeholder-cup.jpg'"
-                  :alt="item.product.name"
-                  class="cart-item__image"
-                  loading="lazy"
-                />
-              </div>
-              <div class="cart-item__info">
-                <RouterLink :to="`/tienda/${item.product.slug}`" class="cart-item__name" @click="uiStore.closeCart()">
-                  {{ item.product.name }}
-                </RouterLink>
-                <span v-if="item.selectedSize" class="cart-item__size-tag">{{ item.selectedSize.name }}</span>
-                <span class="cart-item__price">{{ formatPrice(item.selectedSize?.price ?? item.product.price) }}</span>
-                <div class="cart-item__controls">
-                  <button class="cart-item__qty-btn" @click="cartStore.updateQuantity(item.product._id, item.quantity - 1, item.selectedSize?.name)" aria-label="Reducir cantidad">−</button>
-                  <span class="cart-item__qty">{{ item.quantity }}</span>
-                  <button class="cart-item__qty-btn" @click="cartStore.updateQuantity(item.product._id, item.quantity + 1, item.selectedSize?.name)" aria-label="Aumentar cantidad">+</button>
+        <template v-else>
+          <ul class="cd__list">
+            <li v-for="item in items" :key="`${item.product._id}-${item.selectedSize?.name}`" class="cd-item">
+              <RouterLink :to="`/tienda/${item.product.slug}`" class="cd-item__media" @click="uiStore.closeCart()">
+                <img :src="item.product.mainImage || '/placeholder-cup.jpg'" :alt="item.product.name" loading="lazy" />
+              </RouterLink>
+              <div class="cd-item__info">
+                <div class="cd-item__top">
+                  <RouterLink :to="`/tienda/${item.product.slug}`" class="cd-item__name" @click="uiStore.closeCart()">
+                    {{ item.product.name }}
+                  </RouterLink>
+                  <button class="cd-item__remove" @click="cartStore.removeFromCart(item.product._id, item.selectedSize?.name)" :aria-label="`Eliminar ${item.product.name}`">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                    </svg>
+                  </button>
                 </div>
-              </div>
-              <div class="cart-item__right">
-                <span class="cart-item__subtotal">{{ formatPrice((item.selectedSize?.price ?? item.product.price) * item.quantity) }}</span>
-                <button class="cart-item__remove" @click="cartStore.removeFromCart(item.product._id, item.selectedSize?.name)" aria-label="Eliminar producto">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                  </svg>
-                </button>
+                <span v-if="item.selectedSize" class="cd-item__size">{{ item.selectedSize.name }}</span>
+                <div class="cd-item__bottom">
+                  <div class="qty">
+                    <button class="qty__btn" @click="cartStore.updateQuantity(item.product._id, item.quantity - 1, item.selectedSize?.name)" aria-label="Reducir cantidad">−</button>
+                    <span class="qty__num">{{ item.quantity }}</span>
+                    <button class="qty__btn" @click="cartStore.updateQuantity(item.product._id, item.quantity + 1, item.selectedSize?.name)" aria-label="Aumentar cantidad">+</button>
+                  </div>
+                  <span class="cd-item__price">{{ formatPrice((item.selectedSize?.price ?? item.product.price) * item.quantity) }}</span>
+                </div>
               </div>
             </li>
           </ul>
-        </div>
 
-        <!-- Footer -->
-        <div v-if="!isEmpty" class="cart-drawer__footer">
-          <div class="cart-drawer__subtotal">
-            <span class="cart-drawer__subtotal-label">Subtotal</span>
-            <span class="cart-drawer__subtotal-value">{{ formatPrice(subtotal) }}</span>
-          </div>
-          <p class="cart-drawer__shipping-note">Envío calculado al finalizar la compra</p>
-          <button class="cart-drawer__checkout-btn" @click="goToCheckout">
-            Ir a Pagar
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-          <button class="cart-drawer__continue-btn" @click="goToShop">
-            Seguir comprando
-          </button>
-        </div>
+          <footer class="cd__footer">
+            <div class="cd__subtotal">
+              <span>Subtotal</span>
+              <strong>{{ formatPrice(subtotal) }}</strong>
+            </div>
+            <p class="cd__note">El envío se calcula según tu país en el siguiente paso.</p>
+            <button class="btn-primary btn-lg btn-block cd__pay" @click="goToCheckout">
+              <i class="fa-solid fa-lock"></i>
+              Pagar ahora · {{ formatPrice(subtotal) }}
+            </button>
+            <button class="cd__continue" @click="uiStore.closeCart()">Seguir comprando</button>
+            <div class="cd__trust">
+              <span><i class="fa-solid fa-shield-halved"></i> Pago seguro</span>
+              <span><i class="fa-solid fa-truck-fast"></i> Envío a todo el país</span>
+            </div>
+          </footer>
+        </template>
       </aside>
     </Transition>
   </Teleport>
 </template>
 
 <style lang="scss" scoped>
-@use "sass:color";
-
-.cart-overlay {
+.cd-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(var(--color-primary), 0.45);
   z-index: 1100;
-  cursor: pointer;
+  background-color: rgba(20, 14, 10, 0.5);
+  backdrop-filter: blur(2px);
 }
 
-.cart-drawer {
+.cd {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 420px;
-  max-width: 100vw;
-  background-color: var(--color-bg-card);
   z-index: 1101;
+  width: min(440px, 100vw);
   display: flex;
   flex-direction: column;
-  box-shadow: $shadow-xl;
-
-  @media (max-width: 480px) {
-    width: 100%;
-  }
+  background-color: var(--color-bg);
+  box-shadow: var(--shadow-lg);
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1rem 1rem 1.25rem;
     border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.375rem;
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 0.4rem;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
+    border-radius: $radius-full;
   }
 
   &__close {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: $radius-sm;
+    width: 44px;
+    height: 44px;
     color: var(--color-muted);
+    border-radius: 50%;
     transition: all 0.2s ease;
-    cursor: pointer;
 
     &:hover {
-      background-color: var(--color-bg-subtle);
       color: var(--color-primary);
+      background-color: var(--color-bg-subtle);
     }
   }
 
@@ -181,256 +197,209 @@ function formatPrice(val: number) {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0.875rem;
     padding: 3rem 2rem;
     text-align: center;
-    gap: 1rem;
   }
 
   &__empty-icon {
-    font-size: 3.5rem;
-    line-height: 1;
-    opacity: 0.4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    font-size: 1.75rem;
+    color: var(--color-accent);
+    background-color: var(--color-accent-light);
+    border-radius: 50%;
   }
 
   &__empty-title {
-    font-family: var(--font-heading);
     font-size: 1.25rem;
-    color: var(--color-primary);
   }
 
   &__empty-text {
+    max-width: 280px;
     font-size: 0.9375rem;
-    color: var(--color-muted);
-    max-width: 260px;
-    line-height: 1.6;
-  }
-
-  &__body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.75rem 0;
   }
 
   &__list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.5rem 1.25rem;
   }
 
   &__footer {
-    border-top: 1px solid var(--color-border);
-    padding: 1.25rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.875rem;
-    flex-shrink: 0;
+    gap: 0.625rem;
+    padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+    background-color: var(--color-bg-card);
+    border-top: 1px solid var(--color-border);
   }
 
   &__subtotal {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-  }
-
-  &__subtotal-label {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--color-primary);
-  }
-
-  &__subtotal-value {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-primary);
-  }
-
-  &__shipping-note {
-    font-size: 0.8125rem;
-    color: var(--color-muted);
-    text-align: center;
-  }
-
-  &__checkout-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.9rem 1.5rem;
-    background-color: $color-accent;
-    color: white;
-    border: none;
-    border-radius: $radius-md;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: var(--font-body);
-
-    &:hover {
-      background-color: color.adjust($color-accent, $lightness: -8%);
-      transform: translateY(-1px);
-      box-shadow: $shadow-md;
-    }
-  }
-
-  &__continue-btn {
-    width: 100%;
-    padding: 0.75rem;
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-md;
+    align-items: baseline;
     font-size: 0.9375rem;
     color: var(--color-muted);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: var(--font-body);
 
-    &:hover {
-      border-color: var(--color-primary);
+    strong {
+      font-size: 1.25rem;
       color: var(--color-primary);
+      font-variant-numeric: tabular-nums;
     }
+  }
+
+  &__note {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  &__pay {
+    margin-top: 0.25rem;
+  }
+
+  &__continue {
+    min-height: 40px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    &:hover { color: var(--color-primary); }
+  }
+
+  &__trust {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+
+    i { color: var(--color-accent); margin-right: 0.25rem; }
   }
 }
 
-.cart-item {
+.cd-item {
   display: flex;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
+  gap: 0.875rem;
+  padding: 1rem 0;
   border-bottom: 1px solid var(--color-border);
 
-  &:last-child {
-    border-bottom: none;
-  }
+  &:last-child { border-bottom: none; }
 
-  &__image-wrap {
-    width: 72px;
-    height: 72px;
+  &__media {
     flex-shrink: 0;
-    border-radius: $radius-sm;
+    width: 84px;
+    height: 96px;
     overflow: hidden;
     background-color: var(--color-bg-subtle);
-  }
+    border-radius: $radius-md;
 
-  &__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
 
   &__info {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    min-width: 0;
+  }
+
+  &__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 
   &__name {
-    font-size: 0.9375rem;
-    font-weight: 500;
-    color: var(--color-primary);
-    text-decoration: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-
-    &:hover {
-      color: $color-accent;
-    }
-  }
-
-  &__size-tag {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: $color-accent;
-    background-color: rgba($color-accent, 0.1);
-    border-radius: $radius-full;
-    padding: 0.1rem 0.5rem;
-    margin-bottom: 0.1rem;
-  }
-
-  &__price {
-    font-size: 0.875rem;
-    color: var(--color-muted);
-  }
-
-  &__controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.25rem;
-  }
-
-  &__qty-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-sm;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    color: var(--color-primary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: none;
-
-    &:hover {
-      border-color: $color-accent;
-      color: $color-accent;
-    }
-  }
-
-  &__qty {
-    font-size: 0.9375rem;
-    font-weight: 500;
-    color: var(--color-primary);
-    min-width: 20px;
-    text-align: center;
-  }
-
-  &__right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  &__subtotal {
-    font-weight: 600;
-    font-size: 0.9375rem;
-    color: var(--color-primary);
     font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-primary);
+
+    &:hover { color: var(--color-accent); }
   }
 
   &__remove {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: -0.25rem -0.375rem 0 0;
     color: var(--color-muted);
-    cursor: pointer;
-    transition: color 0.2s ease;
-    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
 
     &:hover {
       color: var(--color-error);
+      background-color: var(--color-error-light);
     }
+  }
+
+  &__size {
+    align-self: flex-start;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    background-color: var(--color-bg-subtle);
+    border-radius: $radius-full;
+  }
+
+  &__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 0.375rem;
+  }
+
+  &__price {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 }
 
-// Transitions
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--color-border);
+  border-radius: $radius-full;
 
-.slide-right-enter-active, .slide-right-leave-active {
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    font-size: 1.125rem;
+    color: var(--color-primary);
+    border-radius: 50%;
+
+    &:hover { background-color: var(--color-bg-subtle); }
+  }
+
+  &__num {
+    min-width: 24px;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
 }
-.slide-right-enter-from { transform: translateX(100%); }
-.slide-right-leave-to { transform: translateX(100%); }
 </style>

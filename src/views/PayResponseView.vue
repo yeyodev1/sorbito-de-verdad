@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
 import { orderService } from '../services/order.service';
 
@@ -42,87 +42,114 @@ onMounted(async () => {
 
 <template>
   <MainLayout>
-    <div class="pay-response">
-      <div class="pay-response__card">
+    <section class="pay-response">
+      <div class="pay-response__card" role="status" aria-live="polite">
         <!-- Verifying -->
         <template v-if="status === 'verifying'">
-          <div class="pay-response__spinner">
-            <i class="fa-solid fa-circle-notch fa-spin"></i>
+          <div class="pay-response__loader" aria-hidden="true">
+            <span class="pay-response__ring"></span>
+            <i class="fa-solid fa-mug-hot"></i>
           </div>
-          <h2 class="pay-response__title">Verificando tu pago</h2>
-          <p class="pay-response__desc">Estamos confirmando tu transacción. Un momento...</p>
+          <span class="eyebrow">Paso final</span>
+          <h1 class="pay-response__title">Verificando tu pago</h1>
+          <p class="pay-response__desc">Estamos confirmando tu transacción con el banco. No cierres esta ventana.</p>
         </template>
 
         <!-- Error -->
         <template v-else-if="status === 'error'">
-          <div class="pay-response__icon pay-response__icon--error">
+          <div class="pay-response__icon" aria-hidden="true">
             <i class="fa-solid fa-triangle-exclamation"></i>
           </div>
-          <h2 class="pay-response__title">Algo salió mal</h2>
+          <span class="eyebrow pay-response__eyebrow--error">Verificación</span>
+          <h1 class="pay-response__title">Algo salió mal</h1>
           <p class="pay-response__desc">{{ message }}</p>
+          <RouterLink to="/" class="btn-outline pay-response__btn">Volver al inicio</RouterLink>
         </template>
       </div>
-    </div>
+    </section>
   </MainLayout>
 </template>
 
 <style lang="scss" scoped>
 .pay-response {
-  min-height: 60vh;
+  min-height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 4rem 1rem;
 
   &__card {
+    width: 100%;
+    max-width: 440px;
+    padding: 3rem 1.75rem;
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
     border-radius: $radius-xl;
-    padding: 3rem 2.5rem;
+    box-shadow: var(--shadow-lg);
     text-align: center;
-    max-width: 420px;
-    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
-  }
+    gap: 0.875rem;
 
-  &__spinner {
-    font-size: 2.5rem;
-    color: $color-accent;
-    margin-bottom: 0.5rem;
-  }
-
-  &__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.75rem;
-    margin-bottom: 0.5rem;
-
-    &--error {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
+    @media (min-width: 480px) {
+      padding: 3.5rem 2.75rem;
     }
   }
 
+  &__loader {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 1.625rem;
+    color: var(--color-accent);
+    background: var(--color-accent-light);
+    border-radius: 50%;
+  }
+
+  &__ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
+    border-top-color: var(--color-accent);
+    animation: pay-spin 1s linear infinite;
+  }
+
+  &__icon {
+    width: 84px;
+    height: 84px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.5rem;
+    border-radius: 50%;
+    font-size: 1.75rem;
+    color: var(--color-error);
+    background: var(--color-error-light);
+  }
+
+  &__eyebrow--error {
+    color: var(--color-error);
+  }
+
   &__title {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 0;
+    font-size: clamp(1.625rem, 4vw, 2rem);
   }
 
   &__desc {
     font-size: 0.9375rem;
-    color: var(--color-muted);
-    line-height: 1.6;
-    margin: 0;
+    max-width: 32ch;
   }
+
+  &__btn {
+    margin-top: 0.75rem;
+  }
+}
+
+@keyframes pay-spin {
+  to { transform: rotate(360deg); }
 }
 </style>

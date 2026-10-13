@@ -71,63 +71,58 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 </template>
 
 <style lang="scss" scoped>
-@use "sass:color";
-
 .cm-overlay {
   position: fixed;
   inset: 0;
   z-index: 99998;
-  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1rem;
+  background-color: rgba(20, 12, 8, 0.55);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+
+  @media (min-width: 560px) {
+    align-items: center;
+    padding: 1.5rem;
+  }
 }
 
 .cm-card {
-  background-color: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.25rem;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 420px;
+  padding: 1.75rem 1.25rem 1.25rem;
   text-align: center;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-xl;
+  box-shadow: var(--shadow-lg);
+
+  @media (min-width: 560px) {
+    padding: 2rem;
+  }
 }
 
 .cm-icon {
-  width: 60px;
-  height: 60px;
+  --cm-tone: var(--color-error);
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: var(--cm-tone);
+  background-color: color-mix(in srgb, var(--cm-tone) 12%, transparent);
 
-  i { font-size: 1.5rem; }
+  i { font-size: 1.4rem; }
 
-  &--danger {
-    background-color: rgba(#ef4444, 0.12);
-    color: #ef4444;
-    border: 2px solid rgba(#ef4444, 0.25);
-  }
-
-  &--warning {
-    background-color: rgba(#f59e0b, 0.12);
-    color: #f59e0b;
-    border: 2px solid rgba(#f59e0b, 0.25);
-  }
-
-  &--info {
-    background-color: rgba(#3b82f6, 0.12);
-    color: #3b82f6;
-    border: 2px solid rgba(#3b82f6, 0.25);
-  }
+  &--danger  { --cm-tone: var(--color-error); }
+  &--warning { --cm-tone: var(--color-warning); }
+  &--info    { --cm-tone: var(--color-accent); }
 }
 
 .cm-content {
@@ -137,86 +132,66 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 }
 
 .cm-title {
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-primary);
   margin: 0;
-  line-height: 1.3;
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .cm-message {
-  font-size: 0.9375rem;
-  color: var(--color-muted);
   margin: 0;
+  font-size: 0.9375rem;
   line-height: 1.6;
 }
 
 .cm-actions {
   display: flex;
-  gap: 0.75rem;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
   width: 100%;
   margin-top: 0.25rem;
+
+  @media (min-width: 400px) {
+    flex-direction: row;
+  }
 }
 
 .cm-btn {
+  --cm-tone: var(--color-error);
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  border-radius: 8px;
+  min-height: 48px;
+  padding: 0 1.25rem;
+  font-family: var(--font-body);
   font-size: 0.9375rem;
   font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.18s ease;
-  font-family: var(--font-body);
+  color: var(--color-on-accent);
+  background-color: var(--cm-tone);
+  border-radius: $radius-full;
+  transition: opacity 0.18s ease, background-color 0.18s ease, transform 0.15s ease;
 
-  i { font-size: 0.875rem; }
+  i { font-size: 0.85rem; }
+
+  &:hover { opacity: 0.9; }
+  &:active { transform: scale(0.97); }
 
   &--cancel {
-    background-color: var(--color-bg-subtle);
-    color: var(--color-muted);
-    border: 1px solid var(--color-border);
+    color: var(--color-primary);
+    background-color: transparent;
+    border: 1.5px solid var(--color-border-strong);
 
     &:hover {
-      background-color: var(--color-border);
-      color: var(--color-primary);
+      opacity: 1;
+      background-color: var(--color-bg-subtle);
     }
   }
 
-  &--danger {
-    background-color: #ef4444;
-    color: white;
-
-    &:hover {
-      background-color: color.adjust(#ef4444, $lightness: -8%);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(#ef4444, 0.4);
-    }
-  }
-
-  &--warning {
-    background-color: #f59e0b;
-    color: white;
-
-    &:hover {
-      background-color: color.adjust(#f59e0b, $lightness: -8%);
-      transform: translateY(-1px);
-    }
-  }
-
-  &--info {
-    background-color: $color-accent;
-    color: white;
-
-    &:hover {
-      background-color: color.adjust($color-accent, $lightness: -8%);
-      transform: translateY(-1px);
-    }
-  }
+  &--danger  { --cm-tone: var(--color-error); }
+  &--warning { --cm-tone: var(--color-warning); }
+  &--info    { --cm-tone: var(--color-accent); }
 }
 
 // ── Animations ──────────────────────────────────────────────

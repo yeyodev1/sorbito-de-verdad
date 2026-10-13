@@ -97,32 +97,27 @@ function handleAction(toastId: number, to: string) {
 
 // ── Toast item ───────────────────────────────────────────────
 .toast-item {
+  --toast-tone: var(--color-primary);
   position: relative;
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  padding: 0.875rem 0.875rem 0.875rem 1rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  padding: 0.75rem 0.75rem 0.75rem 0.875rem;
   overflow: hidden;
-  pointer-events: all;
-  background-color: #1c1c1e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #f0f0f0;
-
-  // Rich variant (has image) padding tweak
-  &--rich {
-    padding: 0.75rem;
-    align-items: flex-start;
-  }
+  pointer-events: auto;
+  color: var(--color-primary);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-lg;
+  box-shadow: var(--shadow-lg);
 
   &__img {
     width: 56px;
     height: 56px;
-    border-radius: 8px;
-    object-fit: cover;
     flex-shrink: 0;
-    border: 1px solid rgba(255,255,255,0.1);
+    object-fit: cover;
+    border-radius: $radius-md;
+    background-color: var(--color-bg-subtle);
   }
 
   &__body {
@@ -140,115 +135,77 @@ function handleAction(toastId: number, to: string) {
   }
 
   &__icon {
-    font-size: 1rem;
     flex-shrink: 0;
-    margin-top: 1px;
+    margin-top: 0.15rem;
+    font-size: 1rem;
+    color: var(--toast-tone);
   }
 
   &__msg {
     flex: 1;
-    line-height: 1.45;
+    min-width: 0;
     font-size: 0.875rem;
     font-weight: 500;
+    line-height: 1.45;
+    word-break: break-word;
   }
 
   &__close {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.4);
-    cursor: pointer;
-    padding: 0.2rem;
-    font-size: 0.6875rem;
-    line-height: 1;
-    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
+    margin: -0.375rem -0.25rem 0 0;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    border-radius: 50%;
     transition: color 0.15s ease, background-color 0.15s ease;
-    align-self: flex-start;
 
     &:hover {
-      color: rgba(255, 255, 255, 0.9);
-      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--color-primary);
+      background-color: var(--color-bg-subtle);
     }
   }
 
   &__actions {
-    padding-left: 1.625rem; // align under the message (icon width + gap)
+    display: flex;
   }
 
   &__action-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.875rem;
-    border-radius: 6px;
+    gap: 0.4rem;
+    min-height: 36px;
+    padding: 0 0.95rem;
     font-size: 0.8125rem;
     font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.15s ease;
-    background-color: rgba(255, 255, 255, 0.12);
-    color: #ffffff;
-    font-family: inherit;
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
+    border-radius: $radius-full;
+    transition: background-color 0.15s ease;
 
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      transform: translateX(2px);
-    }
+    i { font-size: 0.7rem; }
 
-    i {
-      font-size: 0.6875rem;
-      transition: transform 0.15s ease;
-    }
-
-    &:hover i {
-      transform: translateX(2px);
-    }
+    &:hover { background-color: var(--color-accent-hover); }
   }
 
-  // ── Progress bar ────────────────────────────────────────
   &__progress {
     position: absolute;
-    bottom: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
     height: 3px;
-    width: 100%;
+    background-color: var(--toast-tone);
+    opacity: 0.6;
     transform-origin: left;
     animation: toast-progress linear forwards;
-    border-radius: 0 0 12px 12px;
   }
 
-  // ── Type variants ───────────────────────────────────────
-  &--success {
-    border-left: 3px solid #4ade80;
-    .toast-item__icon { color: #4ade80; }
-    .toast-item__progress { background-color: #4ade80; }
-    .toast-item__action-btn { background-color: rgba(#4ade80, 0.15); color: #4ade80; }
-    .toast-item__action-btn:hover { background-color: rgba(#4ade80, 0.25); }
-  }
-
-  &--error {
-    border-left: 3px solid #f87171;
-    .toast-item__icon { color: #f87171; }
-    .toast-item__progress { background-color: #f87171; }
-    .toast-item__action-btn { background-color: rgba(#f87171, 0.15); color: #f87171; }
-    .toast-item__action-btn:hover { background-color: rgba(#f87171, 0.25); }
-  }
-
-  &--warning {
-    border-left: 3px solid #fbbf24;
-    .toast-item__icon { color: #fbbf24; }
-    .toast-item__progress { background-color: #fbbf24; }
-    .toast-item__action-btn { background-color: rgba(#fbbf24, 0.15); color: #fbbf24; }
-    .toast-item__action-btn:hover { background-color: rgba(#fbbf24, 0.25); }
-  }
-
-  &--info {
-    border-left: 3px solid #60a5fa;
-    .toast-item__icon { color: #60a5fa; }
-    .toast-item__progress { background-color: #60a5fa; }
-    .toast-item__action-btn { background-color: rgba(#60a5fa, 0.15); color: #60a5fa; }
-    .toast-item__action-btn:hover { background-color: rgba(#60a5fa, 0.25); }
-  }
+  &--success { --toast-tone: var(--color-success); }
+  &--error   { --toast-tone: var(--color-error); }
+  &--warning { --toast-tone: var(--color-warning); }
+  &--info    { --toast-tone: var(--color-accent); }
 }
 
 // ── Progress animation ──────────────────────────────────────

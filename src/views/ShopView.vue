@@ -84,95 +84,87 @@ watch(selectedCollection, () => applyFilters(1));
 
 <template>
   <MainLayout>
-    <div class="shop-view">
+    <div class="shop">
 
-      <!-- Hero header -->
-      <div class="shop-view__hero">
-        <div class="container shop-view__hero-inner">
-          <div>
-            <span class="shop-view__eyebrow">Tienda</span>
-            <h1 class="shop-view__title">Elige tu taza</h1>
-            <p class="shop-view__subtitle">4 modelos · 2 tamaños · 1 colección completa</p>
-          </div>
+      <!-- Header -->
+      <header class="shop__hero">
+        <div class="container shop__hero-inner">
+          <span class="eyebrow">Tienda</span>
+          <h1 class="shop__title">Elige tu taza</h1>
+          <p class="shop__subtitle">4 modelos · 2 tamaños · 1 colección completa. Hechas a mano en Ecuador.</p>
         </div>
-      </div>
+      </header>
 
       <!-- Sticky filter bar -->
-      <div class="shop-view__filter-bar">
-        <div class="container shop-view__filter-inner">
-
-          <!-- Search -->
-          <div class="shop-filter-search">
-            <i class="fa-solid fa-magnifying-glass shop-filter-search__icon"></i>
-            <input
-              v-model="searchQuery"
-              type="search"
-              placeholder="Buscar..."
-              class="shop-filter-search__input"
-              @input="onSearchInput"
-            />
-          </div>
-
-          <!-- Collection pills -->
-          <div class="shop-filter-pills">
+      <div class="shop__bar">
+        <div class="container shop__bar-inner">
+          <div class="shop__chips" role="tablist" aria-label="Colecciones">
             <button
               v-for="col in collections"
               :key="col.value"
-              :class="['shop-filter-pill', { 'shop-filter-pill--active': selectedCollection === col.value }]"
+              type="button"
+              role="tab"
+              :aria-selected="selectedCollection === col.value"
+              :class="['shop__chip', { 'shop__chip--active': selectedCollection === col.value }]"
               @click="selectedCollection = col.value"
             >
-              <i :class="[col.icon, 'shop-filter-pill__icon']"></i>
               {{ col.label }}
             </button>
           </div>
 
-          <!-- Sort -->
-          <div class="shop-filter-sort">
-            <i class="fa-solid fa-arrow-up-wide-short shop-filter-sort__icon"></i>
-            <select v-model="selectedSort" class="shop-filter-sort__select">
-              <option v-for="s in sorts" :key="s.value" :value="s.value">{{ s.label }}</option>
-            </select>
+          <div class="shop__tools">
+            <label class="shop__search">
+              <span class="sr-only">Buscar tazas</span>
+              <i class="fa-solid fa-magnifying-glass shop__search-icon" aria-hidden="true"></i>
+              <input
+                v-model="searchQuery"
+                type="search"
+                placeholder="Buscar taza…"
+                class="shop__search-input"
+                @input="onSearchInput"
+              />
+            </label>
+            <label class="shop__sort">
+              <span class="sr-only">Ordenar por</span>
+              <select v-model="selectedSort" class="shop__sort-select">
+                <option v-for="s in sorts" :key="s.value" :value="s.value">{{ s.label }}</option>
+              </select>
+              <i class="fa-solid fa-chevron-down shop__sort-icon" aria-hidden="true"></i>
+            </label>
           </div>
-
         </div>
       </div>
 
       <!-- Results -->
-      <div class="container shop-view__content">
-        <!-- Results bar -->
-        <div class="shop-view__results-bar">
-          <p class="shop-view__results-text">
+      <section class="container shop__content">
+        <div class="shop__meta">
+          <p class="shop__count" aria-live="polite">
             <template v-if="!loading">
               <strong>{{ pagination.total }}</strong> taza{{ pagination.total !== 1 ? 's' : '' }}
               <template v-if="selectedCollection">
                 en <em>{{ collections.find(c => c.value === selectedCollection)?.label }}</em>
               </template>
             </template>
-            <template v-else>Buscando...</template>
+            <template v-else>Buscando…</template>
           </p>
-          <button v-if="hasActiveFilters" class="shop-view__clear-btn" @click="clearFilters">
-            <i class="fa-solid fa-xmark"></i>
-            Limpiar filtros
+          <button v-if="hasActiveFilters" type="button" class="shop__clear" @click="clearFilters">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            Limpiar
           </button>
         </div>
 
         <!-- Loading Skeletons -->
-        <div v-if="loading" class="shop-view__grid">
-          <div v-for="i in 6" :key="`skeleton-${i}`" class="product-skeleton">
-            <div class="product-skeleton__image skeleton"></div>
-            <div class="product-skeleton__body">
-              <div class="product-skeleton__line skeleton" style="width: 65%"></div>
-              <div class="product-skeleton__line skeleton" style="width: 45%"></div>
-              <div class="product-skeleton__footer">
-                <div class="product-skeleton__price skeleton" style="width: 30%"></div>
-                <div class="product-skeleton__btn skeleton" style="width: 35%"></div>
-              </div>
-            </div>
+        <div v-if="loading" class="shop__grid">
+          <div v-for="i in 8" :key="`skeleton-${i}`" class="shop-skel">
+            <div class="shop-skel__image skeleton"></div>
+            <div class="shop-skel__line skeleton" style="width: 70%"></div>
+            <div class="shop-skel__line skeleton" style="width: 40%"></div>
+            <div class="shop-skel__btn skeleton"></div>
           </div>
         </div>
 
         <!-- Products Grid -->
-        <div v-else-if="products.length > 0" class="shop-view__grid">
+        <div v-else-if="products.length > 0" class="shop__grid">
           <ProductCard
             v-for="product in products"
             :key="product._id"
@@ -181,374 +173,383 @@ watch(selectedCollection, () => applyFilters(1));
         </div>
 
         <!-- No results -->
-        <div v-else class="shop-view__empty">
-          <div class="shop-view__empty-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-          <h3 class="shop-view__empty-title">Sin resultados</h3>
-          <p class="shop-view__empty-text">No encontramos tazas con esos criterios.</p>
-          <button class="shop-view__empty-btn" @click="clearFilters">Ver todas las tazas</button>
+        <div v-else class="shop__empty">
+          <div class="shop__empty-icon"><i class="fa-solid fa-mug-saucer" aria-hidden="true"></i></div>
+          <h2 class="shop__empty-title">Sin resultados</h2>
+          <p class="shop__empty-text">No encontramos tazas con esos criterios.</p>
+          <button type="button" class="btn-primary" @click="clearFilters">Ver todas las tazas</button>
         </div>
 
         <!-- Pagination -->
-        <div v-if="!loading && pagination.pages > 1" class="shop-view__pagination">
+        <nav v-if="!loading && pagination.pages > 1" class="shop__pagination" aria-label="Paginación">
           <button
-            class="shop-view__page-btn"
+            type="button"
+            class="shop__page"
             :disabled="pagination.page <= 1"
+            aria-label="Página anterior"
             @click="goToPage(pagination.page - 1)"
-          >&lsaquo;</button>
+          ><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
           <button
             v-for="p in pagination.pages"
             :key="p"
-            :class="['shop-view__page-btn', { 'shop-view__page-btn--active': p === pagination.page }]"
+            type="button"
+            :class="['shop__page', { 'shop__page--active': p === pagination.page }]"
+            :aria-current="p === pagination.page ? 'page' : undefined"
             @click="goToPage(p)"
           >{{ p }}</button>
           <button
-            class="shop-view__page-btn"
+            type="button"
+            class="shop__page"
             :disabled="pagination.page >= pagination.pages"
+            aria-label="Página siguiente"
             @click="goToPage(pagination.page + 1)"
-          >&rsaquo;</button>
-        </div>
-      </div>
+          ><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </nav>
+      </section>
     </div>
   </MainLayout>
 </template>
 
 <style lang="scss" scoped>
-@use "sass:color";
+.shop {
+  background-color: var(--color-bg);
+  min-height: 100vh;
 
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-.shop-view {
+  // ── Header ──────────────────────────────────
   &__hero {
-    background-color: var(--color-bg-subtle);
-    border-bottom: 1px solid var(--color-border);
-    padding: 3rem 0 2.5rem;
+    padding: 2.5rem 0 1.5rem;
+
+    @media (min-width: 768px) {
+      padding: 4rem 0 2.25rem;
+    }
   }
 
   &__hero-inner {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  &__eyebrow {
-    display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: $color-accent;
-    margin-bottom: 0.375rem;
+    flex-direction: column;
+    gap: 0.625rem;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: clamp(1.75rem, 4vw, 2.75rem);
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 0 0 0.375rem;
-    line-height: 1.15;
+    font-size: clamp(2.25rem, 6vw, 4rem);
+    font-weight: 500;
   }
 
   &__subtitle {
-    font-size: 0.9375rem;
-    color: var(--color-muted);
-    margin: 0;
+    max-width: 46ch;
+    font-size: 1rem;
   }
 
-  // ── Filter Bar ────────────────────────────────────────────
-  &__filter-bar {
+  // ── Filter bar ──────────────────────────────
+  &__bar {
     position: sticky;
-    top: 0;
-    z-index: 40;
-    background-color: var(--color-bg-card);
+    top: 60px;
+    z-index: 50;
+    background-color: var(--navbar-bg-scrolled);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
-    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-  }
 
-  &__filter-inner {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding-top: 0.875rem;
-    padding-bottom: 0.875rem;
-    flex-wrap: wrap;
-
-    @media (max-width: 768px) {
-      gap: 0.75rem;
+    @media (min-width: 768px) {
+      top: 70px;
     }
   }
 
-  // ── Content ───────────────────────────────────────────────
-  &__content {
-    padding-top: 2rem;
-    padding-bottom: 4rem;
+  &__bar-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+
+    @media (min-width: 900px) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
   }
 
-  &__results-bar {
+  &__chips {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    scroll-snap-type: x proximity;
+
+    &::-webkit-scrollbar { display: none; }
+
+    @media (min-width: 768px) {
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  &__chip {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    min-height: 44px;
+    padding: 0 1.125rem;
+    border-radius: $radius-full;
+    border: 1.5px solid var(--color-border);
+    background-color: var(--color-bg-card);
+    color: var(--color-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      border-color: var(--color-border-strong);
+    }
+
+    &--active,
+    &--active:hover {
+      background-color: var(--color-bg-inverse);
+      border-color: var(--color-bg-inverse);
+      color: var(--color-on-inverse);
+    }
+  }
+
+  &__tools {
+    display: flex;
+    gap: 0.5rem;
+    min-width: 0;
+
+    @media (min-width: 900px) {
+      flex-shrink: 0;
+    }
+  }
+
+  &__search {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+
+    @media (min-width: 900px) {
+      width: 240px;
+      flex: none;
+    }
+  }
+
+  &__search-icon {
+    position: absolute;
+    left: 0.95rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    pointer-events: none;
+  }
+
+  &__search-input,
+  &__sort-select {
+    width: 100%;
+    min-height: 44px;
+    border-radius: $radius-full;
+    border: 1.5px solid var(--color-border);
+    background-color: var(--color-bg-card);
+    color: var(--color-primary);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      border-color: var(--color-accent);
+      box-shadow: var(--focus-ring);
+    }
+
+    @media (min-width: 900px) {
+      font-size: 0.875rem;
+    }
+  }
+
+  &__search-input {
+    padding: 0 1rem 0 2.4rem;
+
+    &::placeholder { color: var(--color-muted); opacity: 0.8; }
+  }
+
+  &__sort {
+    position: relative;
+    flex-shrink: 0;
+    width: 44%;
+    max-width: 180px;
+
+    @media (min-width: 900px) {
+      width: 180px;
+    }
+  }
+
+  &__sort-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0 2.25rem 0 1rem;
+    cursor: pointer;
+
+    option { background-color: var(--color-bg-card); color: var(--color-primary); }
+  }
+
+  &__sort-icon {
+    position: absolute;
+    right: 0.95rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+    pointer-events: none;
+  }
+
+  // ── Content ─────────────────────────────────
+  &__content {
+    padding-top: 1.25rem;
+    padding-bottom: 5rem;
+  }
+
+  &__meta {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
-    min-height: 28px;
+    gap: 1rem;
+    min-height: 44px;
+    margin-bottom: 1rem;
   }
 
-  &__results-text {
-    font-size: 0.9375rem;
-    color: var(--color-muted);
+  &__count {
+    font-size: 0.875rem;
 
-    strong { color: var(--color-primary); }
-    em { color: $color-accent; font-style: normal; font-weight: 600; }
+    strong { color: var(--color-primary); font-weight: 600; }
+    em { font-style: normal; color: var(--color-accent); font-weight: 500; }
   }
 
-  &__clear-btn {
-    display: flex;
+  &__clear {
+    display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.35rem 0.875rem;
+    min-height: 44px;
+    padding: 0 0.875rem;
+    border-radius: $radius-full;
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-muted);
-    background: none;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-full;
-    cursor: pointer;
-    font-family: var(--font-body);
-    transition: all 0.2s ease;
-
-    i { font-size: 0.7rem; }
+    transition: color 0.2s ease, background-color 0.2s ease;
 
     &:hover {
-      border-color: var(--color-error);
-      color: var(--color-error);
+      color: var(--color-primary);
+      background-color: var(--color-bg-subtle);
     }
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
 
-    @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
-    @media (max-width: 560px)  { grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 1180px) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
   }
 
+  // ── Empty ───────────────────────────────────
   &__empty {
-    text-align: center;
-    padding: 5rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    text-align: center;
+    gap: 0.75rem;
+    padding: 4rem 1rem;
   }
 
-  &__empty-icon { font-size: 2.5rem; opacity: 0.35; }
+  &__empty-icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: var(--color-accent-light);
+    color: var(--color-accent);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
 
   &__empty-title {
-    font-family: var(--font-heading);
-    font-size: 1.375rem;
-    color: var(--color-primary);
-    margin: 0;
+    font-size: 1.5rem;
   }
 
   &__empty-text {
-    font-size: 0.9375rem;
-    color: var(--color-muted);
-    max-width: 280px;
-    line-height: 1.6;
-    margin: 0;
+    margin-bottom: 0.75rem;
   }
 
-  &__empty-btn {
-    padding: 0.75rem 1.75rem;
-    background-color: $color-accent;
-    color: white;
-    border: none;
-    border-radius: $radius-md;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: var(--font-body);
-    transition: background-color 0.2s ease;
-
-    &:hover { background-color: color.adjust($color-accent, $lightness: -8%); }
-  }
-
+  // ── Pagination ──────────────────────────────
   &__pagination {
     display: flex;
-    align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 0.375rem;
     margin-top: 3rem;
-    flex-wrap: wrap;
   }
 
-  &__page-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 40px;
-    height: 40px;
+  &__page {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    height: 44px;
     padding: 0 0.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: $radius-sm;
-    font-size: 0.9375rem;
-    color: var(--color-muted);
-    cursor: pointer;
-    background: none;
-    transition: all 0.2s ease;
-    font-family: var(--font-body);
-
-    &:hover:not(:disabled) { border-color: $color-accent; color: $color-accent; }
-    &--active { background-color: $color-accent; border-color: $color-accent; color: white; font-weight: 600; }
-    &:disabled { opacity: 0.4; cursor: not-allowed; }
-  }
-}
-
-// ── Search ────────────────────────────────────────────────
-.shop-filter-search {
-  position: relative;
-  flex-shrink: 0;
-
-  &__icon {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.8rem;
-    color: var(--color-muted);
-    pointer-events: none;
-  }
-
-  &__input {
-    width: 180px;
-    padding: 0.5rem 0.875rem 0.5rem 2.125rem;
-    border: 1px solid var(--color-border);
     border-radius: $radius-full;
-    font-size: 0.875rem;
+    border: 1.5px solid var(--color-border);
+    background-color: var(--color-bg-card);
     color: var(--color-primary);
-    background-color: var(--color-bg);
-    font-family: var(--font-body);
-    transition: border-color 0.2s ease, width 0.25s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 
-    &:focus {
-      outline: none;
-      border-color: $color-accent;
-      width: 220px;
+    &:hover:not(:disabled) {
+      border-color: var(--color-border-strong);
     }
 
-    &::placeholder { color: var(--color-muted); }
+    &--active,
+    &--active:hover:not(:disabled) {
+      background-color: var(--color-bg-inverse);
+      border-color: var(--color-bg-inverse);
+      color: var(--color-on-inverse);
+    }
 
-    @media (max-width: 560px) { width: 100%; &:focus { width: 100%; } }
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
   }
 }
 
-// ── Collection pills ─────────────────────────────────────
-.shop-filter-pills {
+// ── Skeleton card ─────────────────────────────
+.shop-skel {
   display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  flex-wrap: wrap;
-  flex: 1;
-}
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-bottom: 0.5rem;
 
-.shop-filter-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.4rem 0.875rem;
-  border: 1.5px solid var(--color-border);
-  border-radius: $radius-full;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-muted);
-  background: none;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  &__icon { font-size: 0.85em; }
-
-  &:hover {
-    border-color: $color-accent;
-    color: $color-accent;
+  &__image {
+    aspect-ratio: 1 / 1;
+    border-radius: $radius-lg;
   }
 
-  &--active {
-    background-color: $color-accent;
-    border-color: $color-accent;
-    color: white;
-  }
-}
-
-// ── Sort ─────────────────────────────────────────────────
-.shop-filter-sort {
-  position: relative;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-
-  &__icon {
-    position: absolute;
-    left: 0.75rem;
-    font-size: 0.8rem;
-    color: var(--color-muted);
-    pointer-events: none;
+  &__line {
+    height: 14px;
   }
 
-  &__select {
-    padding: 0.5rem 1rem 0.5rem 2.125rem;
-    border: 1px solid var(--color-border);
+  &__btn {
+    height: 44px;
     border-radius: $radius-full;
-    font-size: 0.875rem;
-    color: var(--color-primary);
-    background-color: var(--color-bg);
-    font-family: var(--font-body);
-    cursor: pointer;
-    transition: border-color 0.2s ease;
-    appearance: none;
-    -webkit-appearance: none;
-
-    &:focus { outline: none; border-color: $color-accent; }
-  }
-}
-
-// ── Skeletons ─────────────────────────────────────────────
-.product-skeleton {
-  background-color: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: $radius-lg;
-  overflow: hidden;
-
-  &__image { aspect-ratio: 1 / 1; width: 100%; }
-
-  &__body {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  &__line { height: 14px; border-radius: $radius-sm; }
-
-  &__footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 0.75rem;
     margin-top: 0.25rem;
   }
-
-  &__price { height: 20px; border-radius: $radius-sm; }
-  &__btn   { height: 32px; border-radius: $radius-sm; }
-}
-
-.skeleton {
-  background-color: var(--color-border);
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 </style>
