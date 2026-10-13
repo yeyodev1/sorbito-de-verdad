@@ -91,12 +91,24 @@ onMounted(async () => {
     }
   }
   &__grid {
-    display: grid;
-    grid-template-columns: 1fr 320px;
+    display: flex;
     gap: 1.5rem;
+    align-items: stretch;
+
+    > :first-child {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    > :last-child {
+      flex: 0 0 320px;
+      min-width: 0;
+    }
 
     @media (max-width: 1100px) {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+
+      > :last-child { flex-basis: auto; }
     }
   }
 }
