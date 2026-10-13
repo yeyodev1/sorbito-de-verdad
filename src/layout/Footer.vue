@@ -13,10 +13,10 @@ const showCta = computed(() => !['/checkout', '/carrito'].includes(route.path));
       <!-- CTA band -->
       <div v-if="showCta" class="footer__cta">
         <div>
-          <p class="eyebrow">Hecho a mano en Ecuador</p>
-          <h2 class="footer__cta-title">Tu próximo café merece<br /> una taza de verdad.</h2>
+          <p class="footer__cta-eyebrow">Hecho a mano en Ecuador</p>
+          <h2 class="footer__cta-title">Tu próximo café merece <em>una taza de verdad.</em></h2>
         </div>
-        <RouterLink to="/tienda" class="btn-primary btn-lg">
+        <RouterLink to="/tienda" class="footer__cta-btn">
           Comprar ahora <i class="fa-solid fa-arrow-right"></i>
         </RouterLink>
       </div>
@@ -76,6 +76,9 @@ const showCta = computed(() => !['/checkout', '/carrito'].includes(route.path));
         </div>
       </div>
 
+      <!-- Marca en grande -->
+      <p class="footer__wordmark" aria-hidden="true">Sorbito <em>de Verdad</em></p>
+
       <!-- Bottom bar -->
       <div class="footer__bottom">
         <p class="footer__copyright">
@@ -99,167 +102,4 @@ const showCta = computed(() => !['/checkout', '/carrito'].includes(route.path));
   </footer>
 </template>
 
-<style lang="scss" scoped>
-.footer {
-  margin-top: auto;
-  background-color: var(--color-bg-subtle);
-  border-top: 1px solid var(--color-border);
-
-  &__cta {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 3.5rem 0 3rem;
-    border-bottom: 1px solid var(--color-border);
-
-    @media (min-width: 768px) {
-      flex-direction: row;
-      align-items: flex-end;
-      justify-content: space-between;
-      padding: 5rem 0 4rem;
-    }
-  }
-
-  &__cta-title {
-    margin-top: 0.75rem;
-    font-size: clamp(1.75rem, 4vw, 2.75rem);
-    font-weight: 500;
-  }
-
-  &__inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem 1.5rem;
-    padding: 3rem 0;
-
-    @media (min-width: 1024px) {
-      grid-template-columns: 1.6fr repeat(3, 1fr);
-      gap: 3rem;
-    }
-  }
-
-  &__brand {
-    grid-column: 1 / -1;
-
-    @media (min-width: 1024px) {
-      grid-column: auto;
-    }
-  }
-
-  &__logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.625rem;
-  }
-
-  &__logo-mark {
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: var(--color-accent);
-    color: var(--color-on-accent);
-    font-size: 0.95rem;
-  }
-
-  &__logo-name {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--color-primary);
-  }
-
-  &__tagline {
-    max-width: 34ch;
-    margin-top: 1rem;
-    font-size: 0.925rem;
-  }
-
-  &__social {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1.25rem;
-  }
-
-  &__social-link {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 1px solid var(--color-border-strong);
-    color: var(--color-primary);
-    font-size: 1.05rem;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-
-    &:hover {
-      background-color: var(--color-accent);
-      border-color: var(--color-accent);
-      color: var(--color-on-accent);
-    }
-  }
-
-  &__col-title {
-    margin-bottom: 0.75rem;
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-muted);
-  }
-
-  &__nav {
-    display: flex;
-    flex-direction: column;
-  }
-
-  &__link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 36px;
-    font-size: 0.925rem;
-    color: var(--color-primary);
-    transition: color 0.2s ease;
-
-    &:hover { color: var(--color-accent); }
-  }
-
-  &__bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1.5rem 0 2rem;
-    border-top: 1px solid var(--color-border);
-    font-size: 0.8125rem;
-    color: var(--color-muted);
-
-    @media (min-width: 768px) {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
-
-  &__copyright {
-    font-size: inherit;
-  }
-
-  &__credits {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 0.6rem;
-  }
-
-  &__credits-link {
-    color: var(--color-primary);
-    font-weight: 500;
-    text-decoration: underline;
-    text-decoration-color: var(--color-border-strong);
-    text-underline-offset: 3px;
-
-    &:hover { color: var(--color-accent); }
-  }
-}
-</style>
+<style lang="scss" scoped src="./Footer.scss"></style>
