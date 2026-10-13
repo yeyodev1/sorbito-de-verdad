@@ -67,8 +67,8 @@ defineProps<{ orders: Order[]; loading: boolean }>();
   }
 
   &__order-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem 1rem;
     padding: 0.875rem 1.25rem;
@@ -80,8 +80,6 @@ defineProps<{ orders: Order[]; loading: boolean }>();
     &:hover { background-color: $admin-sidebar-hover; }
 
     @media (max-width: 600px) {
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto auto;
       padding: 0.875rem 1rem;
     }
   }
@@ -97,8 +95,11 @@ defineProps<{ orders: Order[]; loading: boolean }>();
     font-size: 0.8125rem;
     color: $admin-text-muted;
 
+    flex: 1 1 auto;
+    min-width: 0;
+
     @media (max-width: 600px) {
-      grid-column: 1 / -1;
+      flex-basis: 100%;
       order: 3;
     }
   }
