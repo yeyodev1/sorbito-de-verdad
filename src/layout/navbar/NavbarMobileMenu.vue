@@ -90,8 +90,9 @@ const { authStore, uiStore, isDark, totalItems, isMenuOpen, confirmLogout } = us
   }
 
   &__mobile-count {
-    display: inline-grid;
-    place-items: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 28px;
     height: 28px;
     padding: 0 8px;
