@@ -4,9 +4,9 @@
 // CSS Custom Properties (use in templates/JS)
 // Paleta "cerámica": crema, espresso y barro cocido.
 :root {
-  --color-bg: #F7F2EA;
-  --color-bg-card: #FFFDF9;
-  --color-bg-subtle: #EFE7DB;
+  --color-bg: #FBF7F1;
+  --color-bg-card: #FFFFFF;
+  --color-bg-subtle: #F3ECE2;
   --color-bg-inverse: #2A1D15;
   --color-primary: #2A1D15;
   --color-on-inverse: #F7F2EA;
@@ -32,9 +32,16 @@
   --focus-ring: 0 0 0 3px rgba(181, 88, 46, 0.28);
 
   /* Navbar semi-transparent backgrounds */
-  --navbar-bg: rgba(247, 242, 234, 0.82);
-  --navbar-bg-scrolled: rgba(247, 242, 234, 0.94);
-  --navbar-mobile-bg: #FFFDF9;
+  --navbar-bg: rgba(255, 255, 255, 0.72);
+  --navbar-bg-scrolled: rgba(255, 255, 255, 0.9);
+  --navbar-mobile-bg: #FFFFFF;
+
+  /* Mosaicos pastel (colecciones, bento) */
+  --tile-peach: #F8DCC8;
+  --tile-sage: #DCE6D2;
+  --tile-butter: #F6E7B8;
+  --tile-sky: #D8E4EC;
+  --tile-ink: #2A1D15;
 
   --admin-bg: #0A0A0A;
   --admin-sidebar: #111111;
@@ -81,12 +88,19 @@
   --shadow-lg: 0 18px 40px -12px rgba(0, 0, 0, 0.65);
   --focus-ring: 0 0 0 3px rgba(217, 119, 74, 0.35);
 
-  --navbar-bg: rgba(20, 16, 13, 0.78);
-  --navbar-bg-scrolled: rgba(20, 16, 13, 0.94);
+  --navbar-bg: rgba(29, 24, 20, 0.72);
+  --navbar-bg-scrolled: rgba(29, 24, 20, 0.92);
   --navbar-mobile-bg: #1D1814;
+
+  --tile-peach: #3A2419;
+  --tile-sage: #1F2A1F;
+  --tile-butter: #332A14;
+  --tile-sky: #1A2630;
+  --tile-ink: #F3EBE1;
 }
 
 :root {
-  --font-heading: 'Fraunces', Georgia, serif;
+  --font-heading: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-accent: 'Instrument Serif', Georgia, serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 }
