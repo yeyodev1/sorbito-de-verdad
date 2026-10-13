@@ -180,14 +180,19 @@ function buyNow() {
   }
 
   &__layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 1.5rem;
 
+    > * { min-width: 0; }
+
     @media (min-width: 960px) {
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      flex-direction: row;
+      align-items: flex-start;
       gap: 3.5rem;
-      align-items: start;
+
+      > :first-child { flex: 1.1 1 0; }
+      > :last-child { flex: 1 1 0; }
     }
   }
 
@@ -235,17 +240,20 @@ function buyNow() {
   }
 
   &__related-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    --gap: 0.75rem;
+    --cols: 2;
 
-    @media (min-width: 768px) {
-      gap: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap);
+
+    > * {
+      flex: 0 0 calc((100% - var(--gap) * (var(--cols) - 1)) / var(--cols));
+      min-width: 0;
     }
 
-    @media (min-width: 1024px) {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
+    @media (min-width: 768px) { --gap: 1.25rem; }
+    @media (min-width: 1024px) { --cols: 4; }
   }
 }
 </style>
