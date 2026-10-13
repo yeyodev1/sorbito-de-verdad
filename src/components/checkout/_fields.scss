@@ -38,18 +38,23 @@
   }
 
   &__grid {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.875rem;
 
-    @media (min-width: 640px) {
-      grid-template-columns: 1fr 1fr;
+    > * {
+      flex: 1 1 100%;
+      min-width: 0;
+
+      @media (min-width: 640px) {
+        flex-basis: calc(50% - 0.4375rem);
+      }
     }
   }
 
   &__full {
     @media (min-width: 640px) {
-      grid-column: 1 / -1;
+      flex-basis: 100% !important;
     }
   }
 
