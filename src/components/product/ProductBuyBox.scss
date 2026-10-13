@@ -107,10 +107,15 @@
   }
 
   &__buy {
-    display: grid;
-    grid-template-columns: auto 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.625rem;
     margin-top: 0.25rem;
+  }
+
+  &__add {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   &__qty {
@@ -138,7 +143,7 @@
   }
 
   &__now {
-    grid-column: 1 / -1;
+    flex: 1 1 100%;
   }
 
   &__oos {
