@@ -42,7 +42,8 @@ const STEPS = [
   }
 
   &__box {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
     padding: 2rem 1.25rem;
     color: var(--color-on-inverse);
@@ -50,7 +51,7 @@ const STEPS = [
     border-radius: $radius-xl;
 
     @media (min-width: 960px) {
-      grid-template-columns: 0.8fr 1.6fr;
+      flex-direction: row;
       align-items: center;
       gap: 3rem;
       padding: 3.5rem;
@@ -58,6 +59,8 @@ const STEPS = [
   }
 
   &__intro {
+    flex: 0.8 1 0;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -80,11 +83,16 @@ const STEPS = [
   }
 
   &__steps {
-    display: grid;
+    flex: 1.6 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
 
     @media (min-width: 700px) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      flex-direction: row;
+
+      > * { flex: 1 1 0; min-width: 0; }
     }
   }
 
@@ -111,8 +119,9 @@ const STEPS = [
   }
 
   &__icon {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 44px;
     height: 44px;
     margin-bottom: 0.25rem;
