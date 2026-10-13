@@ -102,8 +102,7 @@ import { HERO_IMG } from '../../data/about';
   }
 
   &__stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
     gap: 1rem;
     max-width: 520px;
     margin-top: 1rem;
@@ -112,6 +111,8 @@ import { HERO_IMG } from '../../data/about';
   }
 
   &__stat {
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     flex-direction: column-reverse;
     gap: 0.125rem;
