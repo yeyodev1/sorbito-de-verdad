@@ -1,10 +1,17 @@
 .pf {
   &__row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
 
-    @media (max-width: 480px) { grid-template-columns: 1fr; }
+    > * {
+      flex: 1 1 calc(50% - 0.5rem);
+      min-width: 0;
+    }
+
+    @media (max-width: 480px) {
+      > * { flex-basis: 100%; }
+    }
   }
 
   &__field {
