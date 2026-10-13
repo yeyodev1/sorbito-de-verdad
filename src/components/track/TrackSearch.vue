@@ -90,8 +90,7 @@ const emit = defineEmits<{
   }
 
   &__mode-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     gap: 0.25rem;
     padding: 0.25rem;
     border-radius: $radius-full;
@@ -99,6 +98,8 @@ const emit = defineEmits<{
   }
 
   &__mode-tab {
+    flex: 1 1 0;
+    min-width: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
