@@ -45,18 +45,24 @@ import { STORY_IMG } from '../../data/about';
   }
 
   &__inner {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 2.5rem;
-    align-items: center;
 
     @media (min-width: 900px) {
-      grid-template-columns: 5fr 6fr;
+      flex-direction: row;
+      align-items: center;
       gap: 5rem;
     }
   }
 
   &__image-col {
     position: relative;
+    min-width: 0;
+
+    @media (min-width: 900px) {
+      flex: 5 1 0;
+    }
   }
 
   &__img {
@@ -89,6 +95,11 @@ import { STORY_IMG } from '../../data/about';
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    min-width: 0;
+
+    @media (min-width: 900px) {
+      flex: 6 1 0;
+    }
   }
 
   &__title {
