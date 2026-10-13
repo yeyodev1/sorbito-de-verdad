@@ -28,8 +28,9 @@ defineProps<{ prefix: 'login' | 'rp' }>();
     &__mark {
       width: 44px;
       height: 44px;
-      display: grid;
-      place-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1.125rem;
       color: var(--color-on-accent);
       background-color: var(--color-accent);
