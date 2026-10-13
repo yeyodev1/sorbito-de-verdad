@@ -35,12 +35,18 @@ import { collections } from '../../data/about';
   }
 
   &__grid {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 1.25rem;
 
+    > * { min-width: 0; }
+
     @media (min-width: 700px) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      flex-direction: row;
+      flex-wrap: wrap;
       gap: 1.5rem;
+
+      > * { flex: 1 1 calc((100% - 3rem) / 3); }
     }
   }
 }
