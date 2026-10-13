@@ -115,13 +115,19 @@ onMounted(async () => {
   }
 
   &__grid {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 1.25rem;
-    align-items: start;
+
+    > * { min-width: 0; }
 
     @media (min-width: 900px) {
-      grid-template-columns: 1fr 340px;
+      flex-direction: row;
+      align-items: flex-start;
       gap: 1.5rem;
+
+      > :first-child { flex: 1 1 auto; }
+      > :last-child { flex: 0 0 340px; }
     }
   }
 
@@ -137,8 +143,9 @@ onMounted(async () => {
   &__error-icon {
     width: 64px;
     height: 64px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.5rem;
     color: var(--color-error);
     background-color: var(--color-error-light);
@@ -161,11 +168,15 @@ onMounted(async () => {
 }
 
 .od-skel-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 1.25rem;
 
   @media (min-width: 900px) {
-    grid-template-columns: 1fr 340px;
+    flex-direction: row;
+
+    > :first-child { flex: 1 1 auto; }
+    > :last-child { flex: 0 0 340px; }
   }
 }
 
