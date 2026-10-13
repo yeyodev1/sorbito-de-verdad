@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useProductsStore } from '../stores/products';
 import ProductCard from './ProductCard.vue';
@@ -8,6 +8,15 @@ const productsStore = useProductsStore();
 
 const featured = computed(() => productsStore.featured);
 const loading = computed(() => productsStore.loading);
+
+const rail = ref<HTMLElement | null>(null);
+
+// Desplaza el carrusel casi una "pantalla" de tarjetas
+function scrollRail(dir: 1 | -1) {
+  const el = rail.value;
+  if (!el) return;
+  el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: 'smooth' });
+}
 </script>
 
 <template>
@@ -15,44 +24,42 @@ const loading = computed(() => productsStore.loading);
     <div class="container">
       <div class="featured__header">
         <div>
-          <span class="eyebrow">La colección completa</span>
-          <h2 id="featured-title" class="featured__title">Nuestras tazas</h2>
-          <p class="featured__subtitle">
-            4 modelos únicos · Tamaño Estándar (250 ml) o XXL · Hechos a mano en Ecuador.
-          </p>
+          <span class="eyebrow">Lo más pedido</span>
+          <h2 id="featured-title" class="featured__title">Nuestras <em>tazas</em></h2>
+          <p class="featured__subtitle">Estándar (250 ml) o XXL · IVA y envío incluidos.</p>
         </div>
-        <RouterLink to="/tienda" class="featured__see-all">
-          Ver todos
-          <i class="fa-solid fa-arrow-right"></i>
-        </RouterLink>
-      </div>
-
-      <!-- Loading Skeletons -->
-      <div v-if="loading" class="featured__grid">
-        <div v-for="i in 4" :key="`skeleton-${i}`" class="product-skeleton">
-          <div class="product-skeleton__image skeleton"></div>
-          <div class="product-skeleton__body">
-            <div class="product-skeleton__line skeleton" style="width: 60%"></div>
-            <div class="product-skeleton__line skeleton" style="width: 40%"></div>
-            <div class="product-skeleton__btn skeleton"></div>
-          </div>
+        <div class="featured__controls">
+          <button type="button" class="featured__arrow" aria-label="Anterior" @click="scrollRail(-1)">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <button type="button" class="featured__arrow" aria-label="Siguiente" @click="scrollRail(1)">
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Products Grid -->
-      <div v-else-if="featured.length > 0" class="featured__grid">
-        <ProductCard
-          v-for="product in featured"
-          :key="product._id"
-          :product="product"
-          :showBadge="true"
-        />
+    <!-- Carrusel: se sale del contenedor para sentirse más amplio -->
+    <div v-if="loading" class="featured__rail">
+      <div v-for="i in 4" :key="`sk-${i}`" class="featured__slide">
+        <div class="skeleton featured__sk"></div>
       </div>
+    </div>
 
-      <!-- Empty state -->
-      <div v-else class="featured__empty">
+    <div v-else-if="featured.length > 0" ref="rail" class="featured__rail">
+      <div v-for="product in featured" :key="product._id" class="featured__slide">
+        <ProductCard :product="product" :show-badge="true" />
+      </div>
+      <RouterLink to="/tienda" class="featured__slide featured__more">
+        <span class="featured__more-icon"><i class="fa-solid fa-arrow-right"></i></span>
+        Ver toda la tienda
+      </RouterLink>
+    </div>
+
+    <div v-else class="container">
+      <div class="featured__empty">
         <p>Pronto tendremos productos destacados para ti. ¡Vuelve pronto!</p>
-        <RouterLink to="/tienda" class="btn-outline-accent">Explorar tienda</RouterLink>
+        <RouterLink to="/tienda" class="btn-outline">Explorar tienda</RouterLink>
       </div>
     </div>
   </section>
@@ -60,77 +67,121 @@ const loading = computed(() => productsStore.loading);
 
 <style lang="scss" scoped>
 .featured {
-  padding: 3.5rem 0;
-  background-color: var(--color-bg);
+  padding: 3rem 0;
 
   @media (min-width: 768px) {
-    padding: 6rem 0;
+    padding: 5rem 0;
   }
 
   &__header {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end;
+    justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 2rem;
-
-    @media (min-width: 640px) {
-      flex-direction: row;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 3rem;
-    }
+    margin-bottom: 1.5rem;
   }
 
   &__title {
-    margin: 0.5rem 0;
-    font-size: clamp(2rem, 4.5vw, 3rem);
-    font-weight: 500;
+    margin: 0.4rem 0 0.35rem;
+    font-size: clamp(2rem, 5vw, 3.5rem);
   }
 
   &__subtitle {
-    max-width: 46ch;
-    font-size: 0.975rem;
+    font-size: 0.95rem;
   }
 
-  &__see-all {
-    display: inline-flex;
-    align-items: center;
+  &__controls {
+    display: none;
     gap: 0.5rem;
-    min-height: 44px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-primary);
-    white-space: nowrap;
-    border-bottom: 1.5px solid var(--color-accent);
-    flex-shrink: 0;
 
-    i {
-      font-size: 0.75rem;
-      color: var(--color-accent);
-      transition: transform 0.2s ease;
+    @media (min-width: 768px) {
+      display: flex;
     }
-
-    &:hover i { transform: translateX(4px); }
   }
 
-  &__grid {
+  &__arrow {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    color: var(--color-primary);
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 
-    @media (min-width: 560px) {
-      grid-template-columns: repeat(2, 1fr);
+    &:hover {
+      color: var(--color-on-inverse);
+      background-color: var(--color-bg-inverse);
+      border-color: var(--color-bg-inverse);
+    }
+  }
+
+  // Carril horizontal con scroll-snap; alineado al borde del contenedor
+  &__rail {
+    --gutter: 1rem;
+
+    display: flex;
+    gap: 0.875rem;
+    padding: 0.25rem var(--gutter) 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+
+    @media (min-width: 768px) {
+      --gutter: 2rem;
+      gap: 1.25rem;
     }
 
-    @media (min-width: 900px) {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
+    @media (min-width: 1280px) {
+      --gutter: max(2.5rem, calc((100vw - 1280px) / 2 + 2.5rem));
     }
+  }
 
-    @media (min-width: 1200px) {
-      grid-template-columns: repeat(4, 1fr);
-    }
+  &__slide {
+    flex: 0 0 74%;
+    display: flex;
+    scroll-snap-align: start;
+
+    > * { flex: 1; }
+
+    @media (min-width: 560px) { flex-basis: 46%; }
+    @media (min-width: 900px) { flex-basis: 31%; }
+    @media (min-width: 1200px) { flex-basis: calc((min(100vw, 1280px) - 5rem - 3.75rem) / 4); }
+  }
+
+  &__sk {
+    aspect-ratio: 4 / 6;
+    border-radius: $radius-xl;
+  }
+
+  &__more {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.875rem;
+    min-height: 280px;
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    border: 1.5px dashed var(--color-border-strong);
+    border-radius: $radius-xl;
+    transition: background-color 0.2s ease;
+
+    &:hover { background-color: var(--color-bg-subtle); }
+  }
+
+  &__more-icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
+    border-radius: 50%;
   }
 
   &__empty {
@@ -142,36 +193,6 @@ const loading = computed(() => productsStore.loading);
     text-align: center;
     background-color: var(--color-bg-subtle);
     border-radius: $radius-xl;
-  }
-}
-
-.product-skeleton {
-  background-color: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: $radius-lg;
-  overflow: hidden;
-
-  &__image {
-    aspect-ratio: 1 / 1;
-    width: 100%;
-    border-radius: 0;
-  }
-
-  &__body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    padding: 1.125rem;
-  }
-
-  &__line {
-    height: 16px;
-  }
-
-  &__btn {
-    height: 46px;
-    margin-top: 0.5rem;
-    border-radius: $radius-full;
   }
 }
 </style>
