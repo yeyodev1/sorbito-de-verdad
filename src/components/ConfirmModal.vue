@@ -110,8 +110,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 
 .cm-icon {
   --cm-tone: var(--color-error);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 56px;
   height: 56px;
   border-radius: 50%;
