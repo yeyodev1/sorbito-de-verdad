@@ -120,8 +120,9 @@ function scrollRail(dir: 1 | -1) {
   }
 
   &__arrow {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 48px;
     height: 48px;
     color: var(--color-primary);
@@ -157,8 +158,7 @@ function scrollRail(dir: 1 | -1) {
 
     // En escritorio deja de ser carrusel: grilla de 4 dentro del contenedor
     @media (min-width: 1100px) {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      flex-wrap: wrap;
       gap: 1.5rem;
       max-width: 1280px;
       margin: 0 auto;
@@ -180,6 +180,7 @@ function scrollRail(dir: 1 | -1) {
 
     @media (min-width: 560px) { flex-basis: 46%; }
     @media (min-width: 900px) { flex-basis: 31%; }
+    @media (min-width: 1100px) { flex-basis: calc((100% - 4.5rem) / 4); min-width: 0; }
   }
 
   &__sk {
@@ -209,8 +210,9 @@ function scrollRail(dir: 1 | -1) {
 
   &__more-icon {
     flex: 0 0 auto !important;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 56px;
     height: 56px;
     color: var(--color-on-accent);
