@@ -79,8 +79,9 @@ const orderId = computed(() => (route.query.orderId as string) || '');
   &__icon-wrap {
     width: 84px;
     height: 84px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 0.25rem;
     border-radius: 50%;
     background-color: var(--color-error-light);
