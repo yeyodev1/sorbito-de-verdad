@@ -57,8 +57,9 @@ const email = defineModel<string>('email', { required: true });
   &__success-icon {
     width: 76px;
     height: 76px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.75rem;
     color: var(--color-success);
     background-color: var(--color-success-light);
