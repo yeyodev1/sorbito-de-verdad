@@ -19,10 +19,12 @@ const {
 
       <!-- Header -->
       <header class="shop__hero">
-        <div class="container shop__hero-inner">
+        <div class="container">
+          <div class="shop__hero-inner">
           <span class="eyebrow">Tienda</span>
-          <h1 class="shop__title">Elige tu taza</h1>
+          <h1 class="shop__title">Elige tu <em>taza</em></h1>
           <p class="shop__subtitle">4 modelos · 2 tamaños · 1 colección completa. Hechas a mano en Ecuador.</p>
+          </div>
         </div>
       </header>
 
@@ -73,27 +75,45 @@ const {
 
   // ── Header ──────────────────────────────────
   &__hero {
-    padding: 2.5rem 0 1.5rem;
+    padding: 0.75rem 0 1.25rem;
 
     @media (min-width: 768px) {
-      padding: 4rem 0 2.25rem;
+      padding: 0.5rem 0 1.75rem;
     }
   }
 
+  // Encabezado en una tarjeta pastel
   &__hero-inner {
     display: flex;
     flex-direction: column;
     gap: 0.625rem;
+    padding: 2rem 1.25rem;
+    color: var(--tile-ink);
+    background-color: var(--tile-peach);
+    border-radius: $radius-xl;
+
+    @media (min-width: 768px) {
+      padding: 3.5rem 3rem;
+    }
   }
 
   &__title {
-    font-size: clamp(2.25rem, 6vw, 4rem);
-    font-weight: 500;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    color: inherit;
   }
 
   &__subtitle {
     max-width: 46ch;
     font-size: 1rem;
+    color: inherit;
+    opacity: 0.75;
+  }
+
+  .eyebrow {
+    color: inherit;
+    opacity: 0.7;
   }
 
   // ── Content ─────────────────────────────────
