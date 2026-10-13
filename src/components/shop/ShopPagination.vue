@@ -46,8 +46,9 @@ const emit = defineEmits<{ go: [page: number] }>();
   }
 
   &__page {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 44px;
     height: 44px;
     padding: 0 0.75rem;
