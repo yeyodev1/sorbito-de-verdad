@@ -85,13 +85,21 @@ const tiles = computed(() =>
   }
 
   &__grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    --gap: 0.75rem;
+    --cols: 2;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap);
+
+    > * {
+      flex: 0 0 calc((100% - var(--gap) * (var(--cols) - 1)) / var(--cols));
+      min-width: 0;
+    }
 
     @media (min-width: 900px) {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1rem;
+      --gap: 1rem;
+      --cols: 4;
     }
   }
 }
@@ -148,8 +156,9 @@ const tiles = computed(() =>
 
   &__media {
     align-self: flex-end;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 62%;
     aspect-ratio: 1;
     margin: -0.5rem -0.25rem -0.25rem 0;
@@ -170,8 +179,9 @@ const tiles = computed(() =>
     position: absolute;
     left: 1rem;
     bottom: 1rem;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 36px;
     height: 36px;
     font-size: 0.8rem;
