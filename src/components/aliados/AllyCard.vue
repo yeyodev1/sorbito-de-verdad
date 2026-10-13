@@ -66,8 +66,9 @@ defineProps<{ partner: (typeof otherPartners)[number] }>();
   }
 
   &__logo-wrap {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: 100%;
     padding: 2rem;
