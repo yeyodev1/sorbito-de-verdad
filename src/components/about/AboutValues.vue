@@ -35,15 +35,24 @@ import { values } from '../../data/about';
   }
 
   &__grid {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
 
-    @media (min-width: 640px) {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    > * {
+      flex: 1 1 100%;
+      min-width: 0;
+
+      @media (min-width: 640px) {
+        flex-basis: calc((100% - 1rem) / 2);
+      }
+
+      @media (min-width: 1024px) {
+        flex-basis: calc((100% - 3.75rem) / 4);
+      }
     }
 
     @media (min-width: 1024px) {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 1.25rem;
     }
   }
@@ -69,8 +78,9 @@ import { values } from '../../data/about';
   }
 
   &__icon-wrap {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 48px;
     height: 48px;
     border-radius: 50%;
