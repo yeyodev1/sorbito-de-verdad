@@ -72,8 +72,9 @@
     position: absolute;
     right: 0.625rem;
     bottom: 0.625rem;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 44px;
     height: 44px;
     font-size: 1rem;
