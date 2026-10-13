@@ -104,8 +104,9 @@ onUnmounted(() => {
   }
 
   &__logo-mark {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 34px;
     height: 34px;
     border-radius: 50%;
