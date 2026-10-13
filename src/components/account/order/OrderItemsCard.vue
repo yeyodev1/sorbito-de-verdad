@@ -84,8 +84,9 @@ defineProps<{ order: Order }>();
   &__img { object-fit: cover; }
 
   &__img-placeholder {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--color-muted);
   }
 
@@ -96,8 +97,9 @@ defineProps<{ order: Order }>();
     min-width: 22px;
     height: 22px;
     padding: 0 6px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.6875rem;
     font-weight: 700;
     color: var(--color-on-inverse);
