@@ -108,17 +108,26 @@ async function handleCreateUser() {
   }
 
   &__create-form {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr) auto;
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.875rem;
     align-items: flex-end;
 
+    // 4 campos que se reparten el ancho + el botón a su tamaño
+    > * {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    > :last-child { flex: 0 0 auto; }
+
     @media (max-width: 1100px) {
-      grid-template-columns: repeat(2, 1fr);
+      > * { flex: 1 1 calc(50% - 0.4375rem); }
+      > :last-child { flex: 1 1 100%; }
     }
 
     @media (max-width: 600px) {
-      grid-template-columns: 1fr;
+      > * { flex-basis: 100%; }
     }
   }
 
