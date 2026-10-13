@@ -81,13 +81,18 @@ import {
   }
 
   &__inner {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 2.5rem;
-    align-items: center;
+
+    > * { min-width: 0; }
 
     @media (min-width: 960px) {
-      grid-template-columns: 1fr 1fr;
+      flex-direction: row;
+      align-items: center;
       gap: 4.5rem;
+
+      > * { flex: 1 1 0; }
     }
   }
 
@@ -139,8 +144,7 @@ import {
   }
 
   &__stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
     gap: 1rem;
     width: 100%;
     padding: 1.25rem 0;
@@ -149,6 +153,8 @@ import {
   }
 
   &__stat {
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     flex-direction: column-reverse;
     gap: 0.25rem;
@@ -204,8 +210,9 @@ import {
     & + & { margin-left: -10px; }
 
     &--more {
-      display: grid;
-      place-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-weight: 600;
       color: var(--color-accent);
       background-color: var(--color-accent-light);
