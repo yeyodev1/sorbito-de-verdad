@@ -39,9 +39,14 @@ function getStepState(step: string, currentStatus: string) {
 <style lang="scss" scoped>
 .order-detail {
   &__tracker {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
     margin-bottom: 2rem;
+
+    > * {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
     padding: 1.5rem 0.75rem;
     background-color: var(--color-bg-card);
     border: 1px solid var(--color-border);
@@ -66,8 +71,9 @@ function getStepState(step: string, currentStatus: string) {
     z-index: 1;
     width: 40px;
     height: 40px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.875rem;
     color: var(--color-muted);
     background-color: var(--color-bg-subtle);
