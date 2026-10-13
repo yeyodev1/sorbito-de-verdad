@@ -45,14 +45,19 @@
   }
 
   &__layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
 
+    > * { min-width: 0; }
+
     @media (min-width: 960px) {
-      grid-template-columns: minmax(0, 1fr) 360px;
+      flex-direction: row;
+      align-items: flex-start;
       gap: 3rem;
-      align-items: start;
+
+      > :first-child { flex: 1 1 0; }
+      > :last-child { flex: 0 0 360px; }
     }
   }
 
