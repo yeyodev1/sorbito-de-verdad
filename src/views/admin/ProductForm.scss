@@ -72,13 +72,25 @@
   }
 
   &__layout {
-    display: grid;
-    grid-template-columns: 1fr 380px;
+    display: flex;
     gap: 1.5rem;
-    align-items: start; // critical: prevents columns from stretching
+    align-items: flex-start; // critical: prevents columns from stretching
+
+    > :first-child {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    > :last-child {
+      flex: 0 0 380px;
+      min-width: 0;
+    }
 
     @media (max-width: 1100px) {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+      align-items: stretch;
+
+      > :last-child { flex-basis: auto; }
     }
   }
 
