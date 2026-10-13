@@ -1,13 +1,18 @@
 // Precios y vista previa de la tarjeta "Precio & Stock" (admin)
 .pf {
   &__price-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 1.25rem;
+
+    > * {
+      flex: 1 1 calc(50% - 1.25rem / 2);
+      min-width: 0;
+    }
     margin-bottom: 1rem;
 
     @media (max-width: 600px) {
-      grid-template-columns: 1fr;
+      > * { flex-basis: 100%; }
     }
   }
 
