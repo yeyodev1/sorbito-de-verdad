@@ -85,13 +85,18 @@ import { collaborators } from '../data/collaborators';
   }
 
   &__grid {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
 
+    > * { min-width: 0; }
+
     @media (min-width: 900px) {
-      grid-template-columns: repeat(3, 1fr);
+      flex-direction: row;
+      flex-wrap: wrap;
       gap: 1.25rem;
+
+      > * { flex: 1 1 calc((100% - 2.5rem) / 3); }
     }
   }
 
