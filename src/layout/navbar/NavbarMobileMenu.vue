@@ -50,13 +50,14 @@ const { authStore, uiStore, isDark, totalItems, isMenuOpen, confirmLogout } = us
   // ── Mobile menu ──────────────────────
   &__mobile-menu {
     position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    max-height: calc(100dvh - 64px);
+    top: calc(100% + 4px);
+    left: 1rem;
+    right: 1rem;
+    max-height: calc(100dvh - 84px);
     overflow-y: auto;
     background-color: var(--navbar-mobile-bg);
-    border-bottom: 1px solid var(--color-border);
+    border: 1px solid var(--color-border);
+    border-radius: $radius-xl;
     box-shadow: var(--shadow-lg);
 
     @media (min-width: 1024px) {
@@ -77,8 +78,9 @@ const { authStore, uiStore, isDark, totalItems, isMenuOpen, confirmLogout } = us
     justify-content: space-between;
     min-height: 54px;
     font-family: var(--font-heading);
-    font-size: 1.375rem;
-    font-weight: 500;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
     color: var(--color-primary);
     border-bottom: 1px solid var(--color-border);
 
