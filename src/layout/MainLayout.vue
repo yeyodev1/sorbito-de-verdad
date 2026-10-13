@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import AnnouncementBar from './AnnouncementBar.vue';
 import Navbar from './Navbar.vue';
 import Footer from './Footer.vue';
 </script>
 
 <template>
   <div class="main-layout">
+    <AnnouncementBar />
     <Navbar />
     <main class="main-layout__content">
       <slot />
