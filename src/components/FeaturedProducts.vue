@@ -28,6 +28,7 @@ function scrollRail(dir: 1 | -1) {
           <h2 id="featured-title" class="featured__title">Nuestras <em>tazas</em></h2>
           <p class="featured__subtitle">Estándar (250 ml) o XXL · IVA y envío incluidos.</p>
         </div>
+        <RouterLink to="/tienda" class="featured__all">Ver todo <i class="fa-solid fa-arrow-right"></i></RouterLink>
         <div class="featured__controls">
           <button type="button" class="featured__arrow" aria-label="Anterior" @click="scrollRail(-1)">
             <i class="fa-solid fa-arrow-left"></i>
@@ -97,6 +98,25 @@ function scrollRail(dir: 1 | -1) {
     @media (min-width: 768px) {
       display: flex;
     }
+
+    @media (min-width: 1100px) {
+      display: none;
+    }
+  }
+
+  &__all {
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    i { font-size: 0.75rem; transition: transform 0.2s ease; }
+    &:hover i { transform: translateX(3px); }
+
+    @media (min-width: 1100px) { display: inline-flex; }
   }
 
   &__arrow {
@@ -135,8 +155,19 @@ function scrollRail(dir: 1 | -1) {
       gap: 1.25rem;
     }
 
+    // En escritorio deja de ser carrusel: grilla de 4 dentro del contenedor
+    @media (min-width: 1100px) {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1.5rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0.25rem 2rem 0;
+      overflow: visible;
+    }
+
     @media (min-width: 1280px) {
-      --gutter: max(2.5rem, calc((100vw - 1280px) / 2 + 2.5rem));
+      padding-inline: 2.5rem;
     }
   }
 
@@ -149,7 +180,6 @@ function scrollRail(dir: 1 | -1) {
 
     @media (min-width: 560px) { flex-basis: 46%; }
     @media (min-width: 900px) { flex-basis: 31%; }
-    @media (min-width: 1200px) { flex-basis: calc((min(100vw, 1280px) - 5rem - 3.75rem) / 4); }
   }
 
   &__sk {
@@ -172,9 +202,13 @@ function scrollRail(dir: 1 | -1) {
     transition: background-color 0.2s ease;
 
     &:hover { background-color: var(--color-bg-subtle); }
+
+    // En la grilla de escritorio ya hay link "Ver todo" arriba
+    @media (min-width: 1100px) { display: none; }
   }
 
   &__more-icon {
+    flex: 0 0 auto !important;
     display: grid;
     place-items: center;
     width: 56px;
