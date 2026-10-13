@@ -23,8 +23,7 @@ defineProps<{ status: string }>();
 <style lang="scss" scoped>
 .track {
   &__progress {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex;
     padding: 1.5rem 0.5rem;
     border-radius: $radius-xl;
     background-color: var(--color-bg-card);
@@ -39,6 +38,8 @@ defineProps<{ status: string }>();
 // ── Progress step ───────────────────────────────
 .tp-step {
   position: relative;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -48,8 +49,9 @@ defineProps<{ status: string }>();
   &__circle {
     position: relative;
     z-index: 1;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     height: 40px;
     border-radius: 50%;
