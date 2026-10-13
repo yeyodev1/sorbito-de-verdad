@@ -25,13 +25,18 @@
 <style lang="scss" scoped>
 .um {
   &__role-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
+
+    > * {
+      flex: 1 1 calc(50% - 1rem / 2);
+      min-width: 0;
+    }
     margin-bottom: 1.5rem;
 
     @media (max-width: 600px) {
-      grid-template-columns: 1fr;
+      > * { flex-basis: 100%; }
     }
   }
 
