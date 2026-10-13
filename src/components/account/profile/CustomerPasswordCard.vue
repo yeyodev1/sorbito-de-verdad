@@ -81,8 +81,9 @@ const { changingPassword, pwdForm, pwdError, pwdSuccess, savingPwd, handleChange
     flex-shrink: 0;
     width: 40px;
     height: 40px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--color-accent);
     background-color: var(--color-accent-light);
     border-radius: 50%;
