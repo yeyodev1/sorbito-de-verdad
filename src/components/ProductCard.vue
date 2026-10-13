@@ -67,31 +67,47 @@ function formatPrice(val: number) {
 
 <template>
   <article :class="['pc', { 'pc--oos': isOutOfStock }]">
-    <RouterLink :to="`/tienda/${product.slug}`" class="pc__media" :aria-label="product.name">
-      <img
-        :src="product.mainImage || '/placeholder-cup.jpg'"
-        :alt="product.name"
-        class="pc__img"
-        loading="lazy"
-        decoding="async"
-      />
-      <span v-if="showBadge" class="pc__badge">{{ collectionLabel }}</span>
-      <span v-if="isPreorder" class="pc__badge pc__badge--pre">
-        <i class="fa-solid fa-bolt"></i> Pre-venta
-      </span>
-      <span v-if="isOutOfStock" class="pc__oos">Agotado</span>
-    </RouterLink>
-
-    <div class="pc__body">
-      <RouterLink :to="`/tienda/${product.slug}`" class="pc__name-link">
-        <h3 class="pc__name">{{ product.name }}</h3>
+    <div class="pc__frame">
+      <RouterLink :to="`/tienda/${product.slug}`" class="pc__media" :aria-label="product.name">
+        <img
+          :src="product.mainImage || '/placeholder-cup.jpg'"
+          :alt="product.name"
+          class="pc__img"
+          loading="lazy"
+          decoding="async"
+        />
+        <span v-if="showBadge" class="pc__badge">{{ collectionLabel }}</span>
+        <span v-if="isPreorder" class="pc__badge pc__badge--pre">
+          <i class="fa-solid fa-bolt"></i> Pre-venta
+        </span>
+        <span v-if="isOutOfStock" class="pc__oos">Agotado</span>
       </RouterLink>
 
-      <div class="pc__price-row">
-        <span class="pc__price">{{ formatPrice(displayPrice) }}</span>
-        <span v-if="comparePrice" class="pc__compare">{{ formatPrice(comparePrice) }}</span>
-        <span class="pc__note">IVA + envío incl.</span>
+      <!-- Agregar rápido, flotando sobre la foto -->
+      <button
+        v-if="!isOutOfStock"
+        type="button"
+        :class="['pc__add', { 'pc__add--done': justAdded }]"
+        :aria-label="`Agregar ${product.name} al carrito`"
+        title="Agregar al carrito"
+        @click.prevent="addToCart"
+      >
+        <i v-if="justAdded" class="fa-solid fa-check"></i>
+        <i v-else class="fa-solid fa-plus"></i>
+      </button>
+    </div>
+
+    <div class="pc__body">
+      <div class="pc__top">
+        <RouterLink :to="`/tienda/${product.slug}`" class="pc__name-link">
+          <h3 class="pc__name">{{ product.name }}</h3>
+        </RouterLink>
+        <div class="pc__price-col">
+          <span class="pc__price">{{ formatPrice(displayPrice) }}</span>
+          <span v-if="comparePrice" class="pc__compare">{{ formatPrice(comparePrice) }}</span>
+        </div>
       </div>
+      <span class="pc__note">IVA + envío incl.</span>
 
       <div v-if="hasSizes" class="pc__sizes" role="radiogroup" aria-label="Tamaño">
         <button
@@ -107,25 +123,9 @@ function formatPrice(val: number) {
         </button>
       </div>
 
-      <div v-if="!isOutOfStock" class="pc__actions">
-        <button type="button" class="pc__buy" @click.prevent="buyNow">
-          Comprar ya
-        </button>
-        <button
-          type="button"
-          :class="['pc__add', { 'pc__add--done': justAdded }]"
-          :aria-label="`Agregar ${product.name} al carrito`"
-          :title="'Agregar al carrito'"
-          @click.prevent="addToCart"
-        >
-          <i v-if="justAdded" class="fa-solid fa-check"></i>
-          <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 01-8 0"/>
-          </svg>
-        </button>
-      </div>
+      <button v-if="!isOutOfStock" type="button" class="pc__buy" @click.prevent="buyNow">
+        Comprar ya <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </button>
       <RouterLink v-else :to="`/tienda/${product.slug}`" class="pc__oos-link">
         Ver detalles
       </RouterLink>
