@@ -151,8 +151,9 @@ function handleAction(toastId: number, to: string) {
   }
 
   &__close {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 32px;
     height: 32px;
     flex-shrink: 0;
