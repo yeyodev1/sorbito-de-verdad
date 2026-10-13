@@ -59,8 +59,9 @@ const emit = defineEmits<{ (e: 'reload'): void }>();
   box-shadow: var(--shadow-lg);
 
   &__icon-wrap {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 64px;
     height: 64px;
     border-radius: 50%;
