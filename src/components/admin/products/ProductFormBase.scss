@@ -28,12 +28,17 @@
     gap: 1rem;
 
     &--grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      flex-direction: row;
+      flex-wrap: wrap;
       gap: 1rem;
 
+      > * {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: 0;
+      }
+
       @media (max-width: 600px) {
-        grid-template-columns: 1fr;
+        > * { flex-basis: 100%; }
       }
     }
   }
