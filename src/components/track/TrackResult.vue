@@ -130,11 +130,17 @@ const emit = defineEmits<{ back: [] }>();
   }
 
   &__details {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
 
+    > * { min-width: 0; }
+
     @media (min-width: 640px) {
-      grid-template-columns: 1fr 1fr;
+      flex-direction: row;
+      flex-wrap: wrap;
+
+      > * { flex: 1 1 calc((100% - 1rem) / 2); }
     }
   }
 
