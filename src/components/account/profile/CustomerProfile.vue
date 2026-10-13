@@ -85,13 +85,19 @@ defineEmits<{ logout: [] }>();
   }
 
   &__layout {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
-    align-items: start;
+
+    > * { min-width: 0; }
 
     @media (min-width: 960px) {
-      grid-template-columns: 1fr 340px;
+      flex-direction: row;
+      align-items: flex-start;
       gap: 2.5rem;
+
+      > :first-child { flex: 1 1 auto; }
+      > :last-child { flex: 0 0 340px; }
     }
   }
 }
@@ -100,8 +106,9 @@ defineEmits<{ logout: [] }>();
   flex-shrink: 0;
   width: 72px;
   height: 72px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-heading);
   font-size: 1.875rem;
   font-weight: 600;
