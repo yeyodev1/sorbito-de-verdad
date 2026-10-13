@@ -89,22 +89,27 @@ async function handleSubmit() {
   }
 
   &__card {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     border-radius: $radius-xl;
     background-color: var(--color-bg-inverse);
     color: var(--color-on-inverse);
 
     @media (min-width: 900px) {
-      grid-template-columns: 1.2fr 1fr;
+      flex-direction: row;
     }
   }
 
   &__content {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+
+    @media (min-width: 900px) {
+      flex: 1.2 1 0;
+    }
     padding: 2.25rem 1.25rem;
 
     @media (min-width: 768px) {
@@ -240,14 +245,18 @@ async function handleSubmit() {
   }
 
   &__visual {
+    position: relative;
     min-height: 220px;
+    min-width: 0;
 
     @media (min-width: 900px) {
-      min-height: 100%;
+      flex: 1 1 0;
     }
   }
 
   &__img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
