@@ -1,0 +1,54 @@
+.admin-card {
+  background-color: $admin-card;
+  border: 1px solid $admin-border;
+  border-radius: 12px;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid $admin-border;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $admin-text;
+    margin: 0;
+  }
+
+  &__link {
+    font-size: 0.875rem;
+    color: $admin-accent;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__body {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2.5rem;
+    color: $admin-text-muted;
+    font-size: 0.9375rem;
+
+    i {
+      font-size: 2rem;
+      opacity: 0.5;
+    }
+  }
+}

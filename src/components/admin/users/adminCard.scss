@@ -1,0 +1,22 @@
+.admin-card {
+  background-color: $admin-card;
+  border: 1px solid $admin-border;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid $admin-border;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $admin-text;
+    margin: 0;
+  }
+}

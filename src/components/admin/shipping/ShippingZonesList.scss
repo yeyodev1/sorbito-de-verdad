@@ -1,0 +1,189 @@
+@use "sass:color";
+
+.sm {
+  &__skeleton-row {
+    height: 64px;
+    border-bottom: 1px solid $admin-border;
+    background: linear-gradient(90deg, $admin-border 25%, color.adjust(#2A2A2A, $lightness: 5%) 50%, $admin-border 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+
+    &:last-child { border-bottom: none; }
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 4rem 2rem;
+    color: $admin-text-muted;
+    background-color: $admin-card;
+    border: 1px solid $admin-border;
+    border-radius: 12px;
+
+    i { font-size: 3rem; opacity: 0.4; }
+    p { font-size: 1rem; margin: 0; }
+  }
+
+  &__table-wrap {
+    overflow-x: auto;
+  }
+
+  &__zone-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $admin-text;
+  }
+
+  &__zone-desc {
+    font-size: 0.8125rem;
+    color: $admin-text-muted;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    max-width: 180px;
+  }
+
+  &__tag {
+    display: inline-flex;
+    padding: 0.125rem 0.5rem;
+    background-color: $admin-sidebar-active;
+    border: 1px solid $admin-border;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: $admin-text-muted;
+    white-space: nowrap;
+  }
+
+  &__no-countries,
+  &__no-maps {
+    color: $admin-text-muted;
+    opacity: 0.5;
+  }
+
+  &__price {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: $admin-text;
+  }
+
+  &__days {
+    font-size: 0.8125rem;
+    color: $admin-text-muted;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+
+    i { font-size: 0.75rem; color: $admin-accent; }
+  }
+
+  &__maps-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background-color: $admin-sidebar-active;
+    border: 1px solid $admin-border;
+    color: $admin-text-muted;
+    text-decoration: none;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: $admin-accent;
+      color: $admin-accent;
+    }
+
+    i { font-size: 0.8125rem; }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    justify-content: flex-end;
+  }
+
+  &__action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.875rem;
+    border: 1px solid $admin-border;
+    background-color: $admin-sidebar-hover;
+    color: $admin-text-muted;
+
+    &--edit:hover { border-color: $admin-accent; color: $admin-accent; }
+    &--activate:hover, &--deactivate:hover { border-color: $admin-info; color: $admin-info; }
+    &--delete:hover { border-color: $admin-error; color: $admin-error; background-color: rgba($admin-error, 0.1); }
+  }
+}
+
+.admin-card {
+  background-color: $admin-card;
+  border: 1px solid $admin-border;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr th {
+    background-color: $admin-sidebar-active;
+    color: $admin-text-muted;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid $admin-border;
+    transition: background-color 0.15s ease;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background-color: $admin-sidebar-hover; }
+
+    td {
+      padding: 0.875rem 1rem;
+      color: $admin-text;
+    }
+  }
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--success { background-color: rgba($admin-success, 0.15); color: $admin-success; }
+  &--error { background-color: rgba($admin-error, 0.15); color: $admin-error; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

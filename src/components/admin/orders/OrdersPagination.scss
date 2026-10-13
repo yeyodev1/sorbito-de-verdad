@@ -1,0 +1,50 @@
+.om {
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid $admin-border;
+    gap: 1rem;
+
+    &--bottom {
+      border-top: 1px solid $admin-border;
+    }
+  }
+
+  &__pagination-info {
+    font-size: 0.8125rem;
+    color: $admin-text-muted;
+  }
+
+  &__pagination-btns {
+    display: flex;
+    gap: 0.375rem;
+  }
+
+  &__pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid $admin-border;
+    background-color: $admin-card;
+    color: $admin-text;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $admin-accent;
+      color: $admin-accent;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+}

@@ -1,0 +1,92 @@
+// Tokens de color como CSS custom properties.
+// Se cargan una sola vez desde global.scss (no en cada componente).
+
+// CSS Custom Properties (use in templates/JS)
+// Paleta "cerámica": crema, espresso y barro cocido.
+:root {
+  --color-bg: #F7F2EA;
+  --color-bg-card: #FFFDF9;
+  --color-bg-subtle: #EFE7DB;
+  --color-bg-inverse: #2A1D15;
+  --color-primary: #2A1D15;
+  --color-on-inverse: #F7F2EA;
+  --color-accent: #B5582E;
+  --color-accent-hover: #9A4723;
+  --color-accent-light: #F1DCCB;
+  --color-on-accent: #FFFFFF;
+  --color-rose: #C9707F;
+  --color-rose-light: #F8E6E8;
+  --color-border: #E4D9CA;
+  --color-border-strong: #CDBDA9;
+  --color-muted: #6F6157;
+  --color-white: #FFFFFF;
+  --color-success: #2F7D4F;
+  --color-success-light: #E1F0E6;
+  --color-error: #C0392B;
+  --color-error-light: #FBE6E3;
+  --color-warning: #B7791F;
+  --color-warning-light: #FBF0DC;
+  --shadow-sm: 0 1px 2px rgba(42, 29, 21, 0.06);
+  --shadow-md: 0 6px 16px -4px rgba(42, 29, 21, 0.12);
+  --shadow-lg: 0 18px 40px -12px rgba(42, 29, 21, 0.22);
+  --focus-ring: 0 0 0 3px rgba(181, 88, 46, 0.28);
+
+  /* Navbar semi-transparent backgrounds */
+  --navbar-bg: rgba(247, 242, 234, 0.82);
+  --navbar-bg-scrolled: rgba(247, 242, 234, 0.94);
+  --navbar-mobile-bg: #FFFDF9;
+
+  --admin-bg: #0A0A0A;
+  --admin-sidebar: #111111;
+  --admin-sidebar-hover: #1C1C1C;
+  --admin-sidebar-active: #222222;
+  --admin-card: #181818;
+  --admin-border: #2A2A2A;
+  --admin-text: #FFFFFF;
+  --admin-text-muted: #888888;
+  --admin-accent: #C8956C;
+  --admin-accent-dim: rgba(200, 149, 108, 0.12);
+  --admin-success: #22C55E;
+  --admin-error: #EF4444;
+  --admin-warning: #F59E0B;
+  --admin-info: #3B82F6;
+}
+
+/* ── Dark theme overrides ───────────────────────────── */
+[data-theme="dark"] {
+  --color-bg: #14100D;
+  --color-bg-card: #1D1814;
+  --color-bg-subtle: #191410;
+  --color-bg-inverse: #F3EBE1;
+  --color-primary: #F3EBE1;
+  --color-on-inverse: #14100D;
+  --color-accent: #D9774A;
+  --color-accent-hover: #E68A5E;
+  --color-accent-light: #3A2418;
+  --color-on-accent: #1A0F09;
+  --color-rose: #D88D9A;
+  --color-rose-light: #2C1A1E;
+  --color-border: #2E2620;
+  --color-border-strong: #45392F;
+  --color-muted: #A39486;
+  --color-white: #FFFFFF;
+  --color-success: #4CC27A;
+  --color-success-light: #15291D;
+  --color-error: #F0705F;
+  --color-error-light: #2E1714;
+  --color-warning: #E5A643;
+  --color-warning-light: #2D2213;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 16px -4px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 40px -12px rgba(0, 0, 0, 0.65);
+  --focus-ring: 0 0 0 3px rgba(217, 119, 74, 0.35);
+
+  --navbar-bg: rgba(20, 16, 13, 0.78);
+  --navbar-bg-scrolled: rgba(20, 16, 13, 0.94);
+  --navbar-mobile-bg: #1D1814;
+}
+
+:root {
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+}

@@ -1,92 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter, useRoute, RouterLink } from 'vue-router';
+import { RouterLink } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
-import { useAuthStore } from '../stores/auth';
-import { useUIStore } from '../stores/ui';
-import { authService } from '../services/auth.service';
+import AuthBrand from '../components/account/auth/AuthBrand.vue';
+import LoginTabs from '../components/account/auth/LoginTabs.vue';
+import LoginForgotPanel from '../components/account/auth/LoginForgotPanel.vue';
+import LoginCredentialsForm from '../components/account/auth/LoginCredentialsForm.vue';
+import { useLoginForm } from '../composables/account/useLoginForm';
 
-const authStore = useAuthStore();
-const uiStore = useUIStore();
-const router = useRouter();
-const route = useRoute();
-
-// 'login' | 'register' | 'forgot'
-const mode = ref<'login' | 'register' | 'forgot'>('login');
-const loading = ref(false);
-const errorMessage = ref('');
-const forgotSent = ref(false);
-
-const form = ref({ name: '', email: '', password: '' });
-const forgotEmail = ref('');
-
-const redirectPath = computed(() => {
-  const r = route.query.redirect;
-  return typeof r === 'string' ? r : '/';
-});
-
-async function handleSubmit() {
-  if (loading.value) return;
-  loading.value = true;
-  errorMessage.value = '';
-  try {
-    if (mode.value === 'login') {
-      await authStore.login(form.value.email, form.value.password);
-      const firstName = authStore.user?.name?.split(' ')[0] ?? '';
-      uiStore.success(`¡Bienvenido/a${firstName ? `, ${firstName}` : ''}!`);
-      router.push(redirectPath.value);
-    } else {
-      await authStore.register(form.value.name, form.value.email, form.value.password);
-      const firstName = form.value.name.trim().split(' ')[0];
-      uiStore.success(`¡Bienvenido/a a Sorbito, ${firstName}!`);
-      router.push(redirectPath.value);
-    }
-  } catch (err: unknown) {
-    type AxiosErr = { response?: { data?: { message?: string } }; message?: string };
-    const e = err as AxiosErr;
-    errorMessage.value = e.response?.data?.message || 'Error al procesar. Verifica tus datos.';
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function handleForgot() {
-  if (loading.value || !forgotEmail.value) return;
-  loading.value = true;
-  errorMessage.value = '';
-  try {
-    await authService.forgotPassword(forgotEmail.value);
-    forgotSent.value = true;
-  } catch (err: unknown) {
-    errorMessage.value = (err as { message?: string })?.message || 'Error al enviar. Intenta de nuevo.';
-  } finally {
-    loading.value = false;
-  }
-}
-
-function setMode(m: 'login' | 'register' | 'forgot') {
-  mode.value = m;
-  errorMessage.value = '';
-  forgotSent.value = false;
-  form.value = { name: '', email: '', password: '' };
-  forgotEmail.value = '';
-}
-
-const cardTitle = computed(() => {
-  if (mode.value === 'forgot') return forgotSent.value ? '¡Revisa tu correo!' : 'Recuperar contraseña';
-  return mode.value === 'login' ? 'Bienvenido/a de vuelta' : 'Crear cuenta';
-});
-
-const cardSubtitle = computed(() => {
-  if (mode.value === 'forgot') {
-    return forgotSent.value
-      ? `Enviamos un enlace de recuperación a ${forgotEmail.value}. Válido por 1 hora.`
-      : 'Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.';
-  }
-  return mode.value === 'login'
-    ? 'Inicia sesión para acceder a tus pedidos y favoritos.'
-    : 'Únete y descubre el mundo artesanal de Sorbito.';
-});
+const {
+  mode, loading, errorMessage, forgotSent, form, forgotEmail,
+  handleSubmit, handleForgot, setMode, cardTitle, cardSubtitle,
+} = useLoginForm();
 </script>
 
 <template>
@@ -96,37 +20,10 @@ const cardSubtitle = computed(() => {
         <div class="login-card">
 
           <!-- Brand -->
-          <RouterLink to="/" class="login-logo" aria-label="Sorbito de Verdad — inicio">
-            <span class="login-logo__mark" aria-hidden="true">
-              <i class="fa-solid fa-mug-hot"></i>
-            </span>
-            <span class="login-logo__text">
-              <span class="login-logo__name">Sorbito de Verdad</span>
-              <span class="login-logo__tagline">Tazas artesanales · Ecuador</span>
-            </span>
-          </RouterLink>
+          <AuthBrand prefix="login" />
 
           <!-- Mode switch -->
-          <div v-if="mode !== 'forgot'" class="login-tabs" role="tablist" aria-label="Acceso">
-            <button
-              type="button"
-              role="tab"
-              :aria-selected="mode === 'login'"
-              :class="['login-tabs__tab', { 'login-tabs__tab--active': mode === 'login' }]"
-              @click="mode !== 'login' && setMode('login')"
-            >
-              Iniciar sesión
-            </button>
-            <button
-              type="button"
-              role="tab"
-              :aria-selected="mode === 'register'"
-              :class="['login-tabs__tab', { 'login-tabs__tab--active': mode === 'register' }]"
-              @click="mode !== 'register' && setMode('register')"
-            >
-              Crear cuenta
-            </button>
-          </div>
+          <LoginTabs v-if="mode !== 'forgot'" :mode="mode" @select="setMode" />
 
           <!-- Header -->
           <header class="login-card__header">
@@ -152,103 +49,25 @@ const cardSubtitle = computed(() => {
             </div>
           </div>
 
-          <!-- Forgot password — success state -->
-          <div v-if="mode === 'forgot' && forgotSent" class="login-card__success">
-            <div class="login-card__success-icon" aria-hidden="true">
-              <i class="fa-solid fa-envelope-open-text"></i>
-            </div>
-            <button type="button" class="btn-outline btn-block" @click="setMode('login')">
-              <i class="fa-solid fa-arrow-left"></i>
-              Volver al inicio de sesión
-            </button>
-          </div>
-
-          <!-- Forgot password form -->
-          <form v-else-if="mode === 'forgot'" class="login-form" @submit.prevent="handleForgot" novalidate>
-            <div class="field">
-              <label class="field__label" for="forgot-email">Correo electrónico</label>
-              <input
-                id="forgot-email"
-                v-model="forgotEmail"
-                type="email"
-                class="field__input"
-                placeholder="tu@email.com"
-                required
-                autocomplete="email"
-              />
-            </div>
-
-            <button type="submit" class="btn-primary btn-lg btn-block" :disabled="loading || !forgotEmail">
-              <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
-              <i v-else class="fa-solid fa-paper-plane"></i>
-              <span>{{ loading ? 'Enviando...' : 'Enviar enlace de recuperación' }}</span>
-            </button>
-
-            <button type="button" class="login-form__back" @click="setMode('login')">
-              <i class="fa-solid fa-arrow-left"></i>
-              Volver al inicio de sesión
-            </button>
-          </form>
+          <!-- Forgot password -->
+          <LoginForgotPanel
+            v-if="mode === 'forgot'"
+            v-model:email="forgotEmail"
+            :sent="forgotSent"
+            :loading="loading"
+            @submit="handleForgot"
+            @back="setMode('login')"
+          />
 
           <!-- Login / Register form -->
-          <form v-else class="login-form" @submit.prevent="handleSubmit" novalidate>
-            <div v-if="mode === 'register'" class="field">
-              <label class="field__label" for="login-name">Nombre completo</label>
-              <input
-                id="login-name"
-                v-model="form.name"
-                type="text"
-                class="field__input"
-                placeholder="Juan Pérez"
-                required
-                autocomplete="name"
-              />
-            </div>
-
-            <div class="field">
-              <label class="field__label" for="login-email">Correo electrónico</label>
-              <input
-                id="login-email"
-                v-model="form.email"
-                type="email"
-                class="field__input"
-                placeholder="tu@email.com"
-                required
-                autocomplete="email"
-              />
-            </div>
-
-            <div class="field">
-              <div class="login-form__label-row">
-                <label class="field__label" for="login-password">Contraseña</label>
-                <button
-                  v-if="mode === 'login'"
-                  type="button"
-                  class="login-form__forgot-link"
-                  @click="setMode('forgot')"
-                >
-                  ¿La olvidaste?
-                </button>
-              </div>
-              <input
-                id="login-password"
-                v-model="form.password"
-                type="password"
-                class="field__input"
-                placeholder="••••••••"
-                required
-                minlength="6"
-                :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
-              />
-              <p v-if="mode === 'register'" class="login-form__hint">Mínimo 6 caracteres.</p>
-            </div>
-
-            <button type="submit" class="btn-primary btn-lg btn-block login-form__submit" :disabled="loading">
-              <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
-              <span v-if="loading">{{ mode === 'login' ? 'Ingresando...' : 'Creando cuenta...' }}</span>
-              <span v-else>{{ mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta' }}</span>
-            </button>
-          </form>
+          <LoginCredentialsForm
+            v-else
+            v-model:form="form"
+            :mode="mode"
+            :loading="loading"
+            @submit="handleSubmit"
+            @forgot="setMode('forgot')"
+          />
 
           <!-- Footer -->
           <div v-if="mode !== 'forgot'" class="login-card__footer">
@@ -359,23 +178,6 @@ const cardSubtitle = computed(() => {
     }
   }
 
-  &__success {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-  }
-
-  &__success-icon {
-    width: 76px;
-    height: 76px;
-    display: grid;
-    place-items: center;
-    font-size: 1.75rem;
-    color: var(--color-success);
-    background-color: var(--color-success-light);
-    border-radius: 50%;
-  }
 
   &__footer {
     display: flex;
@@ -410,107 +212,9 @@ const cardSubtitle = computed(() => {
   }
 }
 
-.login-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  align-self: flex-start;
-
-  &__mark {
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    font-size: 1.125rem;
-    color: var(--color-on-accent);
-    background-color: var(--color-accent);
-    border-radius: 50%;
-  }
-
-  &__text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
-
-  &__name {
-    font-family: var(--font-heading);
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--color-primary);
-  }
-
-  &__tagline {
-    font-size: 0.75rem;
-    color: var(--color-muted);
-  }
-}
-
-.login-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  background-color: var(--color-bg-subtle);
-  border-radius: $radius-full;
-
-  &__tab {
-    min-height: 42px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-muted);
-    border-radius: $radius-full;
-    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-
-    &:hover { color: var(--color-primary); }
-
-    &--active {
-      color: var(--color-primary);
-      background-color: var(--color-bg-card);
-      box-shadow: var(--shadow-sm);
-    }
-  }
-}
-
 .login-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-
-  &__label-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  &__forgot-link {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--color-accent);
-
-    &:hover { text-decoration: underline; }
-  }
-
-  &__hint {
-    font-size: 0.75rem;
-  }
-
-  &__submit {
-    margin-top: 0.5rem;
-  }
-
-  &__back {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    min-height: 44px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--color-muted);
-
-    &:hover { color: var(--color-primary); }
-  }
 }
 </style>

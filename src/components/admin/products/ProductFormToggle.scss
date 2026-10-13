@@ -1,0 +1,34 @@
+// Interruptor (switch) del formulario de producto (admin)
+.pf {
+  &__toggle {
+    width: 44px;
+    height: 24px;
+    border-radius: 12px;
+    background-color: $admin-border;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+
+    &--on {
+      background-color: $admin-accent;
+    }
+  }
+
+  &__toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #fff;
+    transition: transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+    .pf__toggle--on & {
+      transform: translateX(20px);
+    }
+  }
+}

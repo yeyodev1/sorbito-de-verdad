@@ -1,0 +1,174 @@
+@use "./styles/table";
+@use "./styles/status-badge";
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+}
+
+.om {
+  &__wa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid rgba(37, 211, 102, 0.4);
+    background-color: rgba(37, 211, 102, 0.08);
+    color: #25D366;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 1rem;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: rgba(37, 211, 102, 0.2);
+      border-color: #25D366;
+    }
+  }
+
+  &__order-num {
+    font-family: monospace;
+    font-weight: 600;
+    color: $admin-accent;
+    font-size: 0.9375rem;
+  }
+
+  &__user {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  &__user-name {
+    color: $admin-text;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  &__user-email {
+    color: $admin-text-muted;
+    font-size: 0.75rem;
+  }
+
+  &__items-count {
+    color: $admin-text-muted;
+    font-size: 0.875rem;
+  }
+
+  &__total {
+    color: $admin-text;
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  &__date {
+    color: $admin-text-muted;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+
+  &__cell-control {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  &__cell-select {
+    padding: 0.2rem 0.4rem;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: $admin-text-muted;
+    font-size: 0.6875rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.15s ease;
+    max-width: 90px;
+
+    &:focus {
+      outline: none;
+      border-color: $admin-accent;
+      opacity: 1;
+    }
+
+    &:hover {
+      opacity: 1;
+      border-color: $admin-border;
+    }
+
+    option {
+      background-color: $admin-card;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  &__status-select {
+    padding: 0.375rem 0.625rem;
+    background-color: $admin-sidebar-active;
+    border: 1px solid $admin-border;
+    border-radius: 6px;
+    color: $admin-text;
+    font-size: 0.8125rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: $admin-accent;
+    }
+
+    option {
+      background-color: $admin-card;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+
+  &__expand-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid $admin-border;
+    background-color: $admin-sidebar-hover;
+    color: $admin-text-muted;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.75rem;
+
+    &:hover {
+      border-color: $admin-accent;
+      color: $admin-accent;
+    }
+  }
+
+  &__row--expanded td {
+    border-bottom: none;
+  }
+
+  &__details-row td {
+    padding: 0;
+  }
+}

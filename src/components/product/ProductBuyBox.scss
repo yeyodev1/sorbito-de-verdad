@@ -1,0 +1,224 @@
+.pd-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__badges {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__chip {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    background-color: var(--color-accent-light);
+    border-radius: $radius-full;
+  }
+
+  &__name {
+    font-size: clamp(1.875rem, 4.5vw, 3rem);
+  }
+
+  &__pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  &__price {
+    font-size: 1.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__compare {
+    font-size: 1.125rem;
+    color: var(--color-muted);
+    text-decoration: line-through;
+  }
+
+  &__short {
+    font-size: 1rem;
+  }
+
+  &__stock {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-success);
+
+    &--low { color: var(--color-warning); }
+    &--out { color: var(--color-error); }
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    background-color: currentColor;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 20%, transparent);
+  }
+
+  &__block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+
+  &__sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  &__size {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 108px;
+    padding: 0.625rem 1rem;
+    text-align: left;
+    border: 1.5px solid var(--color-border);
+    border-radius: $radius-md;
+    transition: all 0.2s ease;
+
+    span { font-weight: 600; }
+    small { font-size: 0.8125rem; color: var(--color-muted); }
+
+    &:hover { border-color: var(--color-border-strong); }
+
+    &--active {
+      border-color: var(--color-primary);
+      background-color: var(--color-bg-subtle);
+    }
+  }
+
+  &__buy {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.625rem;
+    margin-top: 0.25rem;
+  }
+
+  &__qty {
+    display: inline-flex;
+    align-items: center;
+    height: 54px;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: $radius-full;
+
+    button {
+      width: 46px;
+      height: 100%;
+      font-size: 1.25rem;
+      border-radius: 50%;
+
+      &:disabled { opacity: 0.35; cursor: not-allowed; }
+    }
+
+    span {
+      min-width: 28px;
+      text-align: center;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__now {
+    grid-column: 1 / -1;
+  }
+
+  &__oos {
+    padding: 1rem;
+    font-size: 0.9375rem;
+    background-color: var(--color-bg-subtle);
+    border-radius: $radius-md;
+
+    a {
+      margin-left: 0.25rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      text-decoration: underline;
+    }
+  }
+
+  &__perks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+
+    i {
+      width: 20px;
+      margin-right: 0.5rem;
+      color: var(--color-accent);
+    }
+  }
+
+  &__details {
+    border-bottom: 1px solid var(--color-border);
+
+    summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 52px;
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+
+      &::-webkit-details-marker { display: none; }
+
+      &::after {
+        content: '+';
+        font-size: 1.25rem;
+        font-weight: 400;
+        color: var(--color-muted);
+      }
+    }
+
+    &[open] summary::after { content: '−'; }
+
+    > p {
+      padding-bottom: 1rem;
+      white-space: pre-line;
+    }
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    padding-bottom: 0.75rem;
+
+    span {
+      padding: 0.25rem 0.625rem;
+      font-size: 0.75rem;
+      color: var(--color-muted);
+      background-color: var(--color-bg-subtle);
+      border-radius: $radius-full;
+    }
+  }
+
+  &__sku {
+    padding-bottom: 1rem;
+    font-size: 0.75rem;
+  }
+}

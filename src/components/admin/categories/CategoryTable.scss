@@ -1,0 +1,99 @@
+// Tabla de categorías (admin)
+.cm {
+  &__table-wrap {
+    overflow-x: auto;
+  }
+
+  &__cat-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $admin-text;
+  }
+
+  &__slug {
+    font-family: monospace;
+    font-size: 0.8125rem;
+    color: $admin-text-muted;
+    background-color: $admin-sidebar-active;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+  }
+
+  &__description {
+    font-size: 0.875rem;
+    color: $admin-text-muted;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    justify-content: flex-end;
+  }
+
+  &__action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.875rem;
+    border: 1px solid $admin-border;
+    background-color: $admin-sidebar-hover;
+    color: $admin-text-muted;
+
+    &--edit:hover { border-color: $admin-accent; color: $admin-accent; }
+    &--activate:hover, &--deactivate:hover { border-color: $admin-info; color: $admin-info; }
+    &--delete:hover { border-color: $admin-error; color: $admin-error; background-color: rgba($admin-error, 0.1); }
+  }
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr th {
+    background-color: $admin-sidebar-active;
+    color: $admin-text-muted;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid $admin-border;
+    transition: background-color 0.15s ease;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background-color: $admin-sidebar-hover; }
+
+    td {
+      padding: 0.875rem 1rem;
+      color: $admin-text;
+    }
+  }
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--success { background-color: rgba($admin-success, 0.15); color: $admin-success; }
+  &--error { background-color: rgba($admin-error, 0.15); color: $admin-error; }
+}
+

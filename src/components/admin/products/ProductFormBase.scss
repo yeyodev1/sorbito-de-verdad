@@ -1,0 +1,160 @@
+// Estilos comunes de las tarjetas del formulario de producto (admin)
+.pf {
+  &__card {
+    background-color: $admin-card;
+    border: 1px solid $admin-border;
+    border-radius: 12px;
+    padding: 1.5rem;
+    flex-shrink: 0; // don't shrink inside the sticky right column
+  }
+
+  &__card-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: $admin-text-muted;
+    margin: 0 0 1.25rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid $admin-border;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    &--grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+
+      @media (max-width: 600px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  &__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $admin-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__required {
+    color: $admin-error;
+    margin-left: 0.25rem;
+  }
+
+  &__hint {
+    color: $admin-text-muted;
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 0.25rem;
+  }
+
+  &__input {
+    padding: 0.625rem 0.875rem;
+    background-color: $admin-sidebar-active;
+    border: 1px solid $admin-border;
+    border-radius: 8px;
+    color: $admin-text;
+    font-size: 0.9375rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    width: 100%;
+
+    &::placeholder {
+      color: #555;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $admin-accent;
+      box-shadow: 0 0 0 3px rgba($admin-accent, 0.12);
+    }
+
+    &-prefix {
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    &--prefixed {
+      padding-left: 1.875rem;
+    }
+  }
+
+  &__prefix {
+    position: absolute;
+    left: 0.875rem;
+    color: $admin-text-muted;
+    font-size: 0.9375rem;
+    pointer-events: none;
+  }
+
+  &__hint-badge {
+    font-size: 0.6875rem;
+    font-weight: 400;
+    color: $admin-text-muted;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  &__field-hint {
+    font-size: 0.75rem;
+    color: $admin-text-muted;
+    margin-top: 0.125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    i { font-size: 0.6875rem; color: $admin-info; }
+  }
+
+  &__divider {
+    height: 1px;
+    background-color: $admin-border;
+    margin: 1.25rem 0;
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 80px;
+
+    &--sm {
+      min-height: 70px;
+    }
+  }
+
+  &__select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    padding-right: 2.5rem;
+    cursor: pointer;
+
+    option {
+      background-color: $admin-card;
+    }
+  }
+}

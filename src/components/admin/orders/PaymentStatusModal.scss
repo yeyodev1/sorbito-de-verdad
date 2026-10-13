@@ -1,0 +1,74 @@
+@use "./styles/pm-modal";
+@use "./styles/status-badge";
+
+.pm-box--compact {
+  max-width: 400px;
+}
+
+.pm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pm-change-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba($admin-border, 0.3);
+  border-radius: 10px;
+}
+
+.pm-change-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pm-change-label {
+  font-size: 0.75rem;
+  color: $admin-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
+
+.pm-change-arrow {
+  font-size: 1.25rem;
+  color: $admin-accent;
+  opacity: 0.6;
+}
+
+.pm-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  color: $admin-warning;
+  background: rgba($admin-warning, 0.08);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border-left: 3px solid $admin-warning;
+  i { font-size: 1rem; }
+}
+
+.pm-receipt-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: $admin-text-muted;
+  a {
+    color: $admin-info;
+    text-decoration: underline;
+  }
+}
+
+.pm-footer {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}

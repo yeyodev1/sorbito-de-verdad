@@ -1,0 +1,89 @@
+@use "sass:color";
+@use "./styles/table";
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.om {
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__skeleton-header {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background-color: $admin-sidebar-active;
+    border-bottom: 1px solid $admin-border;
+  }
+
+  &__skeleton-th {
+    height: 12px;
+    flex: 1;
+    border-radius: 4px;
+    background: linear-gradient(90deg, $admin-border 25%, color.adjust(#2A2A2A, $lightness: 8%) 50%, $admin-border 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+
+    &:first-child { max-width: 100px; }
+    &:last-child  { max-width: 80px; }
+  }
+
+  &__skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    border-bottom: 1px solid $admin-border;
+
+    &:last-child { border-bottom: none; }
+  }
+
+  &__skeleton-cell {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, $admin-border 25%, color.adjust(#2A2A2A, $lightness: 5%) 50%, $admin-border 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+
+    &--sm  { flex: 0 0 80px; }
+    &--md  { flex: 0 0 140px; }
+    &--lg  { flex: 0 0 200px; }
+
+    // Stagger animation delays para efecto cascada
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: 0.08s; }
+    &:nth-child(3) { animation-delay: 0.16s; }
+    &:nth-child(4) { animation-delay: 0.24s; }
+    &:nth-child(5) { animation-delay: 0.32s; }
+    &:nth-child(6) { animation-delay: 0.4s; }
+    &:nth-child(7) { animation-delay: 0.48s; }
+    &:nth-child(8) { animation-delay: 0.56s; }
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 4rem 2rem;
+    color: $admin-text-muted;
+
+    i {
+      font-size: 3rem;
+      opacity: 0.4;
+    }
+
+    p {
+      font-size: 1rem;
+      margin: 0;
+    }
+  }
+
+  &__table-wrap {
+    overflow-x: auto;
+  }
+}

@@ -1,0 +1,169 @@
+// Estructura de la página del formulario de producto (admin)
+@use "sass:color";
+
+.pf {
+  &__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  &__breadcrumb-link {
+    color: $admin-text-muted;
+    text-decoration: none;
+
+    &:hover {
+      color: $admin-text;
+    }
+  }
+
+  &__breadcrumb-sep {
+    color: $admin-text-muted;
+    font-size: 0.625rem;
+  }
+
+  &__breadcrumb-current {
+    color: $admin-accent;
+    font-weight: 500;
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    color: $admin-text-muted;
+    justify-content: center;
+    font-size: 1rem;
+
+    i {
+      font-size: 1.5rem;
+      color: $admin-accent;
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+
+    &--error {
+      background-color: rgba($admin-error, 0.12);
+      border: 1px solid rgba($admin-error, 0.3);
+      color: $admin-error;
+    }
+
+    &--success {
+      background-color: rgba($admin-success, 0.12);
+      border: 1px solid rgba($admin-success, 0.3);
+      color: $admin-success;
+    }
+  }
+
+  &__layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+    align-items: start; // critical: prevents columns from stretching
+
+    @media (max-width: 1100px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  &__right {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+
+    @media (max-width: 1100px) {
+      position: static;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+    border-top: 1px solid $admin-border;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+
+      .btn-outline, .btn-primary {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+
+// Shared buttons
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  background-color: $admin-accent;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', sans-serif;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: color.adjust(#C8956C, $lightness: -8%);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  background-color: transparent;
+  color: $admin-text-muted;
+  border: 1px solid $admin-border;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', sans-serif;
+
+  &:hover {
+    border-color: $admin-text;
+    color: $admin-text;
+  }
+}

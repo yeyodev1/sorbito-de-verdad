@@ -1,0 +1,18 @@
+@use "../../../../styles/index.scss" as *;
+
+.status-badge {
+  display: inline-flex;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--warning { background-color: rgba($admin-warning, 0.15); color: $admin-warning; }
+  &--info { background-color: rgba($admin-info, 0.15); color: $admin-info; }
+  &--success { background-color: rgba($admin-success, 0.15); color: $admin-success; }
+  &--error { background-color: rgba($admin-error, 0.15); color: $admin-error; }
+  &--purple { background-color: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+  &--review { background-color: rgba(251, 146, 60, 0.15); color: #fb923c; }
+  &--muted { background-color: rgba($admin-text-muted, 0.15); color: $admin-text-muted; }
+}

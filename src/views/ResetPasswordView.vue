@@ -1,62 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter, RouterLink } from 'vue-router';
+import { RouterLink } from 'vue-router';
 import MainLayout from '../layout/MainLayout.vue';
-import { useAuthStore } from '../stores/auth';
-import { useUIStore } from '../stores/ui';
-import { authService } from '../services/auth.service';
+import AuthBrand from '../components/account/auth/AuthBrand.vue';
+import ResetPasswordForm from '../components/account/auth/ResetPasswordForm.vue';
+import { useResetPassword } from '../composables/account/useResetPassword';
 
-const route = useRoute();
-const router = useRouter();
-const authStore = useAuthStore();
-const uiStore = useUIStore();
-
-const token = ref('');
-const password = ref('');
-const confirmPassword = ref('');
-const loading = ref(false);
-const errorMessage = ref('');
-const success = ref(false);
-
-onMounted(() => {
-  const t = route.query.token;
-  if (typeof t === 'string' && t) {
-    token.value = t;
-  } else {
-    errorMessage.value = 'Enlace inválido. Solicita uno nuevo desde la pantalla de login.';
-  }
-});
-
-async function handleReset() {
-  if (loading.value) return;
-  errorMessage.value = '';
-
-  if (password.value.length < 6) {
-    errorMessage.value = 'La contraseña debe tener al menos 6 caracteres.';
-    return;
-  }
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = 'Las contraseñas no coinciden.';
-    return;
-  }
-
-  loading.value = true;
-  try {
-    const res = await authService.resetPassword(token.value, password.value);
-    if (res.data?.token) {
-      authStore.setFromToken(res.data.token, res.data.user);
-    }
-    success.value = true;
-    uiStore.showNotification('¡Contraseña actualizada!', 'success');
-    setTimeout(() => router.push('/perfil'), 2200);
-  } catch (err: unknown) {
-    errorMessage.value =
-      (err as { message?: string })?.message ||
-      'Enlace inválido o expirado. Solicita uno nuevo.';
-  } finally {
-    loading.value = false;
-  }
-}
+const { token, password, confirmPassword, loading, errorMessage, success, handleReset } = useResetPassword();
 </script>
 
 <template>
@@ -66,15 +15,7 @@ async function handleReset() {
         <div class="rp-card">
 
           <!-- Brand -->
-          <RouterLink to="/" class="rp-logo" aria-label="Sorbito de Verdad — inicio">
-            <span class="rp-logo__mark" aria-hidden="true">
-              <i class="fa-solid fa-mug-hot"></i>
-            </span>
-            <span class="rp-logo__text">
-              <span class="rp-logo__name">Sorbito de Verdad</span>
-              <span class="rp-logo__tagline">Tazas artesanales · Ecuador</span>
-            </span>
-          </RouterLink>
+          <AuthBrand prefix="rp" />
 
           <!-- Success state -->
           <template v-if="success">
@@ -108,43 +49,13 @@ async function handleReset() {
               <span>{{ errorMessage }}</span>
             </div>
 
-            <form v-if="token" class="rp-form" @submit.prevent="handleReset" novalidate>
-              <div class="field">
-                <label class="field__label" for="rp-password">Nueva contraseña</label>
-                <input
-                  id="rp-password"
-                  v-model="password"
-                  type="password"
-                  class="field__input"
-                  placeholder="Mínimo 6 caracteres"
-                  required
-                  minlength="6"
-                  autocomplete="new-password"
-                />
-              </div>
-
-              <div class="field">
-                <label class="field__label" for="rp-confirm">Confirmar contraseña</label>
-                <input
-                  id="rp-confirm"
-                  v-model="confirmPassword"
-                  type="password"
-                  :class="['field__input', { 'rp-form__input--error': confirmPassword && password !== confirmPassword }]"
-                  placeholder="Repite tu contraseña"
-                  required
-                  autocomplete="new-password"
-                />
-                <span v-if="confirmPassword && password !== confirmPassword" class="rp-form__mismatch">
-                  <i class="fa-solid fa-triangle-exclamation"></i> Las contraseñas no coinciden
-                </span>
-              </div>
-
-              <button type="submit" class="btn-primary btn-lg btn-block rp-form__submit" :disabled="loading || !password || !confirmPassword">
-                <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
-                <i v-else class="fa-solid fa-lock"></i>
-                <span>{{ loading ? 'Actualizando...' : 'Establecer nueva contraseña' }}</span>
-              </button>
-            </form>
+            <ResetPasswordForm
+              v-if="token"
+              v-model:password="password"
+              v-model:confirm="confirmPassword"
+              :loading="loading"
+              @submit="handleReset"
+            />
 
             <div class="rp-card__footer">
               <RouterLink to="/login" class="rp-back-link">
@@ -233,41 +144,6 @@ async function handleReset() {
   }
 }
 
-.rp-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  align-self: flex-start;
-
-  &__mark {
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    font-size: 1.125rem;
-    color: var(--color-on-accent);
-    background-color: var(--color-accent);
-    border-radius: 50%;
-  }
-
-  &__text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
-
-  &__name {
-    font-family: var(--font-heading);
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--color-primary);
-  }
-
-  &__tagline {
-    font-size: 0.75rem;
-    color: var(--color-muted);
-  }
-}
 
 .rp-success-icon {
   width: 76px;
@@ -281,27 +157,6 @@ async function handleReset() {
   border-radius: 50%;
 }
 
-.rp-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  &__input--error {
-    border-color: var(--color-error);
-  }
-
-  &__mismatch {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.8125rem;
-    color: var(--color-error);
-  }
-
-  &__submit {
-    margin-top: 0.5rem;
-  }
-}
 
 .rp-back-link {
   display: inline-flex;

@@ -1,0 +1,40 @@
+@use "../../../../styles/index.scss" as *;
+
+.admin-card {
+  background-color: $admin-card;
+  border: 1px solid $admin-border;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr th {
+    background-color: $admin-sidebar-active;
+    color: $admin-text-muted;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid $admin-border;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: $admin-sidebar-hover;
+    }
+
+    td {
+      padding: 0.875rem 1rem;
+      color: $admin-text;
+    }
+  }
+}

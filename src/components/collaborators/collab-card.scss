@@ -1,0 +1,158 @@
+// Cards sit on photos with a dark scrim, so their text colors are fixed light tones
+$on-photo: #FFFFFF;
+$on-photo-soft: rgba(255, 255, 255, 0.72);
+$on-photo-accent: #F1C7A8;
+
+.collab {
+  // ── Card ─────────────────────────
+  &__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    overflow: hidden;
+    border-radius: $radius-lg;
+    color: $on-photo;
+    background-color: #1A120D;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+
+    @media (min-width: 900px) {
+      min-height: 460px;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+
+      .collab__card-bg { transform: scale(1.04); }
+      .collab__card-cta i { transform: translate(2px, -2px); }
+    }
+
+    &--featured {
+      min-height: 360px;
+      margin-top: 1rem;
+      border-radius: $radius-xl;
+
+      @media (min-width: 900px) {
+        margin-top: 1.25rem;
+      }
+    }
+  }
+
+  &__card-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  &__card-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(20, 12, 8, 0.1) 0%, rgba(20, 12, 8, 0.6) 45%, rgba(20, 12, 8, 0.94) 100%);
+
+    &--featured {
+      background: linear-gradient(180deg, rgba(20, 12, 8, 0.35) 0%, rgba(20, 12, 8, 0.94) 100%);
+
+      @media (min-width: 768px) {
+        background: linear-gradient(90deg, rgba(20, 12, 8, 0.95) 0%, rgba(20, 12, 8, 0.8) 45%, rgba(20, 12, 8, 0.2) 100%);
+      }
+    }
+  }
+
+  &__card-logo-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50%;
+    padding: 2rem 1.5rem;
+  }
+
+  &__card-logo {
+    max-width: 160px;
+    max-height: 90px;
+    object-fit: contain;
+  }
+
+  &__card-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding: 1.5rem;
+
+    &--featured {
+      max-width: 620px;
+
+      @media (min-width: 768px) {
+        margin: auto 0;
+        padding: 2.5rem;
+      }
+    }
+  }
+
+  &__card-role {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $on-photo-accent;
+  }
+
+  &__card-name {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: $on-photo;
+  }
+
+  &__card-featured-logo {
+    display: block;
+    max-width: 150px;
+    max-height: 48px;
+    margin: 0.25rem 0;
+    object-fit: contain;
+  }
+
+  &__card-tagline {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-style: italic;
+    line-height: 1.4;
+    color: $on-photo;
+  }
+
+  &__card-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: $on-photo-soft;
+  }
+
+  &__card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $on-photo;
+
+    i {
+      font-size: 0.7rem;
+      color: $on-photo-accent;
+      transition: transform 0.2s ease;
+    }
+  }
+}

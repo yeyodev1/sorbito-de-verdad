@@ -1,0 +1,261 @@
+// Tabla de productos y paginación (admin)
+.pm {
+  &__table-wrap {
+    overflow-x: auto;
+  }
+
+  &__product-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+
+  &__product-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid $admin-border;
+    background-color: $admin-sidebar-active;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__product-thumb-placeholder {
+    color: $admin-text-muted;
+    font-size: 1.25rem;
+    opacity: 0.4;
+  }
+
+  &__product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  &__product-name {
+    color: $admin-text;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__product-sku {
+    color: $admin-text-muted;
+    font-size: 0.75rem;
+    font-family: monospace;
+  }
+
+  &__price {
+    color: $admin-text;
+    font-weight: 600;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    justify-content: flex-end;
+  }
+
+  &__action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.875rem;
+    border: 1px solid $admin-border;
+    background-color: $admin-sidebar-hover;
+    color: $admin-text-muted;
+
+    &:hover {
+      color: $admin-text;
+    }
+
+    &--edit:hover {
+      border-color: $admin-accent;
+      color: $admin-accent;
+    }
+
+    &--activate:hover,
+    &--deactivate:hover {
+      border-color: $admin-info;
+      color: $admin-info;
+    }
+
+    &--delete:hover {
+      border-color: $admin-error;
+      color: $admin-error;
+      background-color: rgba($admin-error, 0.1);
+    }
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid $admin-border;
+    justify-content: center;
+  }
+
+  &__page-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid $admin-border;
+    background-color: $admin-sidebar-hover;
+    color: $admin-text;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $admin-accent;
+      color: $admin-accent;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &__page-info {
+    color: $admin-text-muted;
+    font-size: 0.875rem;
+  }
+}
+
+.text-muted {
+  color: $admin-text-muted;
+}
+
+// Collection badges
+.collection-badge {
+  display: inline-flex;
+  padding: 0.2rem 0.625rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &--white {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  &--pink {
+    background-color: rgba(244, 114, 182, 0.15);
+    color: #f472b6;
+  }
+
+  &--terracota {
+    background-color: rgba($admin-accent, 0.15);
+    color: $admin-accent;
+  }
+
+  &--blue {
+    background-color: rgba($admin-info, 0.15);
+    color: $admin-info;
+  }
+
+  &--default {
+    background-color: rgba($admin-text-muted, 0.15);
+    color: $admin-text-muted;
+  }
+}
+
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+
+  &--ok {
+    background-color: rgba($admin-success, 0.12);
+    color: $admin-success;
+  }
+
+  &--empty {
+    background-color: rgba($admin-error, 0.12);
+    color: $admin-error;
+  }
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--success {
+    background-color: rgba($admin-success, 0.15);
+    color: $admin-success;
+  }
+
+  &--error {
+    background-color: rgba($admin-error, 0.15);
+    color: $admin-error;
+  }
+}
+
+// Admin Table
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead tr th {
+    background-color: $admin-sidebar-active;
+    color: $admin-text-muted;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid $admin-border;
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: $admin-sidebar-hover;
+    }
+
+    td {
+      padding: 0.875rem 1rem;
+      color: $admin-text;
+    }
+  }
+}
+
