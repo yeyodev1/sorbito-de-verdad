@@ -93,10 +93,15 @@
   }
 
   &__images-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.75rem;
+
+    > * {
+      flex: 0 0 calc((100% - 1rem) / 3);
+      min-width: 0;
+    }
   }
 
   &__image-item {
