@@ -131,19 +131,19 @@ const { authStore, uiStore, isDark, totalItems, isMenuOpen, confirmLogout } = us
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 42px;
+    min-width: 42px;
     justify-content: center;
     padding: 0 0.75rem;
     margin-left: 0.25rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--color-on-inverse);
-    background-color: var(--color-bg-inverse);
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
     border-radius: $radius-full;
-    transition: transform 0.15s ease, opacity 0.2s ease;
+    transition: transform 0.15s ease, background-color 0.2s ease;
 
-    &:hover { opacity: 0.9; }
+    &:hover { background-color: var(--color-accent-hover); }
     &:active { transform: scale(0.96); }
 
     @media (min-width: 1024px) {
@@ -167,8 +167,8 @@ const { authStore, uiStore, isDark, totalItems, isMenuOpen, confirmLogout } = us
     padding: 0 6px;
     font-size: 0.7rem;
     font-weight: 700;
-    color: var(--color-on-accent);
-    background-color: var(--color-accent);
+    color: var(--color-accent);
+    background-color: var(--color-on-accent);
     border-radius: $radius-full;
   }
 
