@@ -4,9 +4,10 @@
 
 // --font-heading / --font-body viven en _tokens.scss
 
-$font-heading: 'Fraunces', Georgia, serif;
+$font-heading: 'Bricolage Grotesque', system-ui, sans-serif;
 $font-body: 'Inter', system-ui, -apple-system, sans-serif;
 
 // Backwards compat
+$font-accent: 'Instrument Serif', Georgia, serif;
 $font-principal: 'Inter', system-ui, -apple-system, sans-serif;
-$font-secondary: 'Fraunces', Georgia, serif;
+$font-secondary: 'Bricolage Grotesque', system-ui, sans-serif;
