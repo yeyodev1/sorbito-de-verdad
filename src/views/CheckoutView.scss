@@ -80,10 +80,12 @@
     flex-direction: column;
 
     @media (min-width: 960px) {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 380px;
+      flex-direction: row;
       gap: 3rem;
-      align-items: start;
+      align-items: flex-start;
+
+      > .co__form { flex: 1 1 0; }
+      > .co__summary { flex: 0 0 380px; }
     }
   }
 
