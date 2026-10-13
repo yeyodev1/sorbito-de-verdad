@@ -15,6 +15,8 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
           <img :src="CRAFT_IMG" alt="Tazas artesanales apiladas" loading="lazy" decoding="async" />
         </figure>
 
+        <div class="bento__side">
+        <div class="bento__row">
         <blockquote class="bento__cell bento__cell--quote">
           <i class="fa-solid fa-quote-left" aria-hidden="true"></i>
           <p>Cada taza nace de manos que conocen el barro, el fuego y la paciencia.</p>
@@ -24,6 +26,9 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
           <strong>100%</strong>
           <span>hecho a mano en Ecuador</span>
         </div>
+        </div>
+
+        <div class="bento__row">
 
         <div class="bento__cell bento__cell--stat bento__cell--butter">
           <strong>2</strong>
@@ -38,6 +43,8 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
           <span>Conoce la historia detrás de cada pieza</span>
           <span class="bento__cta-icon" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
         </RouterLink>
+        </div>
+        </div>
       </div>
     </div>
   </section>
@@ -56,15 +63,43 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
     font-size: clamp(2rem, 5vw, 3.5rem);
   }
 
+  // Móvil: todas las celdas fluyen en un solo flex-wrap (side/row "desaparecen").
+  // Escritorio: foto a la izquierda y dos filas flex a la derecha.
   &__grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.75rem;
 
     @media (min-width: 900px) {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      grid-template-rows: repeat(2, minmax(210px, auto));
+      flex-wrap: nowrap;
       gap: 1rem;
+    }
+  }
+
+  &__side,
+  &__row {
+    display: contents;
+
+    @media (min-width: 900px) {
+      display: flex;
+      gap: 1rem;
+      min-width: 0;
+    }
+  }
+
+  &__side {
+    @media (min-width: 900px) {
+      flex: 3 1 0;
+      flex-direction: column;
+    }
+  }
+
+  &__row {
+    @media (min-width: 900px) {
+      flex: 1 1 0;
+      min-height: 210px;
+
+      > * { flex: 1 1 0; min-width: 0; }
     }
   }
 
@@ -81,18 +116,19 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
     }
 
     &--photo {
-      grid-column: span 2;
+      flex: 1 1 100%;
       aspect-ratio: 4 / 3;
 
       @media (min-width: 900px) {
-        grid-column: span 1;
-        grid-row: span 2;
+        flex: 1 1 0;
+        min-width: 0;
         aspect-ratio: auto;
       }
     }
 
     &--quote {
-      grid-column: span 2;
+      flex: 1 1 100%;
+
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -100,6 +136,8 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
       padding: 1.5rem;
       color: var(--tile-ink);
       background-color: var(--tile-peach);
+
+      @media (min-width: 900px) { flex: 2 1 0 !important; }
 
       i { font-size: 1.5rem; opacity: 0.4; }
 
@@ -113,6 +151,8 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
     }
 
     &--stat {
+      flex: 1 1 calc(50% - 0.375rem);
+      min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
@@ -120,6 +160,8 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
       min-height: 160px;
       padding: 1.25rem;
       color: var(--tile-ink);
+
+      @media (min-width: 900px) { flex: 1 1 0; }
 
       strong {
         font-family: var(--font-heading);
@@ -144,7 +186,8 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
     }
 
     &--cta {
-      grid-column: span 2;
+      flex: 1 1 100%;
+
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -160,18 +203,18 @@ const SPLASH_IMG = 'https://res.cloudinary.com/dpjzfua3n/image/upload/q_auto,f_a
       background-color: var(--color-accent);
       transition: background-color 0.2s ease;
 
+      @media (min-width: 900px) { flex: 1 1 0; min-width: 0; }
+
       &:hover { background-color: var(--color-accent-hover); }
 
-      @media (min-width: 900px) {
-        grid-column: span 1;
-      }
     }
   }
 
   &__cta-icon {
     flex-shrink: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 44px;
     height: 44px;
     color: var(--color-accent);
