@@ -1,0 +1,213 @@
+// Footer oscuro con la marca en grande al final
+.footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  overflow: hidden;
+  color: var(--color-on-inverse);
+  background-color: var(--color-bg-inverse);
+  border-radius: $radius-xl $radius-xl 0 0;
+
+  --ft-muted: color-mix(in srgb, var(--color-on-inverse) 62%, transparent);
+  --ft-line: color-mix(in srgb, var(--color-on-inverse) 14%, transparent);
+
+  p { color: var(--ft-muted); }
+
+  &__cta {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    padding: 2rem 1.5rem;
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
+    border-radius: $radius-xl;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-top: 2.5rem;
+      padding: 3rem;
+    }
+  }
+
+  &__cta-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: inherit !important;
+    opacity: 0.8;
+  }
+
+  &__cta-title {
+    max-width: 18ch;
+    margin-top: 0.5rem;
+    font-size: clamp(1.875rem, 4.5vw, 3.25rem);
+    color: inherit;
+  }
+
+  &__cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    min-height: 54px;
+    padding: 0 1.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background-color: var(--color-bg-card);
+    border-radius: $radius-full;
+    transition: transform 0.2s ease;
+
+    &:hover { transform: translateY(-2px); }
+  }
+
+  &__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem 1.5rem;
+    padding: 3rem 0 2rem;
+
+    @media (min-width: 1024px) {
+      grid-template-columns: 1.6fr repeat(3, 1fr);
+      gap: 3rem;
+      padding-top: 4rem;
+    }
+  }
+
+  &__brand {
+    grid-column: 1 / -1;
+
+    @media (min-width: 1024px) { grid-column: auto; }
+  }
+
+  &__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  &__logo-mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+    color: var(--color-on-accent);
+    font-size: 0.95rem;
+    transform: rotate(-8deg);
+  }
+
+  &__logo-name {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  &__tagline {
+    max-width: 34ch;
+    margin-top: 1rem;
+    font-size: 0.925rem;
+  }
+
+  &__social {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  &__social-link {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--ft-line);
+    font-size: 1.05rem;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--color-accent);
+      border-color: var(--color-accent);
+      color: var(--color-on-accent);
+    }
+  }
+
+  &__col-title {
+    margin-bottom: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ft-muted);
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    font-size: 0.925rem;
+    transition: color 0.2s ease;
+
+    &:hover { color: var(--color-accent); }
+  }
+
+  &__wordmark {
+    margin: 0;
+    padding: 1rem 0 0.5rem;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 8.4vw, 8rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+    white-space: nowrap;
+    color: var(--color-on-inverse) !important;
+    opacity: 0.95;
+
+    em { color: var(--color-accent); }
+  }
+
+  &__bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem 0 2rem;
+    border-top: 1px solid var(--ft-line);
+    font-size: 0.8125rem;
+    color: var(--ft-muted);
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  &__copyright { font-size: inherit; }
+
+  &__credits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.6rem;
+  }
+
+  &__credits-link {
+    color: var(--color-on-inverse);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: var(--ft-line);
+    text-underline-offset: 3px;
+
+    &:hover { color: var(--color-accent); }
+  }
+}
