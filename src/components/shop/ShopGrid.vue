@@ -41,19 +41,28 @@ const emit = defineEmits<{ clear: [] }>();
 
 <style lang="scss" scoped>
 .shop {
+  // Columnas con flex: cada tarjeta mide (100% - huecos) / columnas
   &__grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    --gap: 0.75rem;
+    --cols: 2;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap);
+
+    > * {
+      flex: 0 0 calc((100% - var(--gap) * (var(--cols) - 1)) / var(--cols));
+      min-width: 0;
+    }
 
     @media (min-width: 768px) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1.25rem;
+      --gap: 1.25rem;
+      --cols: 3;
     }
 
     @media (min-width: 1180px) {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1.5rem;
+      --gap: 1.5rem;
+      --cols: 4;
     }
   }
 
@@ -68,8 +77,9 @@ const emit = defineEmits<{ clear: [] }>();
   }
 
   &__empty-icon {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 64px;
     height: 64px;
     border-radius: 50%;
