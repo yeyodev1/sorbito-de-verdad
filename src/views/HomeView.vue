@@ -2,8 +2,10 @@
 import { onMounted } from 'vue';
 import MainLayout from '../layout/MainLayout.vue';
 import HeroSection from '../components/HeroSection.vue';
-import CinematicBreak from '../components/CinematicBreak.vue';
+import CollectionTiles from '../components/home/CollectionTiles.vue';
 import FeaturedProducts from '../components/FeaturedProducts.vue';
+import HowToBuy from '../components/home/HowToBuy.vue';
+import CraftBento from '../components/home/CraftBento.vue';
 import CollaboratorsSection from '../components/CollaboratorsSection.vue';
 import NewsletterSection from '../components/NewsletterSection.vue';
 import { useProductsStore } from '../stores/products';
@@ -15,8 +17,10 @@ onMounted(() => productsStore.fetchFeatured());
 <template>
   <MainLayout>
     <HeroSection />
+    <CollectionTiles />
     <FeaturedProducts />
-    <CinematicBreak />
+    <HowToBuy />
+    <CraftBento />
     <CollaboratorsSection />
     <NewsletterSection />
   </MainLayout>
