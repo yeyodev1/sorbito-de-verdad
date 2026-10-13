@@ -126,8 +126,9 @@ async function resendCredentials() {
   &__icon-wrap {
     width: 84px;
     height: 84px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 0.25rem;
     border-radius: 50%;
     background-color: var(--color-success-light);
@@ -223,8 +224,9 @@ async function resendCredentials() {
     flex-shrink: 0;
     width: 40px;
     height: 40px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
     color: var(--color-on-accent);
     background-color: var(--color-accent);
