@@ -87,8 +87,9 @@ const { authStore, uiStore, isDark, totalItems, isMenuOpen, confirmLogout } = us
   }
 
   &__icon-btn {
-    display: inline-grid;
-    place-items: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -104,7 +105,7 @@ const { authStore, uiStore, isDark, totalItems, isMenuOpen, confirmLogout } = us
       display: none;
 
       @media (min-width: 1024px) {
-        display: inline-grid;
+        display: inline-flex;
       }
     }
   }
@@ -160,8 +161,9 @@ const { authStore, uiStore, isDark, totalItems, isMenuOpen, confirmLogout } = us
   }
 
   &__cart-badge {
-    display: inline-grid;
-    place-items: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 20px;
     height: 20px;
     padding: 0 6px;
