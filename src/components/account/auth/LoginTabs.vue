@@ -30,14 +30,15 @@ defineEmits<{ select: [mode: AuthMode] }>();
 
 <style lang="scss" scoped>
 .login-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 4px;
   padding: 4px;
   background-color: var(--color-bg-subtle);
   border-radius: $radius-full;
 
   &__tab {
+    flex: 1 1 0;
+    min-width: 0;
     min-height: 42px;
     font-size: 0.875rem;
     font-weight: 600;
