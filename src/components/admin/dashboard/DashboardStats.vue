@@ -73,17 +73,22 @@ defineProps<{ loading: boolean; stats: DashboardStats }>();
 .dashboard {
 
   &__stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1.5rem;
 
+    > * {
+      flex: 1 1 calc((100% - 3rem) / 4);
+      min-width: 0;
+    }
+
     @media (max-width: 1200px) {
-      grid-template-columns: repeat(2, 1fr);
+      > * { flex-basis: calc(50% - 0.5rem); }
     }
 
     @media (max-width: 600px) {
-      grid-template-columns: 1fr;
+      > * { flex-basis: 100%; }
     }
   }
 }
