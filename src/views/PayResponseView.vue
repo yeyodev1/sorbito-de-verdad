@@ -101,8 +101,9 @@ onMounted(async () => {
     position: relative;
     width: 84px;
     height: 84px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 0.5rem;
     font-size: 1.625rem;
     color: var(--color-accent);
@@ -122,8 +123,9 @@ onMounted(async () => {
   &__icon {
     width: 84px;
     height: 84px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 0.5rem;
     border-radius: 50%;
     font-size: 1.75rem;
